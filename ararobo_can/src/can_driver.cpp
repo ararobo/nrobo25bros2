@@ -63,7 +63,7 @@ void CANDriver::can_receive_process()
     {
         perror("read");
     }
-    receive(can_rx_frame.can_id, can_rx_frame.data, can_rx_frame.can_dlc);
+    receive(can_rx_frame.can_id, (uint8_t *)can_rx_frame.data, can_rx_frame.can_dlc);
 }
 
 void CANDriver::init()
@@ -98,4 +98,10 @@ CANDriver::~CANDriver()
     {
         perror("close socket");
     }
+}
+
+void CANDriver::receive(uint16_t id, uint8_t *data, uint8_t len)
+{
+    // 受信処理をオーバーライドする場合は、この関数を実装してください
+    // ここでは何もしない
 }

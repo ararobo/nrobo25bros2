@@ -1,10 +1,8 @@
 #include "ararobo_can/robot_node.hpp"
 #include "ararobo_can/can_config.hpp"
 
-using namespace ararobo_can;
-
-RobotNode::RobotNode(const rclcpp::NodeOptions &options)
-    : Node("robot_node", options)
+RobotNode::RobotNode()
+    : Node("robot_node")
 {
     can_id_cmd_vel_ = can_config::encode_id(
         can_config::direction::master,
@@ -38,5 +36,17 @@ void RobotNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     can_driver_->send(can_id_cmd_vel_, data, 6);
 }
 
-#include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(RobotNode)
+RobotNode::~RobotNode()
+{
+    // CANドライバの終了処理
+    can_driver_->~CANDriver();
+    RCLCPP_INFO(this->get_logger(), "RobotNode destroyed");
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<RobotNode>());
+    rclcpp::shutdown();
+    return 0;
+}
