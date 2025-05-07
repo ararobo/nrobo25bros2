@@ -29,7 +29,7 @@ void RobotNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     int16_t cmd_vel_data[3];
     cmd_vel_data[0] = static_cast<int16_t>(msg->linear.x * cmd_vel_scale_);
     cmd_vel_data[1] = static_cast<int16_t>(msg->linear.y * cmd_vel_scale_);
-    cmd_vel_data[2] = static_cast<int16_t>(msg->angular.y * cmd_vel_scale_);
+    cmd_vel_data[2] = static_cast<int16_t>(msg->angular.z * cmd_vel_scale_);
     // CANデータの送信
     uint8_t data[6];
     memcpy(data, cmd_vel_data, sizeof(cmd_vel_data));
