@@ -9,7 +9,7 @@ RobotNode::RobotNode()
     pc_data_slave_->init();
 
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
-        "cmd_vel", 10,
+        "/robot/move", 10,
         std::bind(&RobotNode::cmd_vel_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "RobotNode initialized");
