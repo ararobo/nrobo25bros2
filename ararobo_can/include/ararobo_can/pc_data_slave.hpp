@@ -6,7 +6,7 @@ class PCDataSlave : public CANDriver
 {
 private:
     uint8_t board_id;       // 基板のID
-    uint8_t velocity_scale; // 送信時のベクトルの係数
+    int16_t velocity_scale; // 送信時のベクトルの係数
     /* 一時処理用変数 */
     uint8_t packet_direction;  // 進行方向
     uint8_t packet_board_type; // 基板の種類
