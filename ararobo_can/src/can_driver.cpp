@@ -98,6 +98,10 @@ CANDriver::~CANDriver()
     {
         perror("close socket");
     }
+    else
+    {
+        printf("close socket\n");
+    }
 }
 
 void CANDriver::receive(uint16_t id, uint8_t *data, uint8_t len)
