@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <cerrno>
 
-bool CANDriver::isDataAvailable()
+bool CANDriver::is_packet_available()
 {
     fd_set fds;
     struct timeval tv;
@@ -27,13 +27,13 @@ bool CANDriver::isDataAvailable()
     return ret > 0;
 }
 
-void CANDriver::sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_length)
+void CANDriver::send(uint16_t id, uint8_t *data, uint8_t len)
 {
     can_tx_frame.can_id = id;
-    can_tx_frame.can_dlc = data_length;
-    for (__u8 i = 0; i < data_length; i++)
+    can_tx_frame.can_dlc = len;
+    for (__u8 i = 0; i < len; i++)
     {
-        can_tx_frame.data[i] = send_buffer[i];
+        can_tx_frame.data[i] = data[i];
     }
     ssize_t nbytes = write(can_socket, &can_tx_frame, sizeof(can_tx_frame));
     if (nbytes == -1)
@@ -52,22 +52,21 @@ void CANDriver::sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_leng
     }
 }
 
-void CANDriver::readPacket(uint8_t *receive_buffer, uint16_t *rx_id, uint8_t *rx_data_length)
+void CANDriver::can_receive_process()
 {
+    if (!is_packet_available())
+    {
+        return;
+    }
     rx_numbytes = read(can_socket, &can_rx_frame, sizeof(can_rx_frame));
     if (rx_numbytes < 0)
     {
         perror("read");
     }
-    for (uint8_t i = 0; i < can_rx_frame.can_dlc; i++)
-    {
-        receive_buffer[i] = can_rx_frame.data[i];
-    }
-    *rx_id = can_rx_frame.can_id;
-    *rx_data_length = can_rx_frame.can_dlc;
+    receive(can_rx_frame.can_id, can_rx_frame.data, can_rx_frame.can_dlc);
 }
 
-void CANDriver::initCAN()
+void CANDriver::init()
 {
     if ((can_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
     {
@@ -93,7 +92,7 @@ void CANDriver::initCAN()
     // fcntl(can_socket, F_SETFL, flags | O_NONBLOCK);
 }
 
-void CANDriver::closeSocket()
+CANDriver::~CANDriver()
 {
     if (close(can_socket) < 0)
     {

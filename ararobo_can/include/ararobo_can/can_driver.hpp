@@ -25,44 +25,52 @@ private:
     struct ifreq ifr;
     struct can_frame can_rx_frame;
     struct can_frame can_tx_frame;
+    uint8_t RxData[8];
+
+    /**
+     * @brief Packetが受信可能かどうかを確認する
+     *
+     * @return true 受信可能
+     * @return false 受信不可能
+     */
+    bool is_packet_available();
 
 protected:
     /**
-     * @brief 受信するデータがあるかどうかを返す関数
-     *
-     * @return true
-     * @return false
-     */
-    bool isDataAvailable();
-
-    /**
-     * @brief データーを送信する関数
+     * @brief CANの受信処理(オーバーライドしてください)
      *
      * @param id CANのID
-     * @param send_buffer 送信するデータ配列(uint8)のポインタ
-     * @param data_length 送信するデータの大きさ
+     * @param data 受信データ
+     * @param len データの長さ
      */
-    void sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_length);
-
-    /**
-     * @brief データを受信する関数
-     *
-     * @param receive_buffer 受信したデータを入れるバッファ(8byte)
-     * @param rx_id 受信したデータのCANのID
-     * @param rx_data_length 受信したデータの大きさ
-     */
-    void readPacket(uint8_t *receive_buffer, uint16_t *rx_id, uint8_t *rx_data_length);
+    virtual void receive(uint16_t id, uint8_t *data, uint8_t len);
 
 public:
     /**
-     * @brief CAN通信を初期化
+     * @brief デストラクタ
      *
      */
-    void initCAN();
+    ~CANDriver();
 
     /**
-     * @brief CAN通信を終了
+     * @brief CANの初期化
      *
      */
-    void closeSocket();
+    void init();
+
+    /**
+     * @brief CANの送信処理
+     *
+     * @param id CANのID
+     * @param data 送信するデータ
+     * @param len データの長さ
+     */
+    void send(uint16_t id, uint8_t *data, uint8_t len);
+
+    /**
+     * @brief CANの受信処理
+     * @note 受信処理を行う周期に合わせて継続的に呼び出す必要があります。
+     *
+     */
+    void can_receive_process();
 };

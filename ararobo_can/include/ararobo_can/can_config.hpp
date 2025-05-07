@@ -2,7 +2,7 @@
  * @file can_config.hpp
  * @author gn10g (8gn24gn25@gmail.com)
  * @brief CAN通信のID設定を行う
- * @version 2.1
+ * @version 2.2
  * @date 2025-05-07
  *
  * @copyright Copyright (c) 2025
@@ -58,6 +58,8 @@ namespace can_config
         namespace pc
         {
             static constexpr uint8_t init = 0;
+            static constexpr uint8_t target = 1;
+            static constexpr uint8_t cmd_vel = 2;
         }
         namespace sensor
         {
