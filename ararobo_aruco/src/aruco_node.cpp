@@ -1,0 +1,1 @@
+#include "ararobo_aruco/aruco_node.hpp"
