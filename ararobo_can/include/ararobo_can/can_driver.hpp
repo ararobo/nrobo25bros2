@@ -2,7 +2,7 @@
  * @file can_driver.hpp
  * @author Gento Aiba
  * @brief CAN通信をLinuxで行うクラス
- * @version 1.0
+ * @version 2.0
  * @date 2024-05-07
  *
  * @copyright Copyright (c) 2025
@@ -16,7 +16,7 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-class CANPeripheral
+class CANDriver
 {
 private:
     int can_socket;

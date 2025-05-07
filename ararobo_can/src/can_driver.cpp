@@ -1,21 +1,21 @@
 /**
- * @file can_peripheral.cpp
+ * @file can_driver.cpp
  * @author Gento Aiba
  * @brief CAN通信をLinuxで行う
- * @version 1.0
- * @date 2024-03-11
+ * @version 2.0
+ * @date 2025-05-07
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2025
  *
  */
-#include "ararobo_can/can_peripheral.hpp"
+#include "ararobo_can/can_driver.hpp"
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <cerrno>
 
-bool CANPeripheral::isDataAvailable()
+bool CANDriver::isDataAvailable()
 {
     fd_set fds;
     struct timeval tv;
@@ -27,7 +27,7 @@ bool CANPeripheral::isDataAvailable()
     return ret > 0;
 }
 
-void CANPeripheral::sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_length)
+void CANDriver::sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_length)
 {
     can_tx_frame.can_id = id;
     can_tx_frame.can_dlc = data_length;
@@ -52,7 +52,7 @@ void CANPeripheral::sendPacket(uint16_t id, uint8_t send_buffer[], uint8_t data_
     }
 }
 
-void CANPeripheral::readPacket(uint8_t *receive_buffer, uint16_t *rx_id, uint8_t *rx_data_length)
+void CANDriver::readPacket(uint8_t *receive_buffer, uint16_t *rx_id, uint8_t *rx_data_length)
 {
     rx_numbytes = read(can_socket, &can_rx_frame, sizeof(can_rx_frame));
     if (rx_numbytes < 0)
@@ -67,7 +67,7 @@ void CANPeripheral::readPacket(uint8_t *receive_buffer, uint16_t *rx_id, uint8_t
     *rx_data_length = can_rx_frame.can_dlc;
 }
 
-void CANPeripheral::initCAN()
+void CANDriver::initCAN()
 {
     if ((can_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
     {
@@ -93,7 +93,7 @@ void CANPeripheral::initCAN()
     // fcntl(can_socket, F_SETFL, flags | O_NONBLOCK);
 }
 
-void CANPeripheral::closeSocket()
+void CANDriver::closeSocket()
 {
     if (close(can_socket) < 0)
     {
