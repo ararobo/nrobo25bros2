@@ -20,7 +20,7 @@ set(dependencies
   geometry_msgs
 )
 
-add_executable(robot src/robot_node.cpp src/can_config.cpp src/can_driver.cpp)
+add_executable(robot src/robot_node.cpp src/can_config.cpp src/can_driver.cpp src/pc_data_slave.cpp)
 
 ament_target_dependencies(robot
   ${dependencies}
