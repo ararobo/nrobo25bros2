@@ -7,9 +7,28 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+add_executable(planner_node src/navi_node.cpp)
+ament_target_dependencies(planner_node
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+  tf2_ros
+)
+target_include_directories(navi_node PUBLIC # includeというフォルダがあるが、その中のヘッダファイルをソースコードで使用したりするため
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+install(TARGETS # この中に書いたものはbuild時に実際にbuildされます。
+  navi_node # my_nodeをビルドする
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -21,6 +40,3 @@ if(BUILD_TESTING)
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-endif()
-
-ament_package()
