@@ -32,9 +32,9 @@ bool PCDataSlave::get_init(uint8_t *config)
 void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 {
     uint8_t data[6];
-    uint16_t vx_int = static_cast<uint16_t>(vx * velocity_scale);
-    uint16_t vy_int = static_cast<uint16_t>(vy * velocity_scale);
-    uint16_t omega_int = static_cast<uint16_t>(omega * velocity_scale);
+    int16_t vx_int = vx * velocity_scale;
+    int16_t vy_int = vy * velocity_scale;
+    int16_t omega_int = omega * velocity_scale;
     data[0] = static_cast<uint8_t>(vx_int & 0xFF);
     data[1] = static_cast<uint8_t>((vx_int >> 8) & 0xFF);
     data[2] = static_cast<uint8_t>(vy_int & 0xFF);
