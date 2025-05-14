@@ -10,7 +10,6 @@ namespace planner_node
     PlannerNode::PlannerNode(const rclcpp::NodeOptions &node_options)
         : Node("planner_node", node_options)
     {
-        // パラメータ初期化（例）
         this->declare_parameter("v_max", 0.5);
         this->declare_parameter("slow_stop", 0.2);
         this->declare_parameter("zero_stop", 0.05);
