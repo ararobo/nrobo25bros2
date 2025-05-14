@@ -36,3 +36,18 @@ void OdomNode::timer_callback()
                      x, y, theta);
     }
 }
+
+OdomNode::~OdomNode()
+{
+    // CANドライバの終了処理
+    pc_data_slave_->~PCDataSlave();
+    RCLCPP_INFO(this->get_logger(), "OdomNode destroyed");
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<OdomNode>());
+    rclcpp::shutdown();
+    return 0;
+}
