@@ -18,6 +18,7 @@ private:
     uint8_t cmd_vel_buffer[6]; // cmd_velバッファ
     bool init_flag;            // 初期化フラグ
     bool target_flag;          // 目標値フラグ
+    bool cmd_vel_flag;         // cmd_velフラグ
 
 protected:
     /**
@@ -39,4 +40,6 @@ public:
     bool get_init(uint8_t *config);
 
     void send_cmd_vel(float vx, float vy, float omega);
+
+    bool get_odometry(float *x, float *y, float *theta);
 };

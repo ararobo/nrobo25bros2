@@ -29,6 +29,22 @@ bool PCDataSlave::get_init(uint8_t *config)
     return false;
 }
 
+bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
+{
+    if (this->cmd_vel_flag)
+    {
+        int16_t x_int = (this->cmd_vel_buffer[0] | (this->cmd_vel_buffer[1] << 8));
+        int16_t y_int = (this->cmd_vel_buffer[2] | (this->cmd_vel_buffer[3] << 8));
+        int16_t theta_int = (this->cmd_vel_buffer[4] | (this->cmd_vel_buffer[5] << 8));
+        *x = static_cast<float>(x_int) / velocity_scale;
+        *y = static_cast<float>(y_int) / velocity_scale;
+        *theta = static_cast<float>(theta_int) / velocity_scale;
+        this->cmd_vel_flag = false;
+        return true;
+    }
+    return false;
+}
+
 void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 {
     uint8_t data[6];
@@ -69,6 +85,12 @@ void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
             {
                 std::memcpy(this->target_buffer, data, sizeof(this->target_buffer));
                 this->target_flag = true;
+            }
+            break;
+        case can_config::data_type::pc::cmd_vel:
+            if (len == sizeof(this->cmd_vel_buffer))
+            {
+                std::memcpy(this->cmd_vel_buffer, data, sizeof(this->cmd_vel_buffer));
             }
             break;
         default:
