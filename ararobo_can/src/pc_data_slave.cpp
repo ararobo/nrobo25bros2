@@ -91,6 +91,7 @@ void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
             if (len == sizeof(this->cmd_vel_buffer))
             {
                 std::memcpy(this->cmd_vel_buffer, data, sizeof(this->cmd_vel_buffer));
+                this->cmd_vel_flag = true;
             }
             break;
         default:
