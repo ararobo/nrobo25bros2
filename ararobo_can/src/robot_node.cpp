@@ -18,8 +18,8 @@ RobotNode::RobotNode()
 void RobotNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
     pc_data_slave_->send_cmd_vel(msg->linear.x, msg->linear.y, msg->angular.z);
-    RCLCPP_DEBUG(this->get_logger(), "cmd_vel: linear.x: %f, linear.y: %f, angular.z: %f",
-                 msg->linear.x, msg->linear.y, msg->angular.z);
+    RCLCPP_INFO(this->get_logger(), "cmd_vel: linear.x: %f, linear.y: %f, angular.z: %f",
+                msg->linear.x, msg->linear.y, msg->angular.z);
 }
 
 RobotNode::~RobotNode()

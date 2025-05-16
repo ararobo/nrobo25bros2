@@ -32,8 +32,8 @@ void OdomNode::timer_callback()
         odom_msg.pose.pose.position.z = 0.0;
         odom_msg.pose.pose.orientation.z = theta;
         pub_odometry_->publish(odom_msg); // odometryデータの送信
-        RCLCPP_DEBUG(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
-                     x, y, theta);
+        RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
+                    x, y, theta);
     }
 }
 
