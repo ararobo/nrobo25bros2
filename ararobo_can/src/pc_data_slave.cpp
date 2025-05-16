@@ -73,8 +73,12 @@ void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 
 void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
 {
-    RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
-                data[0], data[1], data[2], data[3], data[4], data[5]);
+    uint8_t rx_data[8];
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        rx_data[i] = data[i];
+    }
+
     can_config::decode_id(id, this->packet_direction, this->packet_board_type,
                           this->packet_board_id, this->packet_data_type);
     if (this->packet_direction == can_config::direction::master &&
@@ -86,21 +90,21 @@ void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
         case can_config::data_type::pc::init:
             if (len == sizeof(this->init_buffer))
             {
-                std::memcpy(this->init_buffer, data, sizeof(this->init_buffer));
+                std::memcpy(this->init_buffer, rx_data, sizeof(this->init_buffer));
                 this->init_flag = true;
             }
             break;
         case can_config::data_type::pc::target:
             if (len == sizeof(this->target_buffer))
             {
-                std::memcpy(this->target_buffer, data, sizeof(this->target_buffer));
+                std::memcpy(this->target_buffer, rx_data, sizeof(this->target_buffer));
                 this->target_flag = true;
             }
             break;
         case can_config::data_type::pc::cmd_vel:
             if (len == sizeof(this->cmd_vel_buffer))
             {
-                std::memcpy(this->cmd_vel_buffer, data, sizeof(this->cmd_vel_buffer));
+                std::memcpy(this->cmd_vel_buffer, rx_data, sizeof(this->cmd_vel_buffer));
                 this->cmd_vel_flag = true;
             }
             break;
