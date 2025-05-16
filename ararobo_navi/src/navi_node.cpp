@@ -1,7 +1,5 @@
 #include "ararobo_navi/navi_node.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-
 namespace planner_node
 {
 
@@ -37,7 +35,7 @@ namespace planner_node
         timer_ = this->create_wall_timer(
             std::chrono::duration<double>(1.0 / freq),
             std::bind(&PlannerNode::timer_callback, this));
-        }
+    }
 
     struct Node
     {
