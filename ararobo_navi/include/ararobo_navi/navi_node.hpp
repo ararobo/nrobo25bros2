@@ -7,6 +7,10 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
+#include <vector>
+#include <queue>
+#include <cmath>
+#include <algorithm>
 
 namespace planner_node
 {
@@ -38,6 +42,7 @@ namespace planner_node
     double position_tolerance_ = 0.05;
     double angle_tolerance_ = 5.0;
     double resolution_;
+    double geat_pud;
 
     double get_Yaw(const geometry_msgs::msg::Quaternion &q)
     {
