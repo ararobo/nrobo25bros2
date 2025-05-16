@@ -1,5 +1,6 @@
 #include "ararobo_can/pc_data_slave.hpp"
 #include <cstring>
+#include <rclcpp/rclcpp.hpp>
 
 PCDataSlave::PCDataSlave(uint8_t board_id_) : board_id(board_id_)
 {
@@ -33,15 +34,19 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
 {
     if (this->cmd_vel_flag)
     {
+        RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
+                    this->cmd_vel_buffer[0], this->cmd_vel_buffer[1],
+                    this->cmd_vel_buffer[2], this->cmd_vel_buffer[3],
+                    this->cmd_vel_buffer[4], this->cmd_vel_buffer[5]);
         uint16_t x_uint = this->cmd_vel_buffer[0] | uint16_t(this->cmd_vel_buffer[1] << 8);
         uint16_t y_uint = this->cmd_vel_buffer[2] | uint16_t(this->cmd_vel_buffer[3] << 8);
         uint16_t theta_uint = this->cmd_vel_buffer[4] | uint16_t(this->cmd_vel_buffer[5] << 8);
         int16_t x_int = static_cast<int16_t>(x_uint);
         int16_t y_int = static_cast<int16_t>(y_uint);
         int16_t theta_int = static_cast<int16_t>(theta_uint);
-        *x = static_cast<float>(x_int) / velocity_scale;
-        *y = static_cast<float>(y_int) / velocity_scale;
-        *theta = static_cast<float>(theta_int) / velocity_scale;
+        *x = float(x_int);
+        *y = float(y_int);
+        *theta = float(theta_int);
         this->cmd_vel_flag = false;
         return true;
     }
@@ -68,6 +73,8 @@ void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 
 void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
 {
+    RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
+                data[0], data[1], data[2], data[3], data[4], data[5]);
     can_config::decode_id(id, this->packet_direction, this->packet_board_type,
                           this->packet_board_id, this->packet_data_type);
     if (this->packet_direction == can_config::direction::master &&
