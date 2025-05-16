@@ -47,8 +47,6 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
         *x = float(x_int);
         *y = float(y_int);
         *theta = float(theta_int);
-        RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "odometry: x: %f, y: %f, theta: %f",
-                    *x, *y, *theta);
         this->cmd_vel_flag = false;
         return true;
     }
@@ -100,6 +98,8 @@ void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
         case can_config::data_type::pc::cmd_vel:
             if (len == sizeof(this->cmd_vel_buffer))
             {
+                RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
+                            data[0], data[1], data[2], data[3], data[4], data[5]);
                 std::memcpy(this->cmd_vel_buffer, data, sizeof(this->cmd_vel_buffer));
                 this->cmd_vel_flag = true;
             }
