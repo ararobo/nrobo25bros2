@@ -33,9 +33,12 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
 {
     if (this->cmd_vel_flag)
     {
-        int16_t x_int = static_cast<int16_t>(this->cmd_vel_buffer[0] | uint16_t(this->cmd_vel_buffer[1] << 8));
-        int16_t y_int = static_cast<int16_t>(this->cmd_vel_buffer[2] | uint16_t(this->cmd_vel_buffer[3] << 8));
-        int16_t theta_int = static_cast<int16_t>(this->cmd_vel_buffer[4] | uint16_t(this->cmd_vel_buffer[5] << 8));
+        uint16_t x_uint = this->cmd_vel_buffer[0] | uint16_t(this->cmd_vel_buffer[1] << 8);
+        uint16_t y_uint = this->cmd_vel_buffer[2] | uint16_t(this->cmd_vel_buffer[3] << 8);
+        uint16_t theta_uint = this->cmd_vel_buffer[4] | uint16_t(this->cmd_vel_buffer[5] << 8);
+        int16_t x_int = static_cast<int16_t>(x_uint);
+        int16_t y_int = static_cast<int16_t>(y_uint);
+        int16_t theta_int = static_cast<int16_t>(theta_uint);
         *x = static_cast<float>(x_int) / velocity_scale;
         *y = static_cast<float>(y_int) / velocity_scale;
         *theta = static_cast<float>(theta_int) / velocity_scale;
