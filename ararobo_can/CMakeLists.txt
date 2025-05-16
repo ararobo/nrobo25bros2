@@ -17,6 +17,8 @@ set(dependencies
   std_msgs
   geometry_msgs
   nav_msgs
+  tf2
+  tf2_ros
 )
 
 # robot

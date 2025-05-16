@@ -1,4 +1,5 @@
 #include "ararobo_can/odom_node.hpp"
+#include <tf/transform_broadcaster.h>
 
 OdomNode::OdomNode()
     : Node("odom_node")
@@ -30,7 +31,7 @@ void OdomNode::timer_callback()
         odom_msg.pose.pose.position.x = x;
         odom_msg.pose.pose.position.y = y;
         odom_msg.pose.pose.position.z = 0.0;
-        odom_msg.pose.pose.orientation.z = theta;
+        odom_msg.pose.pose.orientation = tf2.createQuaternionMsgFromYaw(theta);
         pub_odometry_->publish(odom_msg); // odometryデータの送信
         RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
                     x, y, theta);
