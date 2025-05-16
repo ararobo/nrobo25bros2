@@ -63,7 +63,12 @@ void CANDriver::can_receive_process()
     {
         perror("read");
     }
-    receive(can_rx_frame.can_id, (uint8_t *)can_rx_frame.data, can_rx_frame.can_dlc);
+    uint8_t rx_data[8];
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        rx_data[i] = can_rx_frame.data[i];
+    }
+    receive(can_rx_frame.can_id, rx_data, can_rx_frame.can_dlc);
 }
 
 void CANDriver::init()
