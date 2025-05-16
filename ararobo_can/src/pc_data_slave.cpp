@@ -40,9 +40,9 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
         int16_t x_int = static_cast<int16_t>(x_uint);
         int16_t y_int = static_cast<int16_t>(y_uint);
         int16_t theta_int = static_cast<int16_t>(theta_uint);
-        *x = float(x_int) / velocity_scale;
-        *y = float(y_int) / velocity_scale;
-        *theta = static_cast<float>(theta_int) / velocity_scale;
+        *x = float(x_int);
+        *y = float(y_int);
+        *theta = float(theta_int);
         this->cmd_vel_flag = false;
         return true;
     }
