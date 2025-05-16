@@ -1,5 +1,6 @@
 #include "ararobo_can/pc_data_slave.hpp"
 #include <cstring>
+#include <rclcpp/rclcpp.hpp>
 
 PCDataSlave::PCDataSlave(uint8_t board_id_) : board_id(board_id_)
 {
@@ -68,6 +69,7 @@ void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 
 void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
 {
+    RCLCPP_INFO(rclcpp::get_logger("OdomNode"), "Received CAN ID: %u", id);
     can_config::decode_id(id, this->packet_direction, this->packet_board_type,
                           this->packet_board_id, this->packet_data_type);
     if (this->packet_direction == can_config::direction::master &&
