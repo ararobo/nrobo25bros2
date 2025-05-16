@@ -11,7 +11,7 @@ OdomNode::OdomNode()
         "/odom", 10);
 
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100),
+        std::chrono::milliseconds(10),
         std::bind(&OdomNode::timer_callback, this));
 
     RCLCPP_INFO(this->get_logger(), "OdomNode initialized");
