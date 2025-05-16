@@ -34,6 +34,10 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
 {
     if (this->cmd_vel_flag)
     {
+        RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
+                    this->cmd_vel_buffer[0], this->cmd_vel_buffer[1],
+                    this->cmd_vel_buffer[2], this->cmd_vel_buffer[3],
+                    this->cmd_vel_buffer[4], this->cmd_vel_buffer[5]);
         uint16_t x_uint = this->cmd_vel_buffer[0] | uint16_t(this->cmd_vel_buffer[1] << 8);
         uint16_t y_uint = this->cmd_vel_buffer[2] | uint16_t(this->cmd_vel_buffer[3] << 8);
         uint16_t theta_uint = this->cmd_vel_buffer[4] | uint16_t(this->cmd_vel_buffer[5] << 8);
@@ -43,6 +47,8 @@ bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
         *x = float(x_int);
         *y = float(y_int);
         *theta = float(theta_int);
+        RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "odometry: x: %f, y: %f, theta: %f",
+                    *x, *y, *theta);
         this->cmd_vel_flag = false;
         return true;
     }
