@@ -8,6 +8,8 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(navi_node src/navi_node.cpp)
 
@@ -19,6 +21,8 @@ target_include_directories(navi_node PUBLIC
 # 💡 これを追加！
 ament_target_dependencies(navi_node
   rclcpp
+  tf2
+  tf2_ros
 )
 
 install(TARGETS
