@@ -51,6 +51,7 @@ class test_node(Node):
     def changed_S(bgr_img,alpha,beta):
         return changed_SV(bgr_img,alpha,beta,1)
 
+#
 #    def timerCb(self):
 #       ret, frame = self.cap.read()
 #       if ret > 0:
