@@ -6,9 +6,9 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
-LINEAR_SPEED = 1.0  # m/s (forward/backward)
-STRAFE_SPEED = 1.0  # m/s (left/right strafe)
-ANGULAR_SPEED = 1.0 # rad/s (rotation)
+LINEAR_SPEED = 0.3  # m/s (forward/backward)
+STRAFE_SPEED = 0.3  # m/s (left/right strafe)
+ANGULAR_SPEED = 0.5 # rad/s (rotation)
 TIMEOUT = 0.1       # seconds (timeout for key press detection)
 
 KEY_MAPPINGS = {
