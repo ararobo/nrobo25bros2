@@ -51,49 +51,95 @@ class test_node(Node):
     def changed_S(bgr_img,alpha,beta):
         return changed_SV(bgr_img,alpha,beta,1)
 
-#
-#    def timerCb(self):
-#       ret, frame = self.cap.read()
-#       if ret > 0:
-#           image, rects = self.detectCan(frame) # 缶を検出
-#           if "detected" in self.debug_output:
-#               cv2.imshow("detected image", image)
-#               cv2.waitKey(1)
-#           angle_msg = UInt16MultiArray()
-#           angle_msg.data = self.objectsFilter(rects)
-#           self.pub_can_angle.publish(angle_msg)
-#           if self.log_image:
-#               self.log_image_writer.write(image)
-#           if self.image_pub:
-#               image_msg = self.bridge.cv2_to_imgmsg(image, encoding="bgr8")
-#               self.pub_can_image.publish(image_msg)
-#
-#    def detectCan (self, raw_image):
-#        image = cv2.GaussianBlur(raw_image,(self.blur_ksize,self.blur_ksize),0)
-#        if "blur" in self.debug_output:
-#            cv2.imshow("blur", image)
-#        hsv_image =cv2.cvtColor(image,cv2.COLOR_BGR2HSV_FULL)
-#        if self.team_color:
-#            hsv_mask_image = cv2.inRange(hsv_image,tuple(self.hsv_red_1[0]),tuple(self.hsv_red_1[1]))
-#            hsv_mask_image |= cv2.inRange(hsv_image,tuple(self.hsv_red_2[0]),tuple(self.hsv_red_2[1]))
-#        else:
-#            hsv_mask_image = cv2.inRange(hsv_image,tuple(self.hsv_blue[0]),tuple(self.hsv_blue[1]))
-#        if "hsv" in self.debug_output:
-#            cv2.imshow("HSV_range", hsv_mask_image)
-#        opening_image = cv2.morphologyEx(hsv_mask_image, cv2.MORPH_CLOSE, self.opening_ksize,iterations=5)
-#        if "opening" in self.debug_output:
-#            cv2.imshow("opening", opening_image)
-#        contours,hierarchy = cv2.findContours(opening_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-#        if "contours" in self.debug_output:
-#            overlay_image = raw_image.copy()
-#            for c in contours
-#                cv2.polylines(overlay_image,c,True (255,0,0),2,cv2.LINE_AA)
-#            cv2.imshow("contours_image", overlay_image)
-#        approxes = []
-#        for c in contours:
-#            area = cv2.contourArea(c)
-#            if area < self.contour_area_min:
-#                continue
+##缶の検出
+    def timerCb(self):
+       ret, frame = self.cap.read()
+       if ret > 0:
+           image, rects = self.detectCan(frame) # 缶を検出
+           if "detected" in self.debug_output:
+               cv2.imshow("detected image", image)
+               cv2.waitKey(1)
+           angle_msg = UInt16MultiArray()
+           angle_msg.data = self.objectsFilter(rects)
+           self.pub_can_angle.publish(angle_msg)
+           if self.log_image:
+               self.log_image_writer.write(image)
+           if self.image_pub:
+               image_msg = self.bridge.cv2_to_imgmsg(image, encoding="bgr8")
+               self.pub_can_image.publish(image_msg)
+
+    def detectCan (self, raw_image):
+        image = cv2.GaussianBlur(raw_image,(self.blur_ksize,self.blur_ksize),0)
+        if "blur" in self.debug_output:
+            cv2.imshow("blur", image)
+        hsv_image =cv2.cvtColor(image,cv2.COLOR_BGR2HSV_FULL)
+        if self.team_color:
+            hsv_mask_image = cv2.inRange(hsv_image,tuple(self.hsv_red_1[0]),tuple(self.hsv_red_1[1]))
+            hsv_mask_image |= cv2.inRange(hsv_image,tuple(self.hsv_red_2[0]),tuple(self.hsv_red_2[1]))
+        else:
+            hsv_mask_image = cv2.inRange(hsv_image,tuple(self.hsv_blue[0]),tuple(self.hsv_blue[1]))
+        if "hsv" in self.debug_output:
+            cv2.imshow("HSV_range", hsv_mask_image)
+        opening_image = cv2.morphologyEx(hsv_mask_image, cv2.MORPH_CLOSE, self.opening_ksize,iterations=5)
+        if "opening" in self.debug_output:
+            cv2.imshow("opening", opening_image)
+        contours,hierarchy = cv2.findContours(opening_image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+        if "contours" in self.debug_output:
+            overlay_image = raw_image.copy()
+            for c in approxes:
+                cv2.polylines(overlay_image,c,True (255,0,0),2,cv2.LINE_AA)
+            cv2.imshow("contours_image", overlay_image)
+        approxes = []
+        for c in contours:
+            area = cv2.contourArea(c)
+            if area < self.contour_area_min:
+                continue
+            approxes.append(cv2.convexHull(c))
+        if "convex" in self.debug_output:
+            overlay_image = raw_image.copy()
+            for a in approxes:
+                cv2.polylines(overlay_image,a,True (255,0,0),2,cv2.LINE_AA)
+            cv2.imshow("convex", overlay_image)
+        rects = []
+        for a in approxes:
+            rects.append(cv2.minAreaRect(a))
+        for r in rects:
+            box = cv2.boxPoints(r)
+            box = np.int0(box)
+            cv2.drawContours(raw_image,[box],0,(255,0,0),2)
+        if "rect" in self.debug_output:
+            cv2.imshow("rect", raw_image)
+        return raw_image, rects
+    
+    def objectsFilter(self,rects):
+        out = [0]
+        for rect in rects:
+            self.get_logger().info(f"y:{rect[0][1]}")
+            if self.y_range[0] < rect[0][1] < self.y_range[1]:
+                if rect[1][0] < rect[1][1]:
+                    if rect[2] < self.inclination:
+                        self.get_logger().info("standing")
+                        out.append(int(rect[0][0]))
+                    else:
+                        self.get_logger().info("falling down")
+                else:
+                    if rect[2] > (90-self.inclination):
+                        self.get_logger().info("standing")
+                        out.append(int(rect[0][0]))
+                        out[0] += 1
+                    else:
+                        self.get_logger().info("falling down")
+        return out
+    
+    def initImageLogger(self,save_name,is_color):
+        img_format = cv2.VideoWriter_fourcc('m','p','4','v')
+        now = datetime.datetime.now()
+        home_dir = os.path.expanduser("~")
+        save_path = os.path.join(home_dir,'can_detector',str(now.day),save_name + str(now.hour) + "_" + str(now.minute) + '.mp4')
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        self.log_image_writer = cv2.VideoWriter(save_path,img_format,self.fps,(self.image_width,self.image_height),isColor=is_color)        
+
+##ここまで
 
     def __init__(self):
         super().__init__('test_node')
