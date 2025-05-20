@@ -10,13 +10,20 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 set(dependencies
   rclcpp
   std_msgs
   geometry_msgs
+  nav_msgs
+  tf2
+  tf2_ros
 )
 
+# robot
 add_executable(robot src/robot_node.cpp src/can_config.cpp src/can_driver.cpp src/pc_data_slave.cpp)
 
 ament_target_dependencies(robot
@@ -24,11 +31,25 @@ ament_target_dependencies(robot
 )
 
 target_include_directories(robot PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# odom
+add_executable(odom src/odom_node.cpp src/can_config.cpp src/can_driver.cpp src/pc_data_slave.cpp)
+
+ament_target_dependencies(odom
+  ${dependencies}
+)
+
+target_include_directories(odom PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 install(TARGETS
   robot
+  odom
   DESTINATION lib/${PROJECT_NAME}
 )
 

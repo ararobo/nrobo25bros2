@@ -1,5 +1,6 @@
 #include "ararobo_can/pc_data_slave.hpp"
 #include <cstring>
+#include <rclcpp/rclcpp.hpp>
 
 PCDataSlave::PCDataSlave(uint8_t board_id_) : board_id(board_id_)
 {
@@ -29,6 +30,29 @@ bool PCDataSlave::get_init(uint8_t *config)
     return false;
 }
 
+bool PCDataSlave::get_odometry(float *x, float *y, float *theta)
+{
+    if (this->cmd_vel_flag)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("PCDataSlave"), "buffer: %02X %02X %02X %02X %02X %02X",
+                    this->cmd_vel_buffer[0], this->cmd_vel_buffer[1],
+                    this->cmd_vel_buffer[2], this->cmd_vel_buffer[3],
+                    this->cmd_vel_buffer[4], this->cmd_vel_buffer[5]);
+        uint16_t x_uint = this->cmd_vel_buffer[0] | uint16_t(this->cmd_vel_buffer[1] << 8);
+        uint16_t y_uint = this->cmd_vel_buffer[2] | uint16_t(this->cmd_vel_buffer[3] << 8);
+        uint16_t theta_uint = this->cmd_vel_buffer[4] | uint16_t(this->cmd_vel_buffer[5] << 8);
+        int16_t x_int = static_cast<int16_t>(x_uint);
+        int16_t y_int = static_cast<int16_t>(y_uint);
+        int16_t theta_int = static_cast<int16_t>(theta_uint);
+        *x = float(x_int) / velocity_scale;
+        *y = float(y_int) / velocity_scale;
+        *theta = float(theta_int) / velocity_scale;
+        this->cmd_vel_flag = false;
+        return true;
+    }
+    return false;
+}
+
 void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 {
     uint8_t data[6];
@@ -49,32 +73,39 @@ void PCDataSlave::send_cmd_vel(float vx, float vy, float omega)
 
 void PCDataSlave::receive(uint16_t id, uint8_t *data, uint8_t len)
 {
-    can_config::decode_id(id, this->packet_direction, this->packet_board_type,
-                          this->packet_board_id, this->packet_data_type);
-    if (this->packet_direction == can_config::direction::master &&
-        this->packet_board_type == can_config::board_type::pc &&
-        this->packet_board_id == this->board_id)
+    // can_config::decode_id(id, this->packet_direction, this->packet_board_type,
+    //                       this->packet_board_id, this->packet_data_type);
+    // if (this->packet_direction == can_config::direction::master &&
+    //     this->packet_board_type == can_config::board_type::pc &&
+    //     this->packet_board_id == this->board_id)
+    //{
+    //     switch (this->packet_data_type)
+    //     {
+    //     case can_config::data_type::pc::init:
+    //         if (len == sizeof(this->init_buffer))
+    //         {
+    //             std::memcpy(this->init_buffer, data, sizeof(this->init_buffer));
+    //             this->init_flag = true;
+    //         }
+    //         break;
+    //     case can_config::data_type::pc::target:
+    //         if (len == sizeof(this->target_buffer))
+    //         {
+    //             std::memcpy(this->target_buffer, data, sizeof(this->target_buffer));
+    //             this->target_flag = true;
+    //         }
+    //         break;
+    //     case can_config::data_type::pc::cmd_vel:
+    if (len == sizeof(this->cmd_vel_buffer))
     {
-        switch (this->packet_data_type)
-        {
-        case can_config::data_type::pc::init:
-            if (len == sizeof(this->init_buffer))
-            {
-                std::memcpy(this->init_buffer, data, sizeof(this->init_buffer));
-                this->init_flag = true;
-            }
-            break;
-        case can_config::data_type::pc::target:
-            if (len == sizeof(this->target_buffer))
-            {
-                std::memcpy(this->target_buffer, data, sizeof(this->target_buffer));
-                this->target_flag = true;
-            }
-            break;
-        default:
-            break;
-        }
+        std::memcpy(this->cmd_vel_buffer, data, sizeof(this->cmd_vel_buffer));
+        this->cmd_vel_flag = true;
     }
+    //        break;
+    //    default:
+    //        break;
+    //    }
+    //}
 }
 
 PCDataSlave::~PCDataSlave()
