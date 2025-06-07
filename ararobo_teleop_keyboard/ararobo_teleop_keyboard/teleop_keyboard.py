@@ -9,7 +9,7 @@ from geometry_msgs.msg import Twist
 LINEAR_SPEED = 0.3  # m/s (forward/backward)
 STRAFE_SPEED = 0.3  # m/s (left/right strafe)
 ANGULAR_SPEED = 0.5 # rad/s (rotation)
-TIMEOUT = 0.1       # seconds (timeout for key press detection)
+TIMEOUT = 0.05       # seconds (timeout for key press detection)
 
 KEY_MAPPINGS = {
     'w': ( 1.0,  0.0,  0.0), # Forward (linear.x +)
@@ -34,19 +34,6 @@ Control the Omni Robot:
 
 Ctrl-C to quit
 """
-
-def get_key(settings, timeout):
-    """Reads a single character from stdin with a timeout."""
-    tty.setraw(sys.stdin.fileno())
-    rlist, _, _ = select.select([sys.stdin], [], [], timeout)
-    if rlist:
-        key = sys.stdin.read(1)
-        if key == '\x1b': # Escape key starts sequence
-             key += sys.stdin.read(2) # Read next two characters
-    else:
-        key = ''
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
 
 class TeleopKeyboard(Node):
     """ROS 2 node for keyboard teleoperation."""
@@ -77,8 +64,19 @@ class TeleopKeyboard(Node):
         self.print_instructions()
 
         try:
+            # Set terminal to raw mode
+            tty.setraw(sys.stdin.fileno())
+
             while rclpy.ok():
-                key = get_key(self.original_settings, TIMEOUT)
+                # Check for key press with a timeout
+                rlist, _, _ = select.select([sys.stdin], [], [], TIMEOUT)
+
+                if rlist:
+                    key = sys.stdin.read(1)
+                    if key == '\x1b':  # Arrow key sequence
+                        key += sys.stdin.read(2)
+                else:
+                    key = ''
 
                 # Reset velocities to zero (default state if no key pressed)
                 target_linear_x = 0.0
@@ -108,8 +106,8 @@ class TeleopKeyboard(Node):
                 twist = Twist()
                 twist.linear.x = self.linear_x
                 twist.linear.y = self.linear_y
-                twist.linear.z = 0.0 # Omni doesn't typically use vertical linear motion
-                twist.angular.x = 0.0 # Omni doesn't typically use roll/pitch
+                twist.linear.z = 0.0  # Omni doesn't typically use vertical linear motion
+                twist.angular.x = 0.0  # Omni doesn't typically use roll/pitch
                 twist.angular.y = 0.0
                 twist.angular.z = self.angular_z
 
