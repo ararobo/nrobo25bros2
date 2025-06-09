@@ -21,7 +21,6 @@ private:
 
     std::shared_ptr<SimpleUDP> udp;
     std::shared_ptr<OdomCalculator> odom_calculator;
-    feedback_data_t feedback_data;
 
     union feedback_data_union_t
     {
