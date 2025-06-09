@@ -11,9 +11,9 @@
 class FeedbackNode : public rclcpp::Node
 {
 private:
-    float encoder_resolution; // エンコーダの分解能
-    float wheel_radius;       // 車輪の半径
-    uint8_t period_odom;      // オドメトリ計算周期[ms]
+    double encoder_resolution; // エンコーダの分解能
+    double wheel_radius;       // 車輪の半径
+    uint8_t period_odom;       // オドメトリ計算周期[ms]
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
