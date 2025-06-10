@@ -3,6 +3,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include "ararobo_robot/robot_data_config.hpp"
 #include "ararobo_robot/simple_udp.hpp"
+#include "ararobo_robot/ethernet_config.hpp"
 
 class OperationNode : public rclcpp::Node
 {
