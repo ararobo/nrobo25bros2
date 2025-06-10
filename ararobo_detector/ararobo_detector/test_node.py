@@ -95,7 +95,7 @@ class test_node(Node):
         self.save_name = self.declare_parameter("save_name",self.save_name).get_parameter_value().string_value
         self.pub_can_angle = self.create_publisher(UInt16MultiArray,"can/pixls", 5)
         self.pub_can_image = self.create_publisher(Image,"can/image", 5)
-        self.cap = cv2.VideoCapture(6)
+        self.cap = cv2.VideoCapture(0)
         self.bridge = CvBridge()
 
         if self.log_image:
