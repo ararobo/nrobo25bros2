@@ -2,8 +2,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp> // クォータニオン生成のためのヘッダー
 #include <tf2_ros/transform_broadcaster.h> // ROS2用のTFブロードキャスターヘッダー
 
-std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
 OdomNode::OdomNode()
     : Node("odom_node")
 {
