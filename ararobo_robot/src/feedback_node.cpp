@@ -20,7 +20,7 @@ FeedbackNode::FeedbackNode()
     }
 
     // 受信ポートの設定
-    if (!udp->bindSocket(ethernet_config::main_board::ip, ethernet_config::main_board::port_feedback))
+    if (!udp->bindSocket(ethernet_config::pc::ip, ethernet_config::main_board::port_feedback))
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to bind UDP socket");
         return;
@@ -66,7 +66,7 @@ void FeedbackNode::timer_callback()
 
     // オドメトリ計算
     odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y);
-    odom_calculator->get_robot_coord(&x, &y, theta, period_odom / 1000.0f);
+    odom_calculator->get_robot_coord(&x, &y, theta, period_odom / 1000.0);
 
     rclcpp::Time now = this->now(); // タイムスタンプを先に取得
 
@@ -105,4 +105,12 @@ void FeedbackNode::timer_callback()
 
     RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
                 x, y, theta);
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<FeedbackNode>());
+    rclcpp::shutdown();
+    return 0;
 }

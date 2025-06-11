@@ -8,8 +8,13 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+
 
 add_executable(navi_node src/navi_node.cpp)
 
@@ -18,11 +23,14 @@ target_include_directories(navi_node PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-# 💡 これを追加！
 ament_target_dependencies(navi_node
   rclcpp
+  geometry_msgs
+  nav_msgs
   tf2
   tf2_ros
+  tf2_geometry_msgs
+  std_msgs
 )
 
 install(TARGETS
@@ -31,3 +39,4 @@ install(TARGETS
 )
 
 ament_package()
+
