@@ -14,6 +14,7 @@
 #include <memory>
 #include <algorithm>
 #include <unordered_set>
+#include <tf2_ros/transform_broadcaster.h>
 
 namespace aster
 {
@@ -22,13 +23,15 @@ namespace aster
   {
   public:
     int x, y;
-    double g, h, cost;
+    double g, h;
     AStarNode *parent;
 
     AStarNode(int x_, int y_, double g_, double h_, AStarNode *parent_ = nullptr)
-        : x(x_), y(y_), g(g_), h(h_), cost(g_ + h_), parent(parent_) {}
+        : x(x_), y(y_), g(g_), h(h_), parent(parent_) {}
 
-    double f() const { return cost; }
+    double f() const { return g + h; }
+
+    AStarNode() : x(0), y(0), g(0.0), h(0.0), parent(nullptr) {}
 
     bool operator==(const AStarNode &other) const
     {

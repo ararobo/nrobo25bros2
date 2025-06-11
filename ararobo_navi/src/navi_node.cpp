@@ -2,29 +2,8 @@
 
 using std::placeholders::_1;
 
-// ... #include部は変更なし
-
 namespace aster
 {
-    // ==== AStarNode クラス定義 ====
-    AStarNode::AStarNode(int x, int y, double g, double h, AStarNode *parent)
-        : x(x), y(y), g(g), h(h), parent(parent) {}
-
-    double AStarNode::f() const
-    {
-        return g + h;
-    }
-
-    bool AStarNode::operator==(const AStarNode &other) const
-    {
-        return x == other.x && y == other.y;
-    }
-
-    bool CompareNode::operator()(const AStarNode *a, const AStarNode *b) const
-    {
-        return a->f() > b->f();
-    }
-
     PlannerNode::PlannerNode()
         : rclcpp::Node("planner_node"), tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())),
           tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_))
@@ -150,6 +129,12 @@ namespace aster
         cmd.linear.x = std::min(v_max, dist);
         cmd.angular.z = 2.0 * (std::atan2(dy, dx) - get_Yaw(current_pose_.orientation));
         err_pub_->publish(cmd);
-    }
-
+        }
 } // namespace aster
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<aster::AStarNode>(); // ←ここは実装クラス名に合わせて！
+    rclcpp::shutdown();
+    return 0;
+}
