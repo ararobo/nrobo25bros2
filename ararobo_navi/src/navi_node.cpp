@@ -129,7 +129,11 @@ namespace aster
         cmd.linear.x = std::min(v_max, dist);
         cmd.angular.z = 2.0 * (std::atan2(dy, dx) - get_Yaw(current_pose_.orientation));
         err_pub_->publish(cmd);
-        }
+    }
+    std::vector<std::vector<int>> grid = {
+        {0, 0, 0, 1},
+        {0, 1, 0, 1},
+        {0, 0, 0, 0}};
 } // namespace aster
 int main(int argc, char **argv)
 {
