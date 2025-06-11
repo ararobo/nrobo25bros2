@@ -9,6 +9,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import datetime
 import os
 
+
 class RealsenseCamera:
     def __init__(self):
         self.WIDTH = 640#幅640ピクセル
@@ -16,17 +17,17 @@ class RealsenseCamera:
         self.FPS = 30#フレームレート30FPS
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, self.WIDTH, self.HEIGHT, rs.format.bgr8, self.FPS)#カラー画像、BGR形式、ストリームを有効化
-        self.config.enable_stream(rs.stream.depth, self.WIDTH, self.HEIGHT, rs.format.z16, self.FPS)#深層画像、16bit、ストリームを有効化
+        self.config.enable_stream(rs.stream.depth, self.WIDTH, self.HEIGHT, rs.format.z16, self.FPS)#深度画像、16bit、ストリームを有効化
     def start(self):#カメラのストリーミングを開始
         
         self.pipeline = rs.pipeline()
         self.pipeline.start(self.config)
         print("start")
-    def read(self,is_array = True):#カメラからカラー画像と深層画像を取得
+    def read(self,is_array = True):#カメラからカラー画像と深度画像を取得
         ret = True
         frames = self.pipeline.wait_for_frames()#新しいフレームを取得
         self.color_frame = frames.get_color_frame()#カラー画像を取得
-        self.depth_frame = frames.get_depth_frame()#深層画像を取得
+        self.depth_frame = frames.get_depth_frame()#深度画像を取得
         if not self.color_frame or not self.depth_frame:#カラー画像もしくは深層画像が習得できなかったらFalse
             ret = False
             return ret, (None, None)
@@ -69,6 +70,7 @@ class test_node(Node):
     image_pub = True
     log_image = False
     save_name = ""
+
     
 ##缶の検出
     def __init__(self):
@@ -90,7 +92,7 @@ class test_node(Node):
         self.save_name = self.declare_parameter("save_name",self.save_name).get_parameter_value().string_value
         self.pub_can_angle = self.create_publisher(UInt16MultiArray,"can/pixls", 5)
         self.pub_can_image = self.create_publisher(Image,"can/image", 5)
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cap.read()
         self.bridge = CvBridge()
 
         if self.log_image:
