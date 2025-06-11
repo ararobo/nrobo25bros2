@@ -55,12 +55,6 @@ void FeedbackNode::timer_callback()
         RCLCPP_ERROR(this->get_logger(), "Failed to receive UDP packet");
         return;
     }
-    if (recv_size != sizeof(feedback_union))
-    {
-        RCLCPP_WARN(this->get_logger(), "Received packet size mismatch: expected %zu, got %d",
-                    sizeof(feedback_union), recv_size);
-        return;
-    }
 
     theta = feedback_union.data.yaw; // ヨー角[rad]
 
