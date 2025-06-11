@@ -10,6 +10,9 @@ OperationNode::OperationNode()
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
         return;
     }
+    // 操作用ポートの設定
+    udp->setTxAddr(ethernet_config::main_board::ip,
+                   ethernet_config::main_board::port_operation);
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "/robot/move", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
@@ -39,4 +42,12 @@ void OperationNode::timer_callback()
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to send operation data via UDP");
     }
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<OperationNode>());
+    rclcpp::shutdown();
+    return 0;
 }
