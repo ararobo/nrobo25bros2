@@ -6,7 +6,8 @@ namespace aster
 {
     PlannerNode::PlannerNode()
         : rclcpp::Node("planner_node"), tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())),
-          tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_))
+          tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
+
     {
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
@@ -93,6 +94,7 @@ namespace aster
     void PlannerNode::goal_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
         goal_rcv = msg;
+        path_ready_ = false;
     }
 
     void PlannerNode::timer_callback()
@@ -115,13 +117,41 @@ namespace aster
         current_pose_.position.y = tf.transform.translation.y;
         current_pose_.orientation = tf.transform.rotation;
 
-        double dx = goal_rcv->pose.position.x - current_pose_.position.x;
-        double dy = goal_rcv->pose.position.y - current_pose_.position.y;
+        int start_x = static_cast<int>(current_pose_.position.x);
+        int start_y = static_cast<int>(current_pose_.position.y);
+        int goal_x = static_cast<int>(goal_rcv->pose.position.x);
+        int goal_y = static_cast<int>(goal_rcv->pose.position.y);
+
+        // 経路計算がまだなら A* を実行！
+        if (!path_ready_)
+        {
+            current_path_ = a_star(grid, start_x, start_y, goal_x, goal_y);
+            path_index_ = 0;
+            path_ready_ = !current_path_.empty();
+            if (!path_ready_)
+            {
+                RCLCPP_WARN(this->get_logger(), "Failed to find path.");
+                return;
+            }
+        }
+
+        if (path_index_ >= current_path_.size())
+        {
+            RCLCPP_INFO(this->get_logger(), "Goal reached!");
+            return;
+        }
+
+        // 現在の目標点
+        int target_x = current_path_[path_index_].first;
+        int target_y = current_path_[path_index_].second;
+
+        double dx = target_x - current_pose_.position.x;
+        double dy = target_y - current_pose_.position.y;
         double dist = std::sqrt(dx * dx + dy * dy);
 
         if (dist < position_tolerance_)
         {
-            RCLCPP_INFO(this->get_logger(), "Goal reached!");
+            path_index_++;
             return;
         }
 
@@ -130,10 +160,7 @@ namespace aster
         cmd.angular.z = 2.0 * (std::atan2(dy, dx) - get_Yaw(current_pose_.orientation));
         err_pub_->publish(cmd);
     }
-    std::vector<std::vector<int>> grid = {
-        {0, 0, 0, 1},
-        {0, 1, 0, 1},
-        {0, 0, 0, 0}};
+
 } // namespace aster
 int main(int argc, char **argv)
 {

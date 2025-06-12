@@ -59,20 +59,29 @@ namespace aster
 
     bool isValid(int x, int y, const std::vector<std::vector<int>> &grid);
     double heuristic(int x1, int y1, int x2, int y2);
-    std::vector<std::pair<int, int>> a_star(const std::vector<std::vector<int>> &grid, int start_x, int start_y, int goal_x, int goal_y);
+    std::vector<std::pair<int, int>> a_star(
+        const std::vector<std::vector<int>> &grid, int start_x, int start_y, int goal_x, int goal_y);
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr err_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
-    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-
     geometry_msgs::msg::Pose current_pose_;
     geometry_msgs::msg::PoseStamped::SharedPtr goal_rcv;
 
+    tf2_ros::Buffer::SharedPtr tf_buffer_;
+    std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
+
+    std::vector<std::pair<int, int>> current_path_;
+    size_t path_index_ = 0;
+    bool path_ready_ = false;
+
     double position_tolerance_ = 0.2;
-    double angle_tolerance_ = 5.0; // degree
     double v_max = 0.5;
+
+    std::vector<std::vector<int>> grid = {
+        {0, 0, 0, 1},
+        {0, 1, 0, 1},
+        {0, 0, 0, 0}};
   };
 
 } // namespace aster
