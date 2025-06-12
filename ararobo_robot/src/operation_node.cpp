@@ -16,7 +16,7 @@ OperationNode::OperationNode()
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "/robot/move", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&OperationNode::timer_callback, this));
 }
 
