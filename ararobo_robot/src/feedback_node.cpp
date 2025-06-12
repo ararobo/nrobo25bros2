@@ -6,7 +6,7 @@ FeedbackNode::FeedbackNode()
     // 機体固有値の初期化
     encoder_resolution = 4096.0f; // エンコーダの分解能 (CPR)
     wheel_radius = 0.03f;         // 車輪の半径 (m)
-    period_odom = 10;             // オドメトリ計算周期 (ms)
+    period_odom = 20;             // オドメトリ計算周期 (ms)
 
     // UDP通信の初期化
     udp = std::make_shared<SimpleUDP>();
