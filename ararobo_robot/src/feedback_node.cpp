@@ -6,7 +6,7 @@ FeedbackNode::FeedbackNode()
     // 機体固有値の初期化
     encoder_resolution = 4096.0f; // エンコーダの分解能 (CPR)
     wheel_radius = 0.03f;         // 車輪の半径 (m)
-    period_odom = 10;             // オドメトリ計算周期 (ms)
+    period_odom = 20;             // オドメトリ計算周期 (ms)
 
     // UDP通信の初期化
     udp = std::make_shared<SimpleUDP>();
@@ -55,12 +55,6 @@ void FeedbackNode::timer_callback()
         RCLCPP_ERROR(this->get_logger(), "Failed to receive UDP packet");
         return;
     }
-    if (recv_size != sizeof(feedback_union))
-    {
-        RCLCPP_WARN(this->get_logger(), "Received packet size mismatch: expected %zu, got %d",
-                    sizeof(feedback_union), recv_size);
-        return;
-    }
 
     theta = feedback_union.data.yaw; // ヨー角[rad]
 
@@ -103,8 +97,7 @@ void FeedbackNode::timer_callback()
 
     tf_broadcaster_->sendTransform(odom_trans);
 
-    RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
-                x, y, theta);
+    RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f", x, y, theta);
 }
 
 int main(int argc, char const *argv[])
