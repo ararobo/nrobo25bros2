@@ -5,6 +5,8 @@ OdomCalculator::OdomCalculator(double encoder_resolution, double wheel_radius)
 {
     robot_velocity[0] = 0.0f; // x軸方向の速度
     robot_velocity[1] = 0.0f; // y軸方向の速度
+    // 初期化
+    reset_robot_coord();
 }
 
 void OdomCalculator::set_encoder_count(int16_t vx_count, int16_t vy_count)

@@ -97,8 +97,7 @@ void FeedbackNode::timer_callback()
 
     tf_broadcaster_->sendTransform(odom_trans);
 
-    RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f",
-                x, y, theta);
+    RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f", x, y, theta);
 }
 
 int main(int argc, char const *argv[])
