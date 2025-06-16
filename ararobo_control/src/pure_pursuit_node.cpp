@@ -3,7 +3,6 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include <nav_msgs/msg/path.hpp>
 #include <cmath>
 
 class PurePursuitNode : public rclcpp::Node
@@ -12,46 +11,48 @@ public:
     PurePursuitNode() : Node("pure_pursuit")
     {
         this->declare_parameter("lookahead_distance", 1.0);
-        this->get_parameter("lookahead_distance", lookaheaddistance);
+        this->get_parameter("lookahead_distance", lookahead_distance);
 
-        posesub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        pose_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "/current_pose", 10,
-            std::bind(&PurePursuitNode::poseCallback, this, std::placeholders::_1));
-        pathsub = this->create_subscription<nav_msgs::msg::Path>(
-            "/planned_path", 10,
-            std::bind(&PurePursuitNode::pathCallback, this, std::placeholders::_1));
-        cmdpub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+            std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
+        path_sub = this->create_subscription<nav_msgs::msg::Path>(
+            "/path", 10,
+            std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
+        cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     }
 
 private:
-    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr posesub;
-    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr pathsub;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmdpub;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub;
+    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
 
-    geometry_msgs::msg::PoseStamped currentpose;
+    geometry_msgs::msg::PoseStamped current_pose;
     nav_msgs::msg::Path path;
-    double lookaheaddistance;
+    double lookahead_distance;
 
-    void pathCallback(const nav_msgs::msg::Path::SharedPtr msg)
+    // コールバック関数
+    // パスと現在の姿勢をメンバ関数に保存
+    void path_callback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         path = *msg;
     }
-
-    void poseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
-        currentpose = *msg;
-        computeControl();
+        current_pose = *msg;
+        compute_control();
     }
-    void computeControl()
+
+    void compute_control()
     {
         geometry_msgs::msg::PoseStamped target;
         bool found = false;
 
         for (const auto &pose : path.poses)
         {
-            double dx = pose.pose.position.x - currentpose.pose.position.x;
-            double dy = pose.pose.position.y - currentpose.pose.position.y;
-            if (std::hypot(dx, dy) >= lookaheaddistance)
+            double dx = pose.pose.position.x - current_pose.pose.position.x;
+            double dy = pose.pose.position.y - current_pose.pose.position.y;
+            if (std::hypot(dx, dy) >= lookahead_distance)
             {
                 target = pose;
                 found = true;
@@ -60,30 +61,39 @@ private:
         }
 
         if (!found)
+        {
             return;
+        }
 
         // 現在の姿勢からyow角を取得
         tf2::Quaternion q(
-            currentpose.pose.orientation.x,
-            currentpose.pose.orientation.y,
-            currentpose.pose.orientation.z,
-            currentpose.pose.orientation.w);
+            current_pose.pose.orientation.x,
+            current_pose.pose.orientation.y,
+            current_pose.pose.orientation.z,
+            current_pose.pose.orientation.w);
         tf2::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
 
-        // 目標との角度差を計算
-        double dx = target.pose.position.x - currentpose.pose.position.x;
-        double dy = target.pose.position.y - currentpose.pose.position.y;
-        double angle_to_target = std::atan2(dy, dx);
-        double alpha = angle_to_target - yaw;
-
-        double steering = std::atan2(2.0 * std::sin(alpha), lookaheaddistance);
+        // ロボット座標系に変換
+        double dx = target.pose.position.x - current_pose.pose.position.x;
+        double dy = target.pose.position.y - current_pose.pose.position.y;
+        double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
+        double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
 
         geometry_msgs::msg::Twist cmd;
-        cmd.linear.x = 1.0; // 定速
-        cmd.angular.z = steering;
-        cmdpub->publish(cmd);
+        if (local_x > 1.0)
+        {
+            local_x = 1.0; // 最大速度制限
+        }
+        if (local_y > 1.0)
+        {
+            local_y = 1.0; // 最大速度制限
+        }
+        cmd.linear.x = local_x; // 前進速度
+        cmd.linear.y = local_y; // 側方速度
+
+        cmd_pub->publish(cmd);
     }
 };
 
