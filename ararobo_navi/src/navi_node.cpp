@@ -134,6 +134,22 @@ namespace aster
                 return;
             }
 
+            nav_msgs::msg::Path path_msg;
+            path_msg.header.stamp = this->now();
+            path_msg.header.frame_id = "map";
+
+            for (const auto &pt : current_path_)
+            {
+                geometry_msgs::msg::PoseStamped pose;
+                pose.header = path_msg.header;
+                pose.pose.position.x = pt.first;
+                pose.pose.position.y = pt.second;
+                pose.pose.position.z = 0.0;
+                pose.pose.orientation.w = 1.0; // デフォルト
+                path_msg.poses.push_back(pose);
+            }
+
+            // ✨ここに補間処理を追加！
             // パスを作成してパブリッシュ
             nav_msgs::msg::Path path_msg;
             path_msg.header.stamp = this->now();
@@ -150,12 +166,36 @@ namespace aster
                 path_msg.poses.push_back(pose);
             }
 
-            planned_path_pub_->publish(path_msg);
-            RCLCPP_INFO(this->get_logger(), "Published planned path with %zu points", path_msg.poses.size());
-        }
-    }
+            // ✨ここに補間処理を追加！
+            nav_msgs::msg::Path interpolated_path;
+            interpolated_path.header = path_msg.header;
+            double desired_spacing = 0.2;
 
-} // namespace aster
+            interpolated_path.poses.push_back(path_msg.poses.front());
+            for (size_t i = 1; i < path_msg.poses.size(); ++i)
+            {
+                auto p1 = path_msg.poses[i - 1].pose.position;
+                auto p2 = path_msg.poses[i].pose.position;
+                double dist = std::hypot(p2.x - p1.x, p2.y - p1.y);
+                int steps = std::max(1, static_cast<int>(dist / desired_spacing)); // 最低1ステップ
+                for (int j = 1; j < steps; ++j)
+                {
+                    double ratio = static_cast<double>(j) / steps;
+                    geometry_msgs::msg::PoseStamped interp;
+                    interp.header = path_msg.header;
+                    interp.pose.position.x = p1.x + ratio * (p2.x - p1.x);
+                    interp.pose.position.y = p1.y + ratio * (p2.y - p1.y);
+                    interp.pose.position.z = 0.0;
+                    interp.pose.orientation.w = 1.0; // orientation補間は今回は省略
+                    interpolated_path.poses.push_back(interp);
+                }
+                interpolated_path.poses.push_back(path_msg.poses[i]);
+            }
+
+            planned_path_pub_->publish(interpolated_path);
+        }
+    } // namespace aster
+}
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
