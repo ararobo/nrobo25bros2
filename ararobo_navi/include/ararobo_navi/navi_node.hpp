@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <tf2_ros/transform_broadcaster.h>
+#include <nav_msgs/msg/path.hpp> // ←これが必要！
 
 namespace aster
 {
@@ -53,15 +54,18 @@ namespace aster
     PlannerNode();
 
   private:
+    void publish_path(const std::vector<std::pair<int, int>> &path);
     void goal_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
     void timer_callback();
     double get_Yaw(const geometry_msgs::msg::Quaternion &q);
 
     bool isValid(int x, int y, const std::vector<std::vector<int>> &grid);
     double heuristic(int x1, int y1, int x2, int y2);
+    double current_x = 0.0;
+    double current_y = 0.0;
     std::vector<std::pair<int, int>> a_star(
         const std::vector<std::vector<int>> &grid, int start_x, int start_y, int goal_x, int goal_y);
-
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr planned_path_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr err_pub_;
     rclcpp::TimerBase::SharedPtr timer_;

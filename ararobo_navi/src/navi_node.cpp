@@ -15,6 +15,7 @@ namespace aster
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&PlannerNode::timer_callback, this));
+        planned_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("planned_path", 10);
     }
 
     double PlannerNode::get_Yaw(const geometry_msgs::msg::Quaternion &q)
@@ -122,7 +123,6 @@ namespace aster
         int goal_x = static_cast<int>(goal_rcv->pose.position.x);
         int goal_y = static_cast<int>(goal_rcv->pose.position.y);
 
-        // 経路計算がまだなら A* を実行！
         if (!path_ready_)
         {
             current_path_ = a_star(grid, start_x, start_y, goal_x, goal_y);
@@ -133,39 +133,34 @@ namespace aster
                 RCLCPP_WARN(this->get_logger(), "Failed to find path.");
                 return;
             }
+
+            // パスを作成してパブリッシュ
+            nav_msgs::msg::Path path_msg;
+            path_msg.header.stamp = this->now();
+            path_msg.header.frame_id = "map";
+
+            for (const auto &pt : current_path_)
+            {
+                geometry_msgs::msg::PoseStamped pose;
+                pose.header = path_msg.header;
+                pose.pose.position.x = pt.first;
+                pose.pose.position.y = pt.second;
+                pose.pose.position.z = 0.0;
+                pose.pose.orientation.w = 1.0; // デフォルト
+                path_msg.poses.push_back(pose);
+            }
+
+            planned_path_pub_->publish(path_msg);
+            RCLCPP_INFO(this->get_logger(), "Published planned path with %zu points", path_msg.poses.size());
         }
-
-        if (path_index_ >= current_path_.size())
-        {
-            RCLCPP_INFO(this->get_logger(), "Goal reached!");
-            return;
-        }
-
-        // 現在の目標点
-        int target_x = current_path_[path_index_].first;
-        int target_y = current_path_[path_index_].second;
-
-        double dx = target_x - current_pose_.position.x;
-        double dy = target_y - current_pose_.position.y;
-        double dist = std::sqrt(dx * dx + dy * dy);
-
-        if (dist < position_tolerance_)
-        {
-            path_index_++;
-            return;
-        }
-
-        geometry_msgs::msg::Twist cmd;
-        cmd.linear.x = std::min(v_max, dist);
-        cmd.angular.z = 2.0 * (std::atan2(dy, dx) - get_Yaw(current_pose_.orientation));
-        err_pub_->publish(cmd);
     }
 
 } // namespace aster
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<aster::AStarNode>(); // ←ここは実装クラス名に合わせて！
+    auto node = std::make_shared<aster::PlannerNode>();
+    rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }

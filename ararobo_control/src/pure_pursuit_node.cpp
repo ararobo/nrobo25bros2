@@ -3,6 +3,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include <nav_msgs/msg/path.hpp>
 #include <cmath>
 
 class PurePursuitNode : public rclcpp::Node
@@ -17,7 +18,7 @@ public:
             "/current_pose", 10,
             std::bind(&PurePursuitNode::poseCallback, this, std::placeholders::_1));
         pathsub = this->create_subscription<nav_msgs::msg::Path>(
-            "/path", 10,
+            "/planned_path", 10,
             std::bind(&PurePursuitNode::pathCallback, this, std::placeholders::_1));
         cmdpub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     }
