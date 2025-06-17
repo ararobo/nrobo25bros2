@@ -12,6 +12,7 @@ namespace aster
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
         err_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+        path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path", 10);
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&PlannerNode::timer_callback, this));
@@ -135,22 +136,6 @@ namespace aster
             }
 
             nav_msgs::msg::Path path_msg;
-            path_msg.header.stamp = this->now();
-            path_msg.header.frame_id = "map";
-
-            for (const auto &pt : current_path_)
-            {
-                geometry_msgs::msg::PoseStamped pose;
-                pose.header = path_msg.header;
-                pose.pose.position.x = pt.first;
-                pose.pose.position.y = pt.second;
-                pose.pose.position.z = 0.0;
-                pose.pose.orientation.w = 1.0; // デフォルト
-                path_msg.poses.push_back(pose);
-            }
-
-            // ✨ここに補間処理を追加！
-            // パスを作成してパブリッシュ
             path_msg.header.stamp = this->now();
             path_msg.header.frame_id = "map";
 

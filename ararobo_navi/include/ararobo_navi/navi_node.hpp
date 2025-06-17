@@ -71,7 +71,7 @@ namespace aster
     rclcpp::TimerBase::SharedPtr timer_;
     geometry_msgs::msg::Pose current_pose_;
     geometry_msgs::msg::PoseStamped::SharedPtr goal_rcv;
-
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
     tf2_ros::Buffer::SharedPtr tf_buffer_;
     std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
 
