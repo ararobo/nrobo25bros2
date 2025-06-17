@@ -151,7 +151,6 @@ namespace aster
 
             // ✨ここに補間処理を追加！
             // パスを作成してパブリッシュ
-            nav_msgs::msg::Path path_msg;
             path_msg.header.stamp = this->now();
             path_msg.header.frame_id = "map";
 
