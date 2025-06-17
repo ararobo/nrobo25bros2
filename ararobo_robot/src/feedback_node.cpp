@@ -76,6 +76,9 @@ void FeedbackNode::timer_callback()
     odom_msg.header.stamp = now;
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
+    odom_msg.twist.twist.linear.x = (double)feedback_union.data.encoder_x / encoder_resolution * M_PI * 2 / (double)period_odom; // x軸方向の速度
+    odom_msg.twist.twist.linear.y = (double)feedback_union.data.encoder_y / encoder_resolution * M_PI * 2 / (double)period_odom; // y軸方向の速度
+    odom_msg.twist.twist.angular.z = feedback_union.data.yaw_rate;                                                               // z軸方向の角速度
     odom_msg.pose.pose.position.x = x;
     odom_msg.pose.pose.position.y = y;
     odom_msg.pose.pose.position.z = 0.0;
