@@ -28,9 +28,12 @@ private:
         uint8_t code[sizeof(feedback_data_t)]; // 送信バイト配列
     } __attribute__((__packed__)) feedback_union;
 
-    double x = 0.0;     // x座標
-    double y = 0.0;     // y座標
-    double theta = 0.0; // ヨー角
+    double x = 0.0;          // x座標
+    double y = 0.0;          // y座標
+    double theta = 0.0;      // ヨー角
+    double prev_theta = 0.0; // 前回のヨー角
+
+    rclcpp::Time prev_time; // 最後のオドメトリ計算時間
 
     void timer_callback();
 
