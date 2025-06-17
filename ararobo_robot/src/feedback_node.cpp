@@ -78,7 +78,7 @@ void FeedbackNode::timer_callback()
     odom_msg.child_frame_id = "base_link";
     odom_msg.twist.twist.linear.x = (double)feedback_union.data.encoder_x / encoder_resolution * M_PI * 2 / (double)period_odom; // x軸方向の速度
     odom_msg.twist.twist.linear.y = (double)feedback_union.data.encoder_y / encoder_resolution * M_PI * 2 / (double)period_odom; // y軸方向の速度
-    odom_msg.twist.twist.angular.z = feedback_union.data.yaw_rate;                                                               // z軸方向の角速度
+    odom_msg.twist.twist.angular.z = (theta - prev_theta) / (now.seconds() - prev_time.seconds());                               // z軸方向の角速度
     odom_msg.pose.pose.position.x = x;
     odom_msg.pose.pose.position.y = y;
     odom_msg.pose.pose.position.z = 0.0;
@@ -100,6 +100,9 @@ void FeedbackNode::timer_callback()
 
     tf_broadcaster_->sendTransform(odom_trans);
 
+    prev_time = now;    // 前回のタイムスタンプを更新
+    prev_theta = theta; // 前回のヨー角を更新
+    // ログ出力
     RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f", x, y, theta);
 }
 
