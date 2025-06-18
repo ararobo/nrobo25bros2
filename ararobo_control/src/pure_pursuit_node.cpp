@@ -14,11 +14,9 @@ public:
         this->get_parameter("lookahead_distance", lookahead_distance);
 
         pose_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/current_pose", 10,
-            std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
+            "/current_pose", 10, std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
-            "/path", 10,
-            std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
+            "planned_path", 10, std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     }
 
@@ -75,23 +73,35 @@ private:
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
 
-        // ロボット座標系に変換
+        // ロボットの座標系に変換
         double dx = target.pose.position.x - current_pose.pose.position.x;
         double dy = target.pose.position.y - current_pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
         double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
 
         geometry_msgs::msg::Twist cmd;
-        if (local_x > 1.0)
+
+        // 最大速度制限
+        double v = local_x;
+        if (v > 1.0)
         {
-            local_x = 1.0; // 最大速度制限
+            v = 1.0;
         }
-        if (local_y > 1.0)
+        if (v < -1.0)
         {
-            local_y = 1.0; // 最大速度制限
+            v = -1.0;
         }
-        cmd.linear.x = local_x; // 前進速度
-        cmd.linear.y = local_y; // 側方速度
+        // 曲率計算
+        double L = lookahead_distance;
+        if (L < 1e-6)
+        {
+            L = 1e-6; // 0除算防止
+        }
+        double curvature = 2.0 * local_y / (L * L);
+
+        cmd.linear.x = v;              // 前進速度
+        cmd.linear.y = local_y;        // 側方速度（通常は0）
+        cmd.angular.z = v * curvature; // 角速度
 
         cmd_pub->publish(cmd);
     }
