@@ -15,7 +15,6 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
-
 add_executable(navi_node src/navi_node.cpp)
 
 target_include_directories(navi_node PUBLIC

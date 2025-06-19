@@ -16,6 +16,10 @@
 #include <unordered_set>
 #include <tf2_ros/transform_broadcaster.h>
 #include <nav_msgs/msg/path.hpp> // ←これが必要！
+#include <nav_msgs/msg/occupancy_grid.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <geometry_msgs/msg/pose2_d.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 
 namespace aster
 {
@@ -54,9 +58,14 @@ namespace aster
     PlannerNode();
 
   private:
+    // --- コールバック関数 ---
+    void enable_callback(const std_msgs::msg::Bool::SharedPtr msg);       // ナビ有効
+    void gate_callback(const std_msgs::msg::Bool::SharedPtr msg);         // ゲート有効
+    void map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg); // マップ受信
+    void timer_callback();                                                // 周期処理
+
     void publish_path(const std::vector<std::pair<int, int>> &path);
-    void goal_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
-    void timer_callback();
+    void goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg);
     double get_Yaw(const geometry_msgs::msg::Quaternion &q);
 
     bool isValid(int x, int y, const std::vector<std::vector<int>> &grid);
@@ -65,16 +74,24 @@ namespace aster
     double current_y = 0.0;
     std::vector<std::pair<int, int>> a_star(
         const std::vector<std::vector<int>> &grid, int start_x, int start_y, int goal_x, int goal_y);
-    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr planned_path_pub_;
-    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr err_pub_;
-    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr err_pub_;    // /robot/move
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr planned_path_pub_; // /planned_path
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;         // /path
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr tof_right_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr tof_left_sub_;
+
+    // --- Subscriber ---
+    rclcpp::Subscription<geometry_msgs::msg::Pose2D>::SharedPtr goal_sub_;  // /nav/goal
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr enable_sub_;       // /nav/enable
+    rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_; // /map
+    geometry_msgs::msg::Pose2D goal_rcv_;                                   // ←メンバ変数
     geometry_msgs::msg::Pose current_pose_;
-    geometry_msgs::msg::PoseStamped::SharedPtr goal_rcv;
-    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+    // --- Timer ---
+    rclcpp::TimerBase::SharedPtr timer_; // 周期処理
+
+    // --- TF ---
     tf2_ros::Buffer::SharedPtr tf_buffer_;
     std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
-
     std::vector<std::pair<int, int>> current_path_;
     size_t path_index_ = 0;
     bool path_ready_ = false;
@@ -87,6 +104,16 @@ namespace aster
         {0, 1, 0, 1},
         {0, 0, 0, 0}};
   };
+
+  void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+  {
+    RCLCPP_INFO(this->get_logger(), "Received map with size: %zu", msg->data.size());
+  }
+
+  void PlannerNode::enable_callback(const std_msgs::msg::Bool::SharedPtr msg)
+  {
+    RCLCPP_INFO(this->get_logger(), "Navigation enabled: %s", msg->data ? "true" : "false");
+  }
 
 } // namespace aster
 

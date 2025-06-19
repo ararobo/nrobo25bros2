@@ -9,14 +9,17 @@ namespace aster
           tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
 
     {
-        goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
-        err_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+        goal_sub_ = this->create_subscription<geometry_msgs::msg::Pose2D>(
+            "/nav/goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
         path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path", 10);
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&PlannerNode::timer_callback, this));
         planned_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("planned_path", 10);
+        map_sub_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
+            "/map", 10, std::bind(&PlannerNode::map_callback, this, _1));
+        enable_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+            "/nav/enable", 10, std::bind(&PlannerNode::enable_callback, this, _1));
     }
 
     double PlannerNode::get_Yaw(const geometry_msgs::msg::Quaternion &q)
@@ -71,6 +74,11 @@ namespace aster
             if (closed_set[current->y][current->x])
             {
                 delete current;
+                while (!open_set.empty())
+                {
+                    delete open_set.top();
+                    open_set.pop();
+                }
                 continue;
             }
 
@@ -93,15 +101,15 @@ namespace aster
         return {};
     }
 
-    void PlannerNode::goal_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    void aster::PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
     {
-        goal_rcv = msg;
+        goal_rcv_ = *msg;
         path_ready_ = false;
     }
 
     void PlannerNode::timer_callback()
     {
-        if (!goal_rcv)
+        if (!path_ready_)
             return;
 
         geometry_msgs::msg::TransformStamped tf;
@@ -121,8 +129,8 @@ namespace aster
 
         int start_x = static_cast<int>(current_pose_.position.x);
         int start_y = static_cast<int>(current_pose_.position.y);
-        int goal_x = static_cast<int>(goal_rcv->pose.position.x);
-        int goal_y = static_cast<int>(goal_rcv->pose.position.y);
+        int goal_x = static_cast<int>(goal_rcv_.x); // ← Pose2D型
+        int goal_y = static_cast<int>(goal_rcv_.y);
 
         if (!path_ready_)
         {
