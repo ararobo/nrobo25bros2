@@ -104,22 +104,25 @@ namespace aster
 
         return {};
     }
-
     void aster::PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
     {
         goal_rcv_ = *msg;
         path_ready_ = false;
         received_map_ = true;
+        RCLCPP_INFO(this->get_logger(), "[GOAL] Goal received: (%.2f, %.2f)", msg->x, msg->y);
     }
+
     void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
     {
-        latest_map_ = *msg;   // 最新マップを保存
-        received_map_ = true; // 受信フラグを立てる
+        RCLCPP_INFO(this->get_logger(), "[MAP] Map received");
+        latest_map_ = *msg;
+        received_map_ = true;
 
         int width = msg->info.width;
         int height = msg->info.height;
 
-        // OccupancyGrid.data は一次元配列 → 二次元グリッドに変換
+        RCLCPP_INFO(this->get_logger(), "[MAP] Converting to grid: width = %d, height = %d", width, height);
+
         grid.resize(height);
         for (int y = 0; y < height; ++y)
         {
@@ -128,18 +131,14 @@ namespace aster
             {
                 int index = y * width + x;
                 int value = msg->data[index];
-
-                // 値の分類：0 = free, 100 = obstacle, -1 = unknown
                 if (value == 0)
-                    grid[y][x] = 0; // 通行可能
-                else if (value == 100)
-                    grid[y][x] = 1; // 障害物
+                    grid[y][x] = 0;
                 else
-                    grid[y][x] = 1; // 未知領域も障害物扱い（安全のため）
+                    grid[y][x] = 1;
             }
         }
 
-        RCLCPP_INFO(this->get_logger(), "Map converted to grid (%d x %d)", width, height);
+        RCLCPP_INFO(this->get_logger(), "[MAP] Grid conversion complete");
     }
 
     void PlannerNode::timer_callback()
@@ -164,19 +163,22 @@ namespace aster
 
         int start_x = static_cast<int>(current_pose_.position.x);
         int start_y = static_cast<int>(current_pose_.position.y);
-        int goal_x = static_cast<int>(goal_rcv_.x); // ← Pose2D型
+        int goal_x = static_cast<int>(goal_rcv_.x);
         int goal_y = static_cast<int>(goal_rcv_.y);
 
         if (!path_ready_)
         {
+            RCLCPP_INFO(this->get_logger(), "[TIMER] Starting A* from (%d, %d) to (%d, %d)", start_x, start_y, goal_x, goal_y);
             current_path_ = a_star(grid, start_x, start_y, goal_x, goal_y);
             path_index_ = 0;
             path_ready_ = !current_path_.empty();
             if (!path_ready_)
             {
-                RCLCPP_WARN(this->get_logger(), "Failed to find path.");
+                RCLCPP_WARN(this->get_logger(), "[TIMER] Failed to find path.");
                 return;
             }
+
+            RCLCPP_INFO(this->get_logger(), "[TIMER] A* path found with %zu points", current_path_.size());
 
             nav_msgs::msg::Path path_msg;
             path_msg.header.stamp = this->now();
@@ -189,14 +191,16 @@ namespace aster
                 pose.pose.position.x = pt.first;
                 pose.pose.position.y = pt.second;
                 pose.pose.position.z = 0.0;
-                pose.pose.orientation.w = 1.0; // デフォルト
+                pose.pose.orientation.w = 1.0;
                 path_msg.poses.push_back(pose);
             }
 
-            // ✨ここに補間処理を追加！
+            // ✨ 補間処理開始
             nav_msgs::msg::Path interpolated_path;
             interpolated_path.header = path_msg.header;
             double desired_spacing = 0.2;
+
+            RCLCPP_INFO(this->get_logger(), "[TIMER] Starting interpolation...");
 
             interpolated_path.poses.push_back(path_msg.poses.front());
             for (size_t i = 1; i < path_msg.poses.size(); ++i)
@@ -204,7 +208,7 @@ namespace aster
                 auto p1 = path_msg.poses[i - 1].pose.position;
                 auto p2 = path_msg.poses[i].pose.position;
                 double dist = std::hypot(p2.x - p1.x, p2.y - p1.y);
-                int steps = std::max(1, static_cast<int>(dist / desired_spacing)); // 最低1ステップ
+                int steps = std::max(1, static_cast<int>(dist / desired_spacing));
                 for (int j = 1; j < steps; ++j)
                 {
                     double ratio = static_cast<double>(j) / steps;
@@ -213,15 +217,18 @@ namespace aster
                     interp.pose.position.x = p1.x + ratio * (p2.x - p1.x);
                     interp.pose.position.y = p1.y + ratio * (p2.y - p1.y);
                     interp.pose.position.z = 0.0;
-                    interp.pose.orientation.w = 1.0; // orientation補間は今回は省略
+                    interp.pose.orientation.w = 1.0;
                     interpolated_path.poses.push_back(interp);
                 }
                 interpolated_path.poses.push_back(path_msg.poses[i]);
             }
 
+            RCLCPP_INFO(this->get_logger(), "[TIMER] Interpolation complete with %zu poses", interpolated_path.poses.size());
+
             planned_path_pub_->publish(interpolated_path);
             draw_path_on_map(current_path_);
         }
+
     } // namespace aster
     void PlannerNode::draw_path_on_map(const std::vector<std::pair<int, int>> &path)
     {
@@ -231,11 +238,12 @@ namespace aster
             return;
         }
 
-        nav_msgs::msg::OccupancyGrid path_map = latest_map_; // 元のマップをコピー（上書きしない）
+        RCLCPP_INFO(this->get_logger(), "[DRAW] Drawing path on map, length: %zu", path.size());
+
+        nav_msgs::msg::OccupancyGrid path_map = latest_map_;
         int width = path_map.info.width;
         int height = path_map.info.height;
 
-        // 経路に沿ってセルに描き込み
         for (const auto &pt : path)
         {
             int x = pt.first;
@@ -244,18 +252,18 @@ namespace aster
             if (x >= 0 && x < width && y >= 0 && y < height)
             {
                 int index = y * width + x;
-                path_map.data[index] = 50; // 50など、経路用の独自値（グレー）を使うと分かりやすい！
+                path_map.data[index] = 50; // グレーで経路を示す
             }
         }
 
-        map_with_path_pub_->publish(path_map); // マップをパブリッシュ！
-        RCLCPP_INFO(this->get_logger(), "Published map with path overlay.");
+        map_with_path_pub_->publish(path_map);
+
+        RCLCPP_INFO(this->get_logger(), "[DRAW] Path drawn and published to map_with_path");
     }
 
 }
 int main(int argc, char **argv)
 {
-    printf("hey\n");
     rclcpp::init(argc, argv);
     auto node = std::make_shared<aster::PlannerNode>();
     rclcpp::spin(node);
