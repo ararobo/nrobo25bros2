@@ -9,6 +9,7 @@ namespace aster
           tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
 
     {
+        RCLCPP_INFO(this->get_logger(), "Initializing");
         goal_sub_ = this->create_subscription<geometry_msgs::msg::Pose2D>(
             "/nav/goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
         path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path", 10);
