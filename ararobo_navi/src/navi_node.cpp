@@ -196,6 +196,7 @@ namespace aster
 }
 int main(int argc, char **argv)
 {
+    printf("hey\n");
     rclcpp::init(argc, argv);
     auto node = std::make_shared<aster::PlannerNode>();
     rclcpp::spin(node);
