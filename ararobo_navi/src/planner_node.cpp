@@ -1,4 +1,4 @@
-#include "ararobo_navi/navi_node.hpp"
+#include "ararobo_navi/planner_node.hpp"
 
 using std::placeholders::_1;
 
@@ -111,6 +111,36 @@ namespace aster
         path_ready_ = false;
         received_map_ = true;
     }
+    void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+    {
+        latest_map_ = *msg;   // 最新マップを保存
+        received_map_ = true; // 受信フラグを立てる
+
+        int width = msg->info.width;
+        int height = msg->info.height;
+
+        // OccupancyGrid.data は一次元配列 → 二次元グリッドに変換
+        grid.resize(height);
+        for (int y = 0; y < height; ++y)
+        {
+            grid[y].resize(width);
+            for (int x = 0; x < width; ++x)
+            {
+                int index = y * width + x;
+                int value = msg->data[index];
+
+                // 値の分類：0 = free, 100 = obstacle, -1 = unknown
+                if (value == 0)
+                    grid[y][x] = 0; // 通行可能
+                else if (value == 100)
+                    grid[y][x] = 1; // 障害物
+                else
+                    grid[y][x] = 1; // 未知領域も障害物扱い（安全のため）
+            }
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Map converted to grid (%d x %d)", width, height);
+    }
 
     void PlannerNode::timer_callback()
     {
@@ -190,8 +220,37 @@ namespace aster
             }
 
             planned_path_pub_->publish(interpolated_path);
+            draw_path_on_map(current_path_);
         }
     } // namespace aster
+    void PlannerNode::draw_path_on_map(const std::vector<std::pair<int, int>> &path)
+    {
+        if (!received_map_)
+        {
+            RCLCPP_WARN(this->get_logger(), "Map not received yet, cannot draw path.");
+            return;
+        }
+
+        nav_msgs::msg::OccupancyGrid path_map = latest_map_; // 元のマップをコピー（上書きしない）
+        int width = path_map.info.width;
+        int height = path_map.info.height;
+
+        // 経路に沿ってセルに描き込み
+        for (const auto &pt : path)
+        {
+            int x = pt.first;
+            int y = pt.second;
+
+            if (x >= 0 && x < width && y >= 0 && y < height)
+            {
+                int index = y * width + x;
+                path_map.data[index] = 50; // 50など、経路用の独自値（グレー）を使うと分かりやすい！
+            }
+        }
+
+        map_with_path_pub_->publish(path_map); // マップをパブリッシュ！
+        RCLCPP_INFO(this->get_logger(), "Published map with path overlay.");
+    }
 
 }
 int main(int argc, char **argv)

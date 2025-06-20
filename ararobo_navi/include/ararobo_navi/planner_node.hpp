@@ -63,7 +63,7 @@ namespace aster
     void gate_callback(const std_msgs::msg::Bool::SharedPtr msg);         // ゲート有効
     void map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg); // マップ受信
     void timer_callback();                                                // 周期処理
-
+    void draw_path_on_map(const std::vector<std::pair<int, int>> &path);
     void publish_path(const std::vector<std::pair<int, int>> &path);
     void goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg);
     double get_Yaw(const geometry_msgs::msg::Quaternion &q);
