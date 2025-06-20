@@ -108,11 +108,6 @@ namespace aster
         {0, 0, 0, 0}};
   };
 
-  void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received map with size: %zu", msg->data.size());
-  }
-
   void PlannerNode::enable_callback(const std_msgs::msg::Bool::SharedPtr msg)
   {
     RCLCPP_INFO(this->get_logger(), "Navigation enabled: %s", msg->data ? "true" : "false");
