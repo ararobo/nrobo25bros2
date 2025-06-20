@@ -79,6 +79,9 @@ namespace aster
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;         // /path
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr tof_right_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr tof_left_sub_;
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr map_with_path_pub_;
+    nav_msgs::msg::OccupancyGrid latest_map_;
+    bool received_map_ = false;
 
     // --- Subscriber ---
     rclcpp::Subscription<geometry_msgs::msg::Pose2D>::SharedPtr goal_sub_;  // /nav/goal

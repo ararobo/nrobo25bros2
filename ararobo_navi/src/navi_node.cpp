@@ -20,6 +20,9 @@ namespace aster
             "/map", 10, std::bind(&PlannerNode::map_callback, this, _1));
         enable_sub_ = this->create_subscription<std_msgs::msg::Bool>(
             "/nav/enable", 10, std::bind(&PlannerNode::enable_callback, this, _1));
+        // コンストラクタ内でパブリッシャ作成
+        map_with_path_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map_with_path", 10);
+        RCLCPP_INFO(this->get_logger(), "started");
     }
 
     double PlannerNode::get_Yaw(const geometry_msgs::msg::Quaternion &q)
@@ -105,6 +108,7 @@ namespace aster
     {
         goal_rcv_ = *msg;
         path_ready_ = false;
+        received_map_ = true;
     }
 
     void PlannerNode::timer_callback()
@@ -187,6 +191,7 @@ namespace aster
             planned_path_pub_->publish(interpolated_path);
         }
     } // namespace aster
+
 }
 int main(int argc, char **argv)
 {
