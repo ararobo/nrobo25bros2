@@ -39,7 +39,8 @@ public:
      * @return true 成功
      * @return false 失敗
      */
-    bool setTxAddr(const uint8_t ip_address[4], const uint16_t port);
+    void setTxAddr(const uint8_t ip_address[4], const uint16_t port);
+
     /**
      * @brief バインドする(受信)
      *
@@ -61,6 +62,7 @@ public:
      * @return false 失敗
      */
     bool sendPacket(uint8_t *data, uint8_t data_size, const uint8_t *ip_address, const uint16_t port);
+
     /**
      * @brief パケットを送信する(事前にIPアドレスとポートを指定)
      *
@@ -70,6 +72,7 @@ public:
      * @return false 失敗
      */
     bool sendPacket(uint8_t *data, uint8_t data_size);
+
     /**
      * @brief パケットを受信する
      *

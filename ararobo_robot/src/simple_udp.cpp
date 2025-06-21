@@ -22,12 +22,6 @@ SimpleUDP::SimpleUDP()
 {
 }
 
-/**
- * @brief ソケットを作成しアドレスを初期化する
- *
- * @return true
- * @return false
- */
 bool SimpleUDP::initSocket()
 {
     // DGRAMでUDPとしてソケット作成
@@ -48,7 +42,7 @@ bool SimpleUDP::initSocket()
     return true;
 }
 
-bool SimpleUDP::setTxAddr(const uint8_t ip_address[4], const uint16_t port)
+void SimpleUDP::setTxAddr(const uint8_t ip_address[4], const uint16_t port)
 {
     tx_addr_.sin_family = AF_INET;
     tx_addr_.sin_port = htons(port);
