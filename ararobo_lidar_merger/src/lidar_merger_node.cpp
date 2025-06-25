@@ -53,7 +53,6 @@ public:
         ydlidar_sub_.subscribe(this, ydlidar_scan_topic);
 
         // ApproximateTimeSynchronizerの設定
-        // キューサイズを調整する必要があるかもしれません。
         // デバイスのレートやネットワークの安定性に応じて増やすことを検討してください。
         synchronizer_ = std::make_shared<message_filters::Synchronizer<ApproximateTime>>(ApproximateTime(10), urg_sub_, ydlidar_sub_);
         synchronizer_->registerCallback(std::bind(&LidarMergerNode::sync_callback, this, std::placeholders::_1, std::placeholders::_2));
