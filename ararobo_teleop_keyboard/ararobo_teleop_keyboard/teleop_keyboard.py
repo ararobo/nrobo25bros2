@@ -39,7 +39,7 @@ class TeleopKeyboard(Node):
     """ROS 2 node for keyboard teleoperation."""
     def __init__(self):
         super().__init__('teleop_keyboard')
-        self.publisher_ = self.create_publisher(Twist, '/robot/move', 10)
+        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
         self.get_logger().info("Teleop Keyboard node started.")
 
         # Save original terminal settings

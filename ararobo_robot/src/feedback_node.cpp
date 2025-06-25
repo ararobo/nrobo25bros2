@@ -76,7 +76,7 @@ void FeedbackNode::timer_callback()
     // オドメトリ計算
     // `OdomCalculator::set_encoder_count` に `period_s` を渡す
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
-    odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
+    odom_calculator->set_encoder_count(-feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
     // `OdomCalculator::get_robot_coord` に `period_s` を渡す
     odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
 
@@ -96,7 +96,7 @@ void FeedbackNode::timer_callback()
     odom_msg.child_frame_id = "base_link";
 
     // `odom_calculator`で計算された速度 (m/s) をそのまま使用
-    odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
+    odom_msg.twist.twist.linear.x = -odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
     odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
 
     // 角速度の計算
