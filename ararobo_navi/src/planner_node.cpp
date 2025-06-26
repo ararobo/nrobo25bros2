@@ -107,7 +107,6 @@ namespace aster
                 grid[y][x] = (msg->data[y * w + x] == 0) ? 0 : 1;
         // 再計算トリガ
         path_ready_ = false;
-        bool received_map_ = false;
     }
 
     void PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
@@ -133,9 +132,6 @@ namespace aster
         wy = gy * map_resolution_ + map_origin_y_ + map_resolution_ / 2.0;
     }
 
-    //--------------------------------------------------------------------
-    //  定期タスク（毎100ms、必ず再計算）
-    //--------------------------------------------------------------------
     void PlannerNode::timer_callback()
     {
         if (!received_map_ || !nav_enabled_)
@@ -182,6 +178,7 @@ namespace aster
             msg.poses.push_back(std::move(p));
         }
         planned_path_pub_->publish(msg);
+        path_pub_->publish(msg);
         draw_path_on_map(current_path_);
     }
 
