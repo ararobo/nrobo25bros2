@@ -14,7 +14,7 @@ public:
         this->get_parameter("lookahead_distance", lookahead_distance);
 
         pose_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/current_pose", 10,
+            "/pose", 10,
             std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
             "/path", 10,
