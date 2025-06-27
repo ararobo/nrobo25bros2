@@ -129,26 +129,62 @@ namespace aster
 
     void PlannerNode::timer_callback()
     {
+        RCLCPP_INFO(get_logger(), "timer triggered. map: %s, nav: %s",
+                    received_map_ ? "yes" : "no",
+                    nav_enabled_ ? "yes" : "no");
+
         if (!received_map_ || !nav_enabled_)
             return;
-        int sx, sy, gx, gy;
-        if (!worldToGrid(current_pose_.position.x, current_pose_.position.y, sx, sy))
-            return;
-        if (!worldToGrid(goal_rcv_.x, goal_rcv_.y, gx, gy))
-            return;
 
-        // 毎回再計算（もとの guard を削除）
-        current_path_ = a_star(grid, sx, sy, gx, gy);
-        if (current_path_.empty())
+        int sx, sy, gx, gy;
+
+        // 現在地の座標をグリッドに変換
+        if (!worldToGrid(current_pose_.position.x, current_pose_.position.y, sx, sy))
         {
-            RCLCPP_WARN(get_logger(), "A* failed");
+            RCLCPP_WARN(get_logger(), "Failed to convert current pose to grid");
             return;
         }
 
-        // publish path
+        // ゴールの座標をグリッドに変換
+        if (!worldToGrid(goal_rcv_.x, goal_rcv_.y, gx, gy))
+        {
+            RCLCPP_WARN(get_logger(), "Failed to convert goal to grid");
+            return;
+        }
+
+        // デバッグ用ログ出力
+        RCLCPP_INFO(get_logger(), "Current pose: (%.2f, %.2f)", current_pose_.position.x, current_pose_.position.y);
+        RCLCPP_INFO(get_logger(), "Start cell: (%d, %d), Goal cell: (%d, %d)", sx, sy, gx, gy);
+
+        // セルの有効性チェック
+        if (!isValid(sx, sy, grid))
+        {
+            RCLCPP_WARN(get_logger(), "Start cell (%d,%d) is invalid", sx, sy);
+            return;
+        }
+
+        if (!isValid(gx, gy, grid))
+        {
+            RCLCPP_WARN(get_logger(), "Goal cell (%d,%d) is invalid", gx, gy);
+            return;
+        }
+
+        // 経路生成
+        current_path_ = a_star(grid, sx, sy, gx, gy);
+
+        if (current_path_.empty())
+        {
+            RCLCPP_WARN(get_logger(), "A* failed to find path");
+            return;
+        }
+
+        RCLCPP_INFO(get_logger(), "Path found with %zu points", current_path_.size());
+
+        // パスをメッセージに変換して配信
         nav_msgs::msg::Path msg;
         msg.header.stamp = now();
         msg.header.frame_id = "map";
+
         for (auto [cx, cy] : current_path_)
         {
             geometry_msgs::msg::PoseStamped p;
@@ -161,6 +197,7 @@ namespace aster
         path_pub_->publish(msg);
         draw_path_on_map(current_path_);
     }
+
     void PlannerNode::draw_path_on_map(const std::vector<std::pair<int, int>> &path)
     {
         if (!received_map_)
