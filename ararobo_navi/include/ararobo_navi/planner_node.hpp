@@ -50,6 +50,7 @@ namespace aster
     double heuristic(int x1, int y1, int x2, int y2);
     std::vector<std::pair<int, int>> a_star(const std::vector<std::vector<int>> &grid,
                                             int sx, int sy, int gx, int gy);
+    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
     // ---- 座標変換 ----
     bool worldToGrid(double wx, double wy, int &gx, int &gy) const;
@@ -73,7 +74,7 @@ namespace aster
     // ---- TF ----
     tf2_ros::Buffer::SharedPtr tf_buffer_;
     std::unique_ptr<tf2_ros::TransformListener> tf_listener_;
-
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;
     // ---- 状態/設定 ----
     geometry_msgs::msg::Pose2D goal_rcv_;
     geometry_msgs::msg::Pose current_pose_;

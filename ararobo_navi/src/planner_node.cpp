@@ -12,7 +12,6 @@ namespace aster
         goal_sub_ = create_subscription<geometry_msgs::msg::Pose2D>("/nav/goal", 10,
                                                                     std::bind(&PlannerNode::goal_callback, this, _1));
         path_pub_ = create_publisher<nav_msgs::msg::Path>("path", 10);
-        planned_path_pub_ = create_publisher<nav_msgs::msg::Path>("planned_path", 10);
         map_with_path_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("map_with_path", 10);
         map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>("/map", 10,
                                                                      std::bind(&PlannerNode::map_callback, this, _1));
@@ -21,6 +20,8 @@ namespace aster
         timer_ = create_wall_timer(std::chrono::milliseconds(100),
                                    std::bind(&PlannerNode::timer_callback, this));
         RCLCPP_INFO(get_logger(), "started");
+        pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/pose", 10, std::bind(&PlannerNode::pose_callback, this, _1));
     }
 
     double PlannerNode::get_Yaw(const geometry_msgs::msg::Quaternion &q)
@@ -130,21 +131,6 @@ namespace aster
     {
         if (!received_map_ || !nav_enabled_)
             return;
-
-        // 現在位置取得
-        geometry_msgs::msg::TransformStamped tf;
-        try
-        {
-            tf = tf_buffer_->lookupTransform("map", "base_link", tf2::TimePointZero);
-        }
-        catch (const tf2::TransformException &e)
-        {
-            return;
-        }
-        current_pose_.position.x = tf.transform.translation.x;
-        current_pose_.position.y = tf.transform.translation.y;
-
-        // world→grid 変換
         int sx, sy, gx, gy;
         if (!worldToGrid(current_pose_.position.x, current_pose_.position.y, sx, sy))
             return;
@@ -171,14 +157,10 @@ namespace aster
             p.pose.orientation.w = 1.0;
             msg.poses.push_back(std::move(p));
         }
-        planned_path_pub_->publish(msg);
+
         path_pub_->publish(msg);
         draw_path_on_map(current_path_);
     }
-
-    //--------------------------------------------------------------------
-    //  経路可視化（変更なし、world→grid 修正不要）
-    //--------------------------------------------------------------------
     void PlannerNode::draw_path_on_map(const std::vector<std::pair<int, int>> &path)
     {
         if (!received_map_)
@@ -189,6 +171,14 @@ namespace aster
             if (gx >= 0 && gy >= 0 && gy < (int)m.info.height && gx < w)
                 m.data[gy * w + gx] = 50;
         map_with_path_pub_->publish(m);
+    }
+    void PlannerNode::pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+    {
+        current_pose_.position = msg->pose.pose.position;
+        current_pose_.orientation = msg->pose.pose.orientation;
+
+        RCLCPP_INFO(get_logger(), "[POSE] x=%.2f y=%.2f",
+                    current_pose_.position.x, current_pose_.position.y);
     }
 
 } // namespace aster
