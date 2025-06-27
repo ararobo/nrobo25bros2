@@ -117,24 +117,25 @@ namespace aster
     {
         if (!received_map_)
         {
-            RCLCPP_INFO(get_logger(),
-                        "Pose world: (%.2f, %.2f)  map_origin:(%.2f, %.2f)  res:%.3f  size:%zu x %zu",
-                        current_pose_.position.x,
-                        current_pose_.position.y,
-                        map_origin_x_, map_origin_y_,
-                        map_resolution_,
-                        grid.empty() ? 0 : grid[0].size(),
-                        grid.size());
+            RCLCPP_WARN(get_logger(), "[worldToGrid] Map not received yet.");
             return false;
         }
+
         gx = static_cast<int>((wx - map_origin_x_) / map_resolution_);
         gy = static_cast<int>((wy - map_origin_y_) / map_resolution_);
-        return gx >= 0 && gy >= 0 && gy < (int)grid.size() && gx < (int)grid[0].size();
-    }
-    void PlannerNode::gridToWorld(int gx, int gy, double &wx, double &wy) const
-    {
-        wx = gx * map_resolution_ + map_origin_x_ + map_resolution_ / 2.0;
-        wy = gy * map_resolution_ + map_origin_y_ + map_resolution_ / 2.0;
+
+        bool in_bounds = gx >= 0 && gy >= 0 &&
+                         gy < static_cast<int>(grid.size()) &&
+                         gx < static_cast<int>(grid[0].size());
+
+        RCLCPP_INFO(get_logger(),
+                    "[worldToGrid] wx=%.2f wy=%.2f -> gx=%d gy=%d (origin: %.2f, %.2f / res: %.3f / size: %zu x %zu) -> %s",
+                    wx, wy, gx, gy,
+                    map_origin_x_, map_origin_y_, map_resolution_,
+                    grid.empty() ? 0 : grid[0].size(), grid.size(),
+                    in_bounds ? "OK" : "OUT OF BOUNDS");
+
+        return in_bounds;
     }
 
     void PlannerNode::timer_callback()
