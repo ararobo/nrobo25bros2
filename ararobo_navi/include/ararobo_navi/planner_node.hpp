@@ -79,7 +79,7 @@ namespace aster
     geometry_msgs::msg::Pose current_pose_;
     std::vector<std::pair<int, int>> current_path_;
     std::vector<std::vector<int>> grid;
-    bool received_map_ = false;
+
     bool path_ready_{false};
     bool received_map_{false};
     bool nav_enabled_{true};

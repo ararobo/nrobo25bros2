@@ -4,27 +4,22 @@ using std::placeholders::_1;
 
 namespace aster
 {
-
     PlannerNode::PlannerNode() : rclcpp::Node("planner_node"),
                                  tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())),
                                  tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
     {
         RCLCPP_INFO(get_logger(), "Initializing");
-
         goal_sub_ = create_subscription<geometry_msgs::msg::Pose2D>("/nav/goal", 10,
                                                                     std::bind(&PlannerNode::goal_callback, this, _1));
         path_pub_ = create_publisher<nav_msgs::msg::Path>("path", 10);
         planned_path_pub_ = create_publisher<nav_msgs::msg::Path>("planned_path", 10);
         map_with_path_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("map_with_path", 10);
-
         map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>("/map", 10,
                                                                      std::bind(&PlannerNode::map_callback, this, _1));
         enable_sub_ = create_subscription<std_msgs::msg::Bool>("/nav/enable", 10,
                                                                std::bind(&PlannerNode::enable_callback, this, _1));
-
         timer_ = create_wall_timer(std::chrono::milliseconds(100),
                                    std::bind(&PlannerNode::timer_callback, this));
-
         RCLCPP_INFO(get_logger(), "started");
     }
 
@@ -113,7 +108,6 @@ namespace aster
     {
         goal_rcv_ = *msg;
         path_ready_ = false;
-        received_map_ = true;
         RCLCPP_INFO(get_logger(), "[GOAL] %.2f %.2f", msg->x, msg->y);
     }
     void PlannerNode::enable_callback(const std_msgs::msg::Bool::SharedPtr msg) { nav_enabled_ = msg->data; }
