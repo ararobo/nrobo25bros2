@@ -116,7 +116,17 @@ namespace aster
     bool PlannerNode::worldToGrid(double wx, double wy, int &gx, int &gy) const
     {
         if (!received_map_)
+        {
+            RCLCPP_INFO(get_logger(),
+                        "Pose world: (%.2f, %.2f)  map_origin:(%.2f, %.2f)  res:%.3f  size:%zu x %zu",
+                        current_pose_.position.x,
+                        current_pose_.position.y,
+                        map_origin_x_, map_origin_y_,
+                        map_resolution_,
+                        grid.empty() ? 0 : grid[0].size(),
+                        grid.size());
             return false;
+        }
         gx = static_cast<int>((wx - map_origin_x_) / map_resolution_);
         gy = static_cast<int>((wy - map_origin_y_) / map_resolution_);
         return gx >= 0 && gy >= 0 && gy < (int)grid.size() && gx < (int)grid[0].size();
