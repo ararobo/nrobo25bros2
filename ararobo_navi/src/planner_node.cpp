@@ -1,267 +1,235 @@
-#include "ararobo_navi/planner_node.hpp"
 
+#include "ararobo_navi/planner_node.hpp"
 using std::placeholders::_1;
 
 namespace aster
 {
-    PlannerNode::PlannerNode()
-        : rclcpp::Node("planner_node"), tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())),
-          tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
-
+    PlannerNode::PlannerNode() : rclcpp::Node("planner_node"),
+                                 tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())),
+                                 tf_listener_(std::make_unique<tf2_ros::TransformListener>(*tf_buffer_))
     {
-        RCLCPP_INFO(this->get_logger(), "Initializing");
-        goal_sub_ = this->create_subscription<geometry_msgs::msg::Pose2D>(
-            "/nav/goal", 10, std::bind(&PlannerNode::goal_callback, this, _1));
-        path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path", 10);
-        timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),
-            std::bind(&PlannerNode::timer_callback, this));
-        planned_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("planned_path", 10);
-        map_sub_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
-            "/map", 10, std::bind(&PlannerNode::map_callback, this, _1));
-        enable_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-            "/nav/enable", 10, std::bind(&PlannerNode::enable_callback, this, _1));
-        // コンストラクタ内でパブリッシャ作成
-        map_with_path_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map_with_path", 10);
-        RCLCPP_INFO(this->get_logger(), "started");
+        RCLCPP_INFO(get_logger(), "Initializing");
+        goal_sub_ = create_subscription<geometry_msgs::msg::Pose2D>("/nav/goal", 10,
+                                                                    std::bind(&PlannerNode::goal_callback, this, _1));
+        path_pub_ = create_publisher<nav_msgs::msg::Path>("path", 10);
+        map_with_path_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("map_with_path", 10);
+        map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>("/map", 10,
+                                                                     std::bind(&PlannerNode::map_callback, this, _1));
+        enable_sub_ = create_subscription<std_msgs::msg::Bool>("/nav/enable", 10,
+                                                               std::bind(&PlannerNode::enable_callback, this, _1));
+        timer_ = create_wall_timer(std::chrono::milliseconds(100),
+                                   std::bind(&PlannerNode::timer_callback, this));
+        RCLCPP_INFO(get_logger(), "started");
+        pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/pose", 10, std::bind(&PlannerNode::pose_callback, this, _1));
     }
 
     double PlannerNode::get_Yaw(const geometry_msgs::msg::Quaternion &q)
     {
         tf2::Quaternion quat(q.x, q.y, q.z, q.w);
-        tf2::Matrix3x3 mat(quat);
-        double roll, pitch, yaw;
-        mat.getRPY(roll, pitch, yaw);
-        return yaw;
+        double r, p, y;
+        tf2::Matrix3x3(quat).getRPY(r, p, y);
+        return y;
     }
 
-    bool PlannerNode::isValid(int x, int y, const std::vector<std::vector<int>> &grid)
+    bool PlannerNode::isValid(int x, int y, const std::vector<std::vector<int>> &g)
     {
-        return x >= 0 && y >= 0 && x < static_cast<int>(grid[0].size()) &&
-               y < static_cast<int>(grid.size()) && grid[y][x] == 0;
+        return x >= 0 && y >= 0 && y < (int)g.size() && x < (int)g[0].size() && g[y][x] == 0;
     }
 
     double PlannerNode::heuristic(int x1, int y1, int x2, int y2)
     {
-        return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        return std::hypot(x1 - x2, y1 - y2);
     }
-
     std::vector<std::pair<int, int>> PlannerNode::a_star(
-        const std::vector<std::vector<int>> &grid, int start_x, int start_y, int goal_x, int goal_y)
+        const std::vector<std::vector<int>> &g, int sx, int sy, int gx, int gy)
     {
-        std::priority_queue<AStarNode *, std::vector<AStarNode *>, CompareNode> open_set;
-        std::vector<std::vector<bool>> closed_set(grid.size(), std::vector<bool>(grid[0].size(), false));
+        using NodePtr = std::shared_ptr<AStarNode>;
+        struct Cmp
+        {
+            bool operator()(const NodePtr &a, const NodePtr &b) const { return a->f() > b->f(); }
+        };
 
-        AStarNode *start = new AStarNode(start_x, start_y, 0.0, heuristic(start_x, start_y, goal_x, goal_y), nullptr);
+        std::priority_queue<NodePtr, std::vector<NodePtr>, Cmp> open_set;
+        std::vector<std::vector<bool>> closed(g.size(), std::vector<bool>(g[0].size(), false));
+
+        NodePtr start = std::make_shared<AStarNode>(sx, sy, 0.0, heuristic(sx, sy, gx, gy));
         open_set.push(start);
 
-        std::vector<std::pair<int, int>> directions = {
-            {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        const std::vector<std::pair<int, int>> dirs{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
         while (!open_set.empty())
         {
-            AStarNode *current = open_set.top();
+            NodePtr cur = open_set.top();
             open_set.pop();
-
-            if (current->x == goal_x && current->y == goal_y)
+            if (cur->x == gx && cur->y == gy)
             {
                 std::vector<std::pair<int, int>> path;
-                while (current)
-                {
-                    path.emplace_back(current->x, current->y);
-                    current = current->parent;
-                }
+                for (NodePtr n = cur; n; n = n->parent)
+                    path.emplace_back(n->x, n->y);
                 std::reverse(path.begin(), path.end());
-                return path;
+                return path; // shared_ptr なので自動解放
             }
-
-            if (closed_set[current->y][current->x])
-            {
-                delete current;
-                while (!open_set.empty())
-                {
-                    delete open_set.top();
-                    open_set.pop();
-                }
+            if (closed[cur->y][cur->x])
                 continue;
-            }
+            closed[cur->y][cur->x] = true;
 
-            closed_set[current->y][current->x] = true;
-
-            for (const auto &dir : directions)
+            for (auto [dX, dY] : dirs)
             {
-                int nx = current->x + dir.first;
-                int ny = current->y + dir.second;
-
-                if (isValid(nx, ny, grid) && !closed_set[ny][nx])
-                {
-                    double g_new = current->g + ((dir.first == 0 || dir.second == 0) ? 1.0 : std::sqrt(2.0));
-                    AStarNode *neighbor = new AStarNode(nx, ny, g_new, heuristic(nx, ny, goal_x, goal_y), current);
-                    open_set.push(neighbor);
-                }
+                int nx = cur->x + dX, ny = cur->y + dY;
+                if (!isValid(nx, ny, g) || closed[ny][nx])
+                    continue;
+                double g_new = cur->g + ((dX == 0 || dY == 0) ? 1.0 : std::sqrt(2.0));
+                NodePtr nb = std::make_shared<AStarNode>(nx, ny, g_new, heuristic(nx, ny, gx, gy));
+                nb->parent = cur;
+                open_set.push(nb);
             }
         }
-
         return {};
-    }
-    void aster::PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
-    {
-        goal_rcv_ = *msg;
-        path_ready_ = false;
-        received_map_ = true;
-        RCLCPP_INFO(this->get_logger(), "[GOAL] Goal received: (%.2f, %.2f)", msg->x, msg->y);
     }
 
     void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
     {
-        RCLCPP_INFO(this->get_logger(), "[MAP] Map received");
         latest_map_ = *msg;
         received_map_ = true;
+        map_resolution_ = msg->info.resolution;
+        map_origin_x_ = msg->info.origin.position.x;
+        map_origin_y_ = msg->info.origin.position.y;
 
-        int width = msg->info.width;
-        int height = msg->info.height;
+        int w = msg->info.width, h = msg->info.height;
+        grid.assign(h, std::vector<int>(w, 1));
+        for (int y = 0; y < h; ++y)
+            for (int x = 0; x < w; ++x)
+                grid[y][x] = (msg->data[y * w + x] == 0) ? 0 : 1;
+        // 再計算トリガ
+        path_ready_ = false;
+    }
 
-        RCLCPP_INFO(this->get_logger(), "[MAP] Converting to grid: width = %d, height = %d", width, height);
+    void PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
+    {
+        goal_rcv_ = *msg;
+        path_ready_ = false;
+        RCLCPP_INFO(get_logger(), "[GOAL] %.2f %.2f", msg->x, msg->y);
+    }
+    void PlannerNode::enable_callback(const std_msgs::msg::Bool::SharedPtr msg) { nav_enabled_ = msg->data; }
 
-        grid.resize(height);
-        for (int y = 0; y < height; ++y)
+    bool PlannerNode::worldToGrid(double wx, double wy, int &gx, int &gy) const
+    {
+        if (!received_map_)
         {
-            grid[y].resize(width);
-            for (int x = 0; x < width; ++x)
-            {
-                int index = y * width + x;
-                int value = msg->data[index];
-                if (value == 0)
-                    grid[y][x] = 0;
-                else
-                    grid[y][x] = 1;
-            }
+            RCLCPP_WARN(get_logger(), "[worldToGrid] Map not received yet.");
+            return false;
         }
 
-        RCLCPP_INFO(this->get_logger(), "[MAP] Grid conversion complete");
+        gx = static_cast<int>((wx - map_origin_x_) / map_resolution_);
+        gy = static_cast<int>((wy - map_origin_y_) / map_resolution_);
+
+        bool in_bounds = gx >= 0 && gy >= 0 &&
+                         gy < static_cast<int>(grid.size()) &&
+                         gx < static_cast<int>(grid[0].size());
+
+        RCLCPP_INFO(get_logger(),
+                    "[worldToGrid] wx=%.2f wy=%.2f -> gx=%d gy=%d (origin: %.2f, %.2f / res: %.3f / size: %zu x %zu) -> %s",
+                    wx, wy, gx, gy,
+                    map_origin_x_, map_origin_y_, map_resolution_,
+                    grid.empty() ? 0 : grid[0].size(), grid.size(),
+                    in_bounds ? "OK" : "OUT OF BOUNDS");
+
+        return in_bounds;
     }
 
     void PlannerNode::timer_callback()
     {
-        if (!path_ready_)
+        RCLCPP_INFO(get_logger(), "timer triggered. map: %s, nav: %s",
+                    received_map_ ? "yes" : "no",
+                    nav_enabled_ ? "yes" : "no");
+
+        if (!received_map_ || !nav_enabled_)
             return;
 
-        geometry_msgs::msg::TransformStamped tf;
-        try
+        int sx, sy, gx, gy;
+
+        // 現在地の座標をグリッドに変換
+        if (!worldToGrid(current_pose_.position.x, current_pose_.position.y, sx, sy))
         {
-            tf = tf_buffer_->lookupTransform("map", "base_link", tf2::TimePointZero);
-        }
-        catch (tf2::TransformException &ex)
-        {
-            RCLCPP_WARN(this->get_logger(), "Transform failed: %s", ex.what());
+            RCLCPP_WARN(get_logger(), "Failed to convert current pose to grid");
             return;
         }
 
-        current_pose_.position.x = tf.transform.translation.x;
-        current_pose_.position.y = tf.transform.translation.y;
-        current_pose_.orientation = tf.transform.rotation;
-
-        int start_x = static_cast<int>(current_pose_.position.x);
-        int start_y = static_cast<int>(current_pose_.position.y);
-        int goal_x = static_cast<int>(goal_rcv_.x);
-        int goal_y = static_cast<int>(goal_rcv_.y);
-
-        if (!path_ready_)
+        // ゴールの座標をグリッドに変換
+        if (!worldToGrid(goal_rcv_.x, goal_rcv_.y, gx, gy))
         {
-            RCLCPP_INFO(this->get_logger(), "[TIMER] Starting A* from (%d, %d) to (%d, %d)", start_x, start_y, goal_x, goal_y);
-            current_path_ = a_star(grid, start_x, start_y, goal_x, goal_y);
-            path_index_ = 0;
-            path_ready_ = !current_path_.empty();
-            if (!path_ready_)
-            {
-                RCLCPP_WARN(this->get_logger(), "[TIMER] Failed to find path.");
-                return;
-            }
-
-            RCLCPP_INFO(this->get_logger(), "[TIMER] A* path found with %zu points", current_path_.size());
-
-            nav_msgs::msg::Path path_msg;
-            path_msg.header.stamp = this->now();
-            path_msg.header.frame_id = "map";
-
-            for (const auto &pt : current_path_)
-            {
-                geometry_msgs::msg::PoseStamped pose;
-                pose.header = path_msg.header;
-                pose.pose.position.x = pt.first;
-                pose.pose.position.y = pt.second;
-                pose.pose.position.z = 0.0;
-                pose.pose.orientation.w = 1.0;
-                path_msg.poses.push_back(pose);
-            }
-
-            // ✨ 補間処理開始
-            nav_msgs::msg::Path interpolated_path;
-            interpolated_path.header = path_msg.header;
-            double desired_spacing = 0.2;
-
-            RCLCPP_INFO(this->get_logger(), "[TIMER] Starting interpolation...");
-
-            interpolated_path.poses.push_back(path_msg.poses.front());
-            for (size_t i = 1; i < path_msg.poses.size(); ++i)
-            {
-                auto p1 = path_msg.poses[i - 1].pose.position;
-                auto p2 = path_msg.poses[i].pose.position;
-                double dist = std::hypot(p2.x - p1.x, p2.y - p1.y);
-                int steps = std::max(1, static_cast<int>(dist / desired_spacing));
-                for (int j = 1; j < steps; ++j)
-                {
-                    double ratio = static_cast<double>(j) / steps;
-                    geometry_msgs::msg::PoseStamped interp;
-                    interp.header = path_msg.header;
-                    interp.pose.position.x = p1.x + ratio * (p2.x - p1.x);
-                    interp.pose.position.y = p1.y + ratio * (p2.y - p1.y);
-                    interp.pose.position.z = 0.0;
-                    interp.pose.orientation.w = 1.0;
-                    interpolated_path.poses.push_back(interp);
-                }
-                interpolated_path.poses.push_back(path_msg.poses[i]);
-            }
-
-            RCLCPP_INFO(this->get_logger(), "[TIMER] Interpolation complete with %zu poses", interpolated_path.poses.size());
-
-            planned_path_pub_->publish(interpolated_path);
-            draw_path_on_map(current_path_);
+            RCLCPP_WARN(get_logger(), "Failed to convert goal to grid");
+            return;
         }
 
-    } // namespace aster
+        // デバッグ用ログ出力
+        RCLCPP_INFO(get_logger(), "Current pose: (%.2f, %.2f)", current_pose_.position.x, current_pose_.position.y);
+        RCLCPP_INFO(get_logger(), "Start cell: (%d, %d), Goal cell: (%d, %d)", sx, sy, gx, gy);
+
+        // セルの有効性チェック
+        if (!isValid(sx, sy, grid))
+        {
+            RCLCPP_WARN(get_logger(), "Start cell (%d,%d) is invalid", sx, sy);
+            return;
+        }
+
+        if (!isValid(gx, gy, grid))
+        {
+            RCLCPP_WARN(get_logger(), "Goal cell (%d,%d) is invalid", gx, gy);
+            return;
+        }
+
+        // 経路生成
+        current_path_ = a_star(grid, sx, sy, gx, gy);
+
+        if (current_path_.empty())
+        {
+            RCLCPP_WARN(get_logger(), "A* failed to find path");
+            return;
+        }
+
+        RCLCPP_INFO(get_logger(), "Path found with %zu points", current_path_.size());
+
+        // パスをメッセージに変換して配信
+        nav_msgs::msg::Path msg;
+        msg.header.stamp = now();
+        msg.header.frame_id = "map";
+
+        for (auto [cx, cy] : current_path_)
+        {
+            geometry_msgs::msg::PoseStamped p;
+            p.header = msg.header;
+            gridToWorld(cx, cy, p.pose.position.x, p.pose.position.y);
+            p.pose.orientation.w = 1.0;
+            msg.poses.push_back(std::move(p));
+        }
+
+        path_pub_->publish(msg);
+        draw_path_on_map(current_path_);
+    }
+
     void PlannerNode::draw_path_on_map(const std::vector<std::pair<int, int>> &path)
     {
         if (!received_map_)
-        {
-            RCLCPP_WARN(this->get_logger(), "Map not received yet, cannot draw path.");
             return;
-        }
+        auto m = latest_map_;
+        int w = m.info.width;
+        for (auto [gx, gy] : path)
+            if (gx >= 0 && gy >= 0 && gy < (int)m.info.height && gx < w)
+                m.data[gy * w + gx] = 50;
+        map_with_path_pub_->publish(m);
+    }
+    void PlannerNode::pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+    {
+        current_pose_.position = msg->pose.pose.position;
+        current_pose_.orientation = msg->pose.pose.orientation;
 
-        RCLCPP_INFO(this->get_logger(), "[DRAW] Drawing path on map, length: %zu", path.size());
-
-        nav_msgs::msg::OccupancyGrid path_map = latest_map_;
-        int width = path_map.info.width;
-        int height = path_map.info.height;
-
-        for (const auto &pt : path)
-        {
-            int x = pt.first;
-            int y = pt.second;
-
-            if (x >= 0 && x < width && y >= 0 && y < height)
-            {
-                int index = y * width + x;
-                path_map.data[index] = 50; // グレーで経路を示す
-            }
-        }
-
-        map_with_path_pub_->publish(path_map);
-
-        RCLCPP_INFO(this->get_logger(), "[DRAW] Path drawn and published to map_with_path");
+        RCLCPP_INFO(get_logger(), "[POSE] x=%.2f y=%.2f",
+                    current_pose_.position.x, current_pose_.position.y);
     }
 
-}
+} // namespace aster
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
