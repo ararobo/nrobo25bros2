@@ -103,6 +103,10 @@ namespace aster
                 grid[y][x] = (msg->data[y * w + x] == 0) ? 0 : 1;
         // 再計算トリガ
         path_ready_ = false;
+        RCLCPP_WARN(get_logger(),
+                    "[MAP] origin(%.2f, %.2f)  res=%.3f  size=%u x %u",
+                    map_origin_x_, map_origin_y_, map_resolution_,
+                    msg->info.width, msg->info.height);
     }
 
     void PlannerNode::goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg)
@@ -123,6 +127,7 @@ namespace aster
 
         gx = static_cast<int>((wx - map_origin_x_) / map_resolution_);
         gy = static_cast<int>((wy - map_origin_y_) / map_resolution_);
+        RCLCPP_INFO(get_logger(), "GX: %d, GY: %d", gx, gy);
 
         bool in_bounds = gx >= 0 && gy >= 0 &&
                          gy < static_cast<int>(grid.size()) &&
@@ -149,7 +154,6 @@ namespace aster
 
         int sx, sy, gx, gy;
 
-        // 現在地の座標をグリッドに変換
         if (!worldToGrid(current_pose_.position.x, current_pose_.position.y, sx, sy))
         {
             RCLCPP_WARN(get_logger(), "Failed to convert current pose to grid");
