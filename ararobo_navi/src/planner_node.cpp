@@ -88,6 +88,12 @@ namespace aster
         return {};
     }
 
+    void PlannerNode::gridToWorld(int gx, int gy, double &wx, double &wy) const
+    {
+        wx = gx * map_resolution_ + map_origin_x_ + map_resolution_ / 2.0;
+        wy = gy * map_resolution_ + map_origin_y_ + map_resolution_ / 2.0;
+    }
+
     void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
     {
         latest_map_ = *msg;
