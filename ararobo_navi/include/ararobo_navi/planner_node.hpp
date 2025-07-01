@@ -84,7 +84,7 @@ namespace aster
     bool path_ready_{false};
     bool received_map_{false};
     bool nav_enabled_{true};
-
+    bool grid_ready_{false};
     double map_resolution_{1.0};
     double map_origin_x_{0.0};
     double map_origin_y_{0.0};

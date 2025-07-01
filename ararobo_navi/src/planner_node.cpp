@@ -109,6 +109,7 @@ namespace aster
                 grid[y][x] = (msg->data[y * w + x] == 0) ? 0 : 1;
         // 再計算トリガ
         path_ready_ = false;
+        grid_ready_ = true;
         RCLCPP_WARN(get_logger(),
                     "[MAP] origin(%.2f, %.2f)  res=%.3f  size=%u x %u",
                     map_origin_x_, map_origin_y_, map_resolution_,
@@ -155,7 +156,7 @@ namespace aster
                     received_map_ ? "yes" : "no",
                     nav_enabled_ ? "yes" : "no");
 
-        if (!received_map_ || !nav_enabled_)
+        if (!received_map_ || !nav_enabled_ || !grid_ready_)
             return;
 
         int sx, sy, gx, gy;
