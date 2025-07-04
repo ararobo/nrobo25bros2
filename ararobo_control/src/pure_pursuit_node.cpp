@@ -18,8 +18,7 @@ public:
             "/pose", 10,
             std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
-            "/path", 10,
-            std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
+            "planned_path", 10, std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     }
 
@@ -87,7 +86,7 @@ private:
         m.getRPY(roll, pitch, yaw);
         RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
 
-        // ロボット座標系に変換
+        // ロボットの座標系に変換
         double dx = target.pose.position.x - current_pose.pose.position.x;
         double dy = target.pose.position.y - current_pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
@@ -95,13 +94,22 @@ private:
         RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
 
         geometry_msgs::msg::Twist cmd;
-        if (local_x > 1.0)
+
+        // 最大速度制限
+        double v = local_x;
+        if (v > 1.0)
         {
-            local_x = 1.0; // 最大速度制限
+            v = 1.0;
         }
-        if (local_y > 1.0)
+        if (v < -1.0)
         {
-            local_y = 1.0; // 最大速度制限
+            v = -1.0;
+        }
+        // 曲率計算
+        double L = lookahead_distance;
+        if (L < 1e-6)
+        {
+            L = 1e-6; // 0除算防止
         }
         cmd.linear.x = local_x; // 前進速度
         cmd.linear.y = local_y; // 側方速度
