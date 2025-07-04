@@ -15,15 +15,14 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
+add_executable(planner_node src/planner_node.cpp)
 
-add_executable(navi_node src/navi_node.cpp)
-
-target_include_directories(navi_node PUBLIC
+target_include_directories(planner_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(navi_node
+ament_target_dependencies(planner_node
   rclcpp
   geometry_msgs
   nav_msgs
@@ -34,7 +33,7 @@ ament_target_dependencies(navi_node
 )
 
 install(TARGETS
-  navi_node
+  planner_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

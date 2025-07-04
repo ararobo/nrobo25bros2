@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "core_node = ararobo_core.core_node:main"
         ],
     },
 )

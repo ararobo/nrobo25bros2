@@ -12,9 +12,11 @@ public:
     {
         this->declare_parameter("lookahead_distance", 1.0);
         this->get_parameter("lookahead_distance", lookahead_distance);
+        RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
 
         pose_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/current_pose", 10, std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
+            "/pose", 10,
+            std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
             "planned_path", 10, std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
@@ -34,10 +36,14 @@ private:
     void path_callback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         path = *msg;
+        RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
+
     void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
         current_pose = *msg;
+        RCLCPP_INFO(this->get_logger(), "Current Pose: x=%.2f, y=%.2f",
+                    current_pose.pose.position.x, current_pose.pose.position.y);
         compute_control();
     }
 
@@ -50,16 +56,20 @@ private:
         {
             double dx = pose.pose.position.x - current_pose.pose.position.x;
             double dy = pose.pose.position.y - current_pose.pose.position.y;
-            if (std::hypot(dx, dy) >= lookahead_distance)
+            double dist = std::hypot(dx, dy);
+            if (dist >= lookahead_distance)
             {
                 target = pose;
                 found = true;
+                RCLCPP_INFO(this->get_logger(), "Target found: x=%.2f, y=%.2f (dist=%.2f)",
+                            target.pose.position.x, target.pose.position.y, dist);
                 break;
             }
         }
 
         if (!found)
         {
+            RCLCPP_WARN(this->get_logger(), "No suitable target found.");
             return;
         }
 
@@ -72,12 +82,14 @@ private:
         tf2::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
+        RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
 
         // ロボットの座標系に変換
         double dx = target.pose.position.x - current_pose.pose.position.x;
         double dy = target.pose.position.y - current_pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
         double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
+        RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
 
         geometry_msgs::msg::Twist cmd;
 
@@ -97,11 +109,11 @@ private:
         {
             L = 1e-6; // 0除算防止
         }
-        double curvature = 2.0 * local_y / (L * L);
+        cmd.linear.x = local_x; // 前進速度
+        cmd.linear.y = local_y; // 側方速度
 
-        cmd.linear.x = v;              // 前進速度
-        cmd.linear.y = local_y;        // 側方速度（通常は0）
-        cmd.angular.z = v * curvature; // 角速度
+        RCLCPP_INFO(this->get_logger(), "Publishing cmd_vel: linear.x=%.2f, linear.y=%.2f",
+                    cmd.linear.x, cmd.linear.y);
 
         cmd_pub->publish(cmd);
     }
