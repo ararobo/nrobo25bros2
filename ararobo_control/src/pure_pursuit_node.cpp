@@ -4,6 +4,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -14,7 +15,7 @@ public:
         this->get_parameter("lookahead_distance", lookahead_distance);
         RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
 
-        pose_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        pose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "/pose", 10,
             std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
@@ -24,7 +25,7 @@ public:
     }
 
 private:
-    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
 
@@ -40,11 +41,16 @@ private:
         RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
 
-    void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
     {
-        current_pose = *msg;
+        RCLCPP_INFO(this->get_logger(), "pose_callback called");
+
+        current_pose.header = msg->header;
+        current_pose.pose = msg->pose.pose; // ← ここで Pose を代入！
+
         RCLCPP_INFO(this->get_logger(), "Current Pose: x=%.2f, y=%.2f",
                     current_pose.pose.position.x, current_pose.pose.position.y);
+
         compute_control();
     }
 
