@@ -3,6 +3,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Bool
 from visualization_msgs.msg import Marker
+from std_msgs.msg import String
 
 class core_node(Node):
     def __init__(self):
@@ -11,9 +12,10 @@ class core_node(Node):
         self.box = self.create_subscription(Marker,"/box/box",self.box_callback,10)
         self.box_select = self.create_publisher(Marker,"/box/boxselect",10)
         self.goal = self.create_publisher(Pose2D,"/nav/goal",10)
-        self.controller = self.create_subscription(Bool,"/controller",self.controller_callback,10)
-        self.timer = self.create_timer(0.5, self.controller_callback)
-        self.timer_goal = self.create_timer(0.5, self.goal_callback)
+        self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
+        #self.timer = self.create_timer(0.5, self.controller_callback)
+        self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
+        #self.timer_box = self.create_timer(0.5, self.box_callback)
 
         self.box_coller = 0
         self.team = "red"
@@ -27,21 +29,18 @@ class core_node(Node):
         self.gpub_y = 0.0
         self.serect_boxID = 0
 
-    def controller_callback(self, msg):
+    def controller_callback(self, msg: String):
         self.get_logger().info(f'Received contrpller message: {msg}')
         # Process the goal message and publish to nav/goal if needed
         self.cmd = msg
         cmds = msg.cmd.split(',')
         if msg.cmd == "start":
-            msg.data = f"{self.startarea}"
             self.gpub_x = self.startart_x
             self.gpub_y = self.startart_y
         elif msg.cmd == "g2":
-            msg.data = f"{self.g2}"
             self.gpub_x = self.g2_x
             self.gpub_y = self.g2_y
         elif msg.cmd == "g3":
-            msg.data = f"{self.g3}"
             self.gpub_x = self.g3_x
             self.gpub_y = self.g3_y
         elif cmds[0] == "box":
@@ -55,15 +54,12 @@ class core_node(Node):
                 self.serect_boxID = 4
         else:
             self.get_logger().warn(f'Unknown command received: {msg.cmd}')
-            return
 
-    def goal_callback(self, msg):
-        self.get_logger().info(f'Received goal message: {msg}')
-        # Process the goal message and publish to nav/goal if needed
-        self.goal.publish(msg)            
+    def goal_timer_callback(self):
+        msg = Pose2D()
         msg.x = self.gpub_x
         msg.y = self.gpub_y
-        self.pub.publish(msg)
+        self.goal.publish(msg)
         self.get_logger().info(f'Published_goal: x={msg.x}, y={msg.y}')
                 
     def box_callback(self, msg):
