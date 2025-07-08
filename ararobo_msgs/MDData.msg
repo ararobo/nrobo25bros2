@@ -1,8 +1,8 @@
-float ur;    // 上アーム右位置[m]
-float ul;    // 上アーム左位置[m]
-float lr;    // 下アーム右位置[m]
-float ll;    // 下アーム左位置[m]
-float ur_w;  // 右上アーム幅[m]
-float ul_w;  // 左上アーム幅[m]
-float lr_w;  // 右上アーム幅[m]
-float ll_w;  // 左上アーム幅[m]
+float32 ur
+float32 ul
+float32 lr
+float32 ll
+float32 ur_w
+float32 ul_w
+float32 lr_w
+float32 ll_w
