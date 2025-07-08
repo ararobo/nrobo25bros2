@@ -25,8 +25,8 @@ class core_node(Node):
         self.g2_y = 0.0
         self.g3_x = 0.0
         self.g3_y = 0.0
-        self.gpub_x = 0.0
-        self.gpub_y = 0.0
+        self.gpub_x = -10000.0
+        self.gpub_y = -10000.0
         self.serect_boxID = 0
 
     def controller_callback(self, msg: String):
@@ -52,15 +52,18 @@ class core_node(Node):
                 self.serect_boxID = 3
             elif cmds[1] == "4":
                 self.serect_boxID = 4
-        else:
-            self.get_logger().warn(f'Unknown command received: {msg.cmd}')
 
     def goal_timer_callback(self):
         msg = Pose2D()
         msg.x = self.gpub_x
         msg.y = self.gpub_y
-        self.goal.publish(msg)
-        self.get_logger().info(f'Published_goal: x={msg.x}, y={msg.y}')
+        if msg.x != -10000.0 and msg.y != -10000.0:
+            self.goal.publish(msg)
+            self.get_logger().info(f'Published_goal: x={msg.x}, y={msg.y}')
+        else:
+            self.get_logger().warn('No valid goal to publish, skipping.')
+        self.gpub_x = -10000.0
+        self.gpub_y = -10000.0
                 
     def box_callback(self, msg):
         self.get_logger().info(f'Received box message: {msg}')
