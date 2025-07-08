@@ -28,7 +28,7 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
 
-    geometry_msgs::msg::PoseStamped current_pose;
+    geometry_msgs::msg::PoseWithCovarianceStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
 
@@ -40,12 +40,12 @@ private:
         RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
 
-    void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
     {
         RCLCPP_INFO(this->get_logger(), "pose_callback called");
         current_pose = *msg;
         RCLCPP_INFO(this->get_logger(), "Current Pose: x=%.2f, y=%.2f",
-                    current_pose.pose.position.x, current_pose.pose.position.y);
+                    current_pose.pose.pose.position.x, current_pose.pose.pose.position.y);
         compute_control();
     }
 
@@ -56,8 +56,8 @@ private:
 
         for (const auto &pose : path.poses)
         {
-            double dx = pose.pose.position.x - current_pose.pose.position.x;
-            double dy = pose.pose.position.y - current_pose.pose.position.y;
+            double dx = pose.pose.position.x - current_pose.pose.pose.position.x;
+            double dy = pose.pose.position.y - current_pose.pose.pose.position.y;
             double dist = std::hypot(dx, dy);
             if (dist >= lookahead_distance)
             {
@@ -77,18 +77,18 @@ private:
 
         // 現在の姿勢からyow角を取得
         tf2::Quaternion q(
-            current_pose.pose.orientation.x,
-            current_pose.pose.orientation.y,
-            current_pose.pose.orientation.z,
-            current_pose.pose.orientation.w);
+            current_pose.pose.pose.orientation.x,
+            current_pose.pose.pose.orientation.y,
+            current_pose.pose.pose.orientation.z,
+            current_pose.pose.pose.orientation.w);
         tf2::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
 
         // ロボット座標系に変換
-        double dx = target.pose.position.x - current_pose.pose.position.x;
-        double dy = target.pose.position.y - current_pose.pose.position.y;
+        double dx = target.pose.position.x - current_pose.pose.pose.position.x;
+        double dy = target.pose.position.y - current_pose.pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
         double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
         RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
