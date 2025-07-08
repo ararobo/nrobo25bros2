@@ -11,7 +11,7 @@ class core_node(Node):
         self.get_logger().info('CoreNode has been initialized.')
         self.box = self.create_subscription(Marker,"/box/box",self.box_callback,10)
         self.box_select = self.create_publisher(Marker,"/box/boxselect",10)
-        self.goal = self.create_publisher(Pose2D,"/nav/goal",10)
+        self.goal = self.create_publisher(Pose2D,"goal_pose",10)
         self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
         #self.timer = self.create_timer(0.5, self.controller_callback)
         self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
