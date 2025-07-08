@@ -32,15 +32,15 @@ class core_node(Node):
     def controller_callback(self, msg: String):
         self.get_logger().info(f'Received contrpller message: {msg}')
         # Process the goal message and publish to nav/goal if needed
-        self.cmd = msg
-        cmds = msg.cmd.split(',')
-        if msg.cmd == "start":
+        self.cmd = msg.data
+        cmds = msg.data.split(',')
+        if msg.data == "start":
             self.gpub_x = self.startart_x
             self.gpub_y = self.startart_y
-        elif msg.cmd == "g2":
+        elif msg.data == "g2":
             self.gpub_x = self.g2_x
             self.gpub_y = self.g2_y
-        elif msg.cmd == "g3":
+        elif msg.data == "g3":
             self.gpub_x = self.g3_x
             self.gpub_y = self.g3_y
         elif cmds[0] == "box":
