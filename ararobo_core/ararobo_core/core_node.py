@@ -21,10 +21,10 @@ class core_node(Node):
         self.team = "red"
         self.startart_x = 0.0
         self.startart_y = 0.0
-        self.g2_x = 0.0
-        self.g2_y = 0.0
-        self.g3_x = 0.0
-        self.g3_y = 0.0
+        self.g2_x = 20.0
+        self.g2_y = 20.0
+        self.g3_x = 30.0
+        self.g3_y = 30.0
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
         self.serect_boxID = 0
