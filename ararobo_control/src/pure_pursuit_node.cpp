@@ -5,10 +5,11 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+
 class PurePursuitNode : public rclcpp::Node
 {
 public:
-    PurePursuitNode() : Node("pure_pursuit")
+    PurePursuitNode() : Node("pure_pursuit"), pose_received(false)
     {
         this->declare_parameter("lookahead_distance", 1.0);
         this->get_parameter("lookahead_distance", lookahead_distance);
@@ -21,19 +22,24 @@ public:
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+
+        // タイマーのコールバックを timer_callback() に変更
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(100),
+            std::bind(&PurePursuitNode::timer_callback, this));
     }
 
 private:
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
+    rclcpp::TimerBase::SharedPtr timer_;
 
     geometry_msgs::msg::PoseWithCovarianceStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
+    bool pose_received;
 
-    // コールバック関数
-    // パスと現在の姿勢をメンバ関数に保存
     void path_callback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         path = *msg;
@@ -42,15 +48,27 @@ private:
 
     void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
     {
-        RCLCPP_INFO(this->get_logger(), "pose_callback called");
         current_pose = *msg;
-        RCLCPP_INFO(this->get_logger(), "Current Pose: x=%.2f, y=%.2f",
+        pose_received = true;
+        RCLCPP_INFO(this->get_logger(), "Pose received: x=%.2f, y=%.2f",
                     current_pose.pose.pose.position.x, current_pose.pose.pose.position.y);
-        compute_control();
     }
 
-    void compute_control()
+    // compute_control -> timer_callback に変更
+    void timer_callback()
     {
+        if (!pose_received)
+        {
+            RCLCPP_WARN(this->get_logger(), "No pose received yet. Skipping control.");
+            return;
+        }
+
+        if (path.poses.empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "No path received yet. Skipping control.");
+            return;
+        }
+
         geometry_msgs::msg::PoseStamped target;
         bool found = false;
 
@@ -75,7 +93,6 @@ private:
             return;
         }
 
-        // 現在の姿勢からyow角を取得
         tf2::Quaternion q(
             current_pose.pose.pose.orientation.x,
             current_pose.pose.pose.orientation.y,
@@ -86,7 +103,6 @@ private:
         m.getRPY(roll, pitch, yaw);
         RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
 
-        // ロボット座標系に変換
         double dx = target.pose.position.x - current_pose.pose.pose.position.x;
         double dy = target.pose.position.y - current_pose.pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
@@ -94,20 +110,13 @@ private:
         RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
 
         geometry_msgs::msg::Twist cmd;
-        if (local_x > 1.0)
-        {
-            local_x = 1.0; // 最大速度制限
-        }
-        if (local_y > 1.0)
-        {
-            local_y = 1.0; // 最大速度制限
-        }
-        cmd.linear.x = local_x; // 前進速度
-        cmd.linear.y = local_y; // 側方速度
+        if (local_x > 1.0) local_x = 1.0;
+        if (local_y > 1.0) local_y = 1.0;
+        cmd.linear.x = local_x;
+        cmd.linear.y = local_y;
 
         RCLCPP_INFO(this->get_logger(), "Publishing cmd_vel: linear.x=%.2f, linear.y=%.2f",
                     cmd.linear.x, cmd.linear.y);
-
         cmd_pub->publish(cmd);
     }
 };
