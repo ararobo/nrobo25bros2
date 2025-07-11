@@ -14,6 +14,7 @@ find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(ararobo_msgs REQUIRED)
 
 set(dependencies
   rclcpp
@@ -23,12 +24,14 @@ set(dependencies
   tf2
   tf2_ros
   tf2_geometry_msgs
+  ararobo_msgs
 )
 
 # robot
 add_executable(operation_node src/operation_node.cpp src/simple_udp.cpp)
 
 ament_target_dependencies(operation_node
+  ararobo_msgs
   ${dependencies}
 )
 

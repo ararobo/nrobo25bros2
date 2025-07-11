@@ -14,7 +14,7 @@ find_package(rosidl_default_generators REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 set(msg_files
-  "MDData.msg"
+  "msg/MdData.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

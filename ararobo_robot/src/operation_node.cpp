@@ -31,6 +31,14 @@ void OperationNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr 
     operation_data.vx = msg->linear.x;     // x軸方向の速度[m/s]
     operation_data.vy = msg->linear.y;     // y軸方向の速度[m/s]
     operation_data.omega = msg->angular.z; // 回転速度[rad/s]
+    operation_data.ur = 0.0;               // 上アーム右位置[m] (初期値)
+    operation_data.ul = 0.0;               // 上アーム左位置[m]
+    operation_data.lr = 0.0;               // 下アーム右位置[m]
+    operation_data.ll = 0.0;               // 下アーム左位置[m]
+    operation_data.ur_w = 0.0;             // 右上アーム幅[m] (初期値)
+    operation_data.ul_w = 0.0;             // 左上アーム幅[m]
+    operation_data.lr_w = 0.0;             // 右下アーム幅[m]
+    operation_data.ll_w = 0.0;             // 左下アーム幅[m]
     RCLCPP_INFO(this->get_logger(), "cmd_vel: linear.x: %f, linear.y: %f, angular.z: %f",
                 msg->linear.x, msg->linear.y, msg->angular.z);
 }
