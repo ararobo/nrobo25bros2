@@ -5,19 +5,20 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 class PurePursuitNode : public rclcpp::Node
 {
 public:
-    PurePursuitNode() : Node("pure_pursuit"), pose_received(false)
+    PurePursuitNode() : Node("pure_pursuit")
     {
+        tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
         this->declare_parameter("lookahead_distance", 1.0);
         this->get_parameter("lookahead_distance", lookahead_distance);
         RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
 
-        pose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            "/pose", 10,
-            std::bind(&PurePursuitNode::pose_callback, this, std::placeholders::_1));
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
@@ -27,6 +28,8 @@ public:
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&PurePursuitNode::timer_callback, this));
+
+        RCLCPP_INFO(this->get_logger(), "Pure Pursuit Node initialized.");
     }
 
 private:
@@ -35,10 +38,12 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
     rclcpp::TimerBase::SharedPtr timer_;
 
-    geometry_msgs::msg::PoseWithCovarianceStamped current_pose;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+
+    geometry_msgs::msg::PoseStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
-    bool pose_received;
 
     void path_callback(const nav_msgs::msg::Path::SharedPtr msg)
     {
@@ -46,20 +51,26 @@ private:
         RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
 
-    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
-    {
-        current_pose = *msg;
-        pose_received = true;
-        RCLCPP_INFO(this->get_logger(), "Pose received: x=%.2f, y=%.2f",
-                    current_pose.pose.pose.position.x, current_pose.pose.pose.position.y);
-    }
-
     // compute_control -> timer_callback に変更
     void timer_callback()
     {
-        if (!pose_received)
+        geometry_msgs::msg::PoseStamped pose;
+        try
         {
-            RCLCPP_WARN(this->get_logger(), "No pose received yet. Skipping control.");
+            // Get current pose
+            geometry_msgs::msg::TransformStamped transform = tf_buffer_->lookupTransform("map", "base_link", tf2::TimePointZero);
+            pose.pose.position.x = transform.transform.translation.x;
+            pose.pose.position.y = transform.transform.translation.y;
+            pose.pose.position.z = transform.transform.translation.z;
+            pose.pose.orientation.x = transform.transform.rotation.x;
+            pose.pose.orientation.y = transform.transform.rotation.y;
+            pose.pose.orientation.z = transform.transform.rotation.z;
+            pose.pose.orientation.w = transform.transform.rotation.w;
+            current_pose = pose;
+        }
+        catch (tf2::TransformException &ex)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Could not get transform: %s", ex.what());
             return;
         }
 
@@ -72,14 +83,14 @@ private:
         geometry_msgs::msg::PoseStamped target;
         bool found = false;
 
-        for (const auto &pose : path.poses)
+        for (const auto &path_pose : path.poses)
         {
-            double dx = pose.pose.position.x - current_pose.pose.pose.position.x;
-            double dy = pose.pose.position.y - current_pose.pose.pose.position.y;
+            double dx = path_pose.pose.position.x - current_pose.pose.position.x;
+            double dy = path_pose.pose.position.y - current_pose.pose.position.y;
             double dist = std::hypot(dx, dy);
             if (dist >= lookahead_distance)
             {
-                target = pose;
+                target = path_pose;
                 found = true;
                 RCLCPP_INFO(this->get_logger(), "Target found: x=%.2f, y=%.2f (dist=%.2f)",
                             target.pose.position.x, target.pose.position.y, dist);
@@ -94,24 +105,26 @@ private:
         }
 
         tf2::Quaternion q(
-            current_pose.pose.pose.orientation.x,
-            current_pose.pose.pose.orientation.y,
-            current_pose.pose.pose.orientation.z,
-            current_pose.pose.pose.orientation.w);
+            current_pose.pose.orientation.x,
+            current_pose.pose.orientation.y,
+            current_pose.pose.orientation.z,
+            current_pose.pose.orientation.w);
         tf2::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
 
-        double dx = target.pose.position.x - current_pose.pose.pose.position.x;
-        double dy = target.pose.position.y - current_pose.pose.pose.position.y;
+        double dx = target.pose.position.x - current_pose.pose.position.x;
+        double dy = target.pose.position.y - current_pose.pose.position.y;
         double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
         double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
         RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
 
         geometry_msgs::msg::Twist cmd;
-        if (local_x > 1.0) local_x = 1.0;
-        if (local_y > 1.0) local_y = 1.0;
+        if (local_x > 1.0)
+            local_x = 1.0;
+        if (local_y > 1.0)
+            local_y = 1.0;
         cmd.linear.x = local_x;
         cmd.linear.y = local_y;
 
