@@ -16,18 +16,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         Node(
-            package='ararobo_robot',
-            executable='operation_node',
-            name='operation_node',
-            output='screen'
-        ),
-        Node(
-            package='ararobo_robot',
-            executable='feedback_node',
-            name='feedback_node',
-            output='screen'
-        ),
-        Node(
             package='ararobo_navi',
             executable='planner_node',
             name='planner_node',
@@ -37,12 +25,6 @@ def generate_launch_description():
             package='ararobo_control',
             executable='pure_pursuit_node',
             name='pure_pursuit_node',
-            output='screen'
-        ),
-        Node(
-            package='ararobo_core',
-            executable='core_node',
-            name='core_node',
             output='screen'
         ),
         # 子となるlaunchファイルをインクルード
