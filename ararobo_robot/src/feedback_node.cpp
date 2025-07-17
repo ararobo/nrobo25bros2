@@ -97,7 +97,7 @@ void FeedbackNode::timer_callback()
 
     // `odom_calculator`で計算された速度 (m/s) をそのまま使用
     odom_msg.twist.twist.linear.x = -odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
-    odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
+    odom_msg.twist.twist.linear.y = -odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
 
     // 角速度の計算
     // prev_time が正しく初期化されていることを確認
