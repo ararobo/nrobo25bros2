@@ -25,7 +25,7 @@ private:
 
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
-    void lift_vel();
+    void lift_vel(std_msgs::msg::Float32::SharedPtr msg);
 
     void timer_callback();
 

@@ -38,9 +38,10 @@ void OperationNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr 
                 msg->linear.x, msg->linear.y, msg->angular.z);
 }
 
-void OperationNode::lift_vel()
+void OperationNode::lift_vel(std_msgs::msg::Float32::SharedPtr msg)
 {
-    operation_data.lift = 0.0;
+    operation_data.lift = msg->data; // リフトの速度[m/s]
+    RCLCPP_INFO(this->get_logger(), "lift_vel: %f", msg->data);
 }
 
 void OperationNode::timer_callback()
