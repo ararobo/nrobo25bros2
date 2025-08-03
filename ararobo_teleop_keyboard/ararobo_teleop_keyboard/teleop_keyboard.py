@@ -11,7 +11,7 @@ from ararobo_msgs.msg import MdData
 LINEAR_SPEED = 0.3  # m/s (forward/backward)
 STRAFE_SPEED = 0.3  # m/s (left/right strafe)
 ANGULAR_SPEED = 0.5 # rad/s (rotation)
-LIFT_VELOCITY = 0.1  # m/s (lift speed)
+LIFT_VELOCITY = 10.0  # rad/s (lift speed) max:40
 ARM_VELOCITY = 0.1  # m/s (arm speed)
 WIDTH_VELOCITY = 0.1  # m/s (width adjustment speed)
 TIMEOUT = 0.05       # seconds (timeout for key press detection)
