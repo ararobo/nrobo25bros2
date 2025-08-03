@@ -5,7 +5,7 @@
 #include "ararobo_robot/robot_data_config.hpp"
 #include "ararobo_robot/simple_udp.hpp"
 #include "ararobo_robot/ethernet_config.hpp"
-// #include "ararobo_msgs/msg/md_data.hpp"
+#include "ararobo_msgs/msg/md_data.hpp"
 
 class OperationNode : public rclcpp::Node
 {

@@ -4,6 +4,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
+#include <limits>
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
@@ -15,7 +16,7 @@ public:
     {
         tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-        this->declare_parameter("lookahead_distance", 1.0);
+        this->declare_parameter("lookahead_distance", 0.03);
         this->get_parameter("lookahead_distance", lookahead_distance);
         RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
 
@@ -80,28 +81,67 @@ private:
             return;
         }
 
+        // Find the closest point on the path to the current position
+        double min_distance = std::numeric_limits<double>::max();
+        int closest_index = 0;
+
+        for (size_t i = 0; i < path.poses.size(); ++i)
+        {
+            double dx = path.poses[i].pose.position.x - current_pose.pose.position.x;
+            double dy = path.poses[i].pose.position.y - current_pose.pose.position.y;
+            double dist = std::hypot(dx, dy);
+
+            if (dist < min_distance)
+            {
+                min_distance = dist;
+                closest_index = i;
+            }
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Closest point index: %d, distance: %.2f", closest_index, min_distance);
+
+        // Look for target point starting from the closest point
         geometry_msgs::msg::PoseStamped target;
         bool found = false;
 
-        for (const auto &path_pose : path.poses)
+        for (size_t i = closest_index; i < path.poses.size(); ++i)
         {
-            double dx = path_pose.pose.position.x - current_pose.pose.position.x;
-            double dy = path_pose.pose.position.y - current_pose.pose.position.y;
+            double dx = path.poses[i].pose.position.x - current_pose.pose.position.x;
+            double dy = path.poses[i].pose.position.y - current_pose.pose.position.y;
             double dist = std::hypot(dx, dy);
+
             if (dist >= lookahead_distance)
             {
-                target = path_pose;
+                target = path.poses[i];
                 found = true;
-                RCLCPP_INFO(this->get_logger(), "Target found: x=%.2f, y=%.2f (dist=%.2f)",
-                            target.pose.position.x, target.pose.position.y, dist);
+                RCLCPP_INFO(this->get_logger(), "Target found: x=%.2f, y=%.2f (dist=%.2f, index=%zu)",
+                            target.pose.position.x, target.pose.position.y, dist, i);
                 break;
             }
         }
 
+        // If no suitable target found, use the last point in the path
         if (!found)
         {
-            RCLCPP_WARN(this->get_logger(), "No suitable target found.");
-            return;
+            target = path.poses.back();
+            double dx = target.pose.position.x - current_pose.pose.position.x;
+            double dy = target.pose.position.y - current_pose.pose.position.y;
+            double dist = std::hypot(dx, dy);
+
+            RCLCPP_INFO(this->get_logger(), "Using last point as target: x=%.2f, y=%.2f (dist=%.2f)",
+                        target.pose.position.x, target.pose.position.y, dist);
+
+            // If we're very close to the final point, stop the robot
+            if (dist < 0.1) // 10cm tolerance
+            {
+                geometry_msgs::msg::Twist cmd;
+                cmd.linear.x = 0.0;
+                cmd.linear.y = 0.0;
+                cmd.angular.z = 0.0;
+                cmd_pub->publish(cmd);
+                RCLCPP_INFO(this->get_logger(), "Reached final goal, stopping robot.");
+                return;
+            }
         }
 
         tf2::Quaternion q(
