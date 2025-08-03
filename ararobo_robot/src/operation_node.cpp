@@ -16,6 +16,9 @@ OperationNode::OperationNode()
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "/cmd_vel", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
+    lift_vel_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/lift_vel", 10,
+        std::bind(&OperationNode::lift_vel, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&OperationNode::timer_callback, this));
 }
@@ -41,6 +44,11 @@ void OperationNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr 
     operation_data.ll_w = 0.0;             // 左下アーム幅[m]
     RCLCPP_INFO(this->get_logger(), "cmd_vel: linear.x: %f, linear.y: %f, angular.z: %f",
                 msg->linear.x, msg->linear.y, msg->angular.z);
+}
+
+void OperationNode::lift_vel()
+{
+    operation_data.lift = 0.0;
 }
 
 void OperationNode::timer_callback()
