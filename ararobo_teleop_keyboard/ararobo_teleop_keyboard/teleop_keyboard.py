@@ -5,10 +5,12 @@ import tty
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32
 
 LINEAR_SPEED = 0.3  # m/s (forward/backward)
 STRAFE_SPEED = 0.3  # m/s (left/right strafe)
 ANGULAR_SPEED = 0.5 # rad/s (rotation)
+LIFT_VELOCITY = 0.1  # m/s (lift speed)
 TIMEOUT = 0.05       # seconds (timeout for key press detection)
 
 KEY_MAPPINGS = {
@@ -39,7 +41,8 @@ class TeleopKeyboard(Node):
     """ROS 2 node for keyboard teleoperation."""
     def __init__(self):
         super().__init__('teleop_keyboard')
-        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.pub_cmd_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.pub_lift_ = self.create_publisher(Float32, '/lift_vel', 10)
         self.get_logger().info("Teleop Keyboard node started.")
 
         # Save original terminal settings
@@ -82,6 +85,8 @@ class TeleopKeyboard(Node):
                 target_linear_x = 0.0
                 target_linear_y = 0.0
                 target_angular_z = 0.0
+                
+                target_lift_vel = 0.0  # Default lift velocity
 
                 if key:
                     if key in KEY_MAPPINGS:
@@ -90,6 +95,10 @@ class TeleopKeyboard(Node):
                         target_linear_x = lx * LINEAR_SPEED
                         target_linear_y = ly * STRAFE_SPEED
                         target_angular_z = az * ANGULAR_SPEED
+                    elif key == '\x1b[A':  # Up Arrow
+                        target_lift_vel = LIFT_VELOCITY  # Lift up
+                    elif key == '\x1b[B':  # Down Arrow
+                        target_lift_vel = -LIFT_VELOCITY
                     elif key == '\x03':  # Ctrl+C
                         self.get_logger().info("Ctrl+C detected. Shutting down.")
                         break
@@ -111,7 +120,12 @@ class TeleopKeyboard(Node):
                 twist.angular.y = 0.0
                 twist.angular.z = self.angular_z
 
-                self.publisher_.publish(twist)
+                self.pub_cmd_.publish(twist)
+                
+                # Create and publish the Float32 message for lift velocity
+                lift_msg = Float32()
+                lift_msg.data = target_lift_vel
+                self.pub_lift_.publish(lift_msg)
 
         except Exception as e:
             self.get_logger().error(f"An error occurred: {e}")
