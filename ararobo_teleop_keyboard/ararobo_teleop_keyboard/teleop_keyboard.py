@@ -34,18 +34,22 @@ Control the Omni Robot:
   s: Move Backward
   a: Strafe Left
   d: Strafe Right
-  ->: Rotate Right
-  <-: Rotate Left
-    Up Arrow: Lift Up
-    Down Arrow: Lift Down
-    t: Decrease Left Low Width
-    g: Increase Left Low Width
-    f: Move Left Low Arm Down
-    h: Move Left Low Arm Up
-    i: Decrease Right Low Width
-    k: Increase Right Low Width
-    j: Move Right Low Arm Down
-    l: Move Right Low Arm Up
+  right: Rotate Right
+  left: Rotate Left
+
+Control the lift
+  up: Lift Up
+  down: Lift Down
+  
+Control the hand
+  t: Decrease Left Low Width
+  g: Increase Left Low Width
+  f: Move Left Low Arm Down
+  h: Move Left Low Arm Up
+  i: Decrease Right Low Width
+  k: Increase Right Low Width
+  j: Move Right Low Arm Down
+  l: Move Right Low Arm Up
 
 Ctrl-C to quit
 """
