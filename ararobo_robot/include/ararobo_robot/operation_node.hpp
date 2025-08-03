@@ -12,6 +12,7 @@ class OperationNode : public rclcpp::Node
 private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lift_vel_;
+    rclcpp::Subscription<ararobo_msgs::msg::MdData>::SharedPtr sub_md_data_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> udp;
 
@@ -25,7 +26,9 @@ private:
 
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
-    void lift_vel(std_msgs::msg::Float32::SharedPtr msg);
+    void lift_vel_callback(const std_msgs::msg::Float32::SharedPtr msg);
+
+    void md_data_callback(const ararobo_msgs::msg::MdData::SharedPtr msg);
 
     void timer_callback();
 
