@@ -127,21 +127,21 @@ class TeleopKeyboard(Node):
                     elif key == '\x1b[B':  # Down Arrow
                         target_lift_vel = -LIFT_VELOCITY
                     elif key == 't':
-                        target_ll_w = -WIDTH_VELOCITY  # Decrease left low width
+                        target_ul_w = -WIDTH_VELOCITY  # Decrease left low width
                     elif key == 'g':
-                        target_ll_w = WIDTH_VELOCITY
+                        target_ul_w = WIDTH_VELOCITY
                     elif key == 'f':
-                        target_ll = -ARM_VELOCITY  # Move left low arm down
+                        target_ul = -ARM_VELOCITY  # Move left low arm down
                     elif key == 'h':
-                        target_ll = ARM_VELOCITY
+                        target_ul = ARM_VELOCITY
                     elif key == 'i':
-                        target_lr_w = -WIDTH_VELOCITY
+                        target_ur_w = -WIDTH_VELOCITY
                     elif key == 'k':
-                        target_lr_w = WIDTH_VELOCITY
+                        target_ur_w = WIDTH_VELOCITY
                     elif key == 'j':
-                        target_lr = -ARM_VELOCITY
+                        target_ur = -ARM_VELOCITY
                     elif key == 'l':
-                        target_lr = ARM_VELOCITY
+                        target_ur = ARM_VELOCITY
                     elif key == '\x03':  # Ctrl+C
                         self.get_logger().info("Ctrl+C detected. Shutting down.")
                         break
