@@ -27,5 +27,5 @@ struct operation_data_t
     float ul_w;  // 左上アーム幅[m]
     float lr_w;  // 右上アーム幅[m]
     float ll_w;  // 左上アーム幅[m]
-    float lift;
+    float lift;  // 昇降
 } __attribute__((__packed__));

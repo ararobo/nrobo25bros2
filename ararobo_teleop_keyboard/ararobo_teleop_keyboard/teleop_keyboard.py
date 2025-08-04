@@ -10,17 +10,17 @@ from ararobo_msgs.msg import MdData
 
 LINEAR_SPEED = 0.3  # m/s (forward/backward)
 STRAFE_SPEED = 0.3  # m/s (left/right strafe)
-ANGULAR_SPEED = 0.5 # rad/s (rotation)
-LIFT_VELOCITY = 10.0  # rad/s (lift speed) max:40
-ARM_VELOCITY = 0.1  # m/s (arm speed)
-WIDTH_VELOCITY = 0.1  # m/s (width adjustment speed)
+ANGULAR_SPEED = 0.3 # rad/s (rotation)
+LIFT_VELOCITY = 30.0  # rad/s (lift speed) max:40
+ARM_VELOCITY = 1.0  # m/s (arm speed)
+WIDTH_VELOCITY = 1.0  # m/s (width adjustment speed)
 TIMEOUT = 0.05       # seconds (timeout for key press detection)
 
 KEY_MAPPINGS = {
-    'w': ( 1.0,  0.0,  0.0), # Forward (linear.x +)
-    's': (-1.0,  0.0,  0.0), # Backward (linear.x -)
-    'a': ( 0.0,  1.0,  0.0), # Strafe Left (linear.y +)
-    'd': ( 0.0, -1.0,  0.0), # Strafe Right (linear.y -)
+    'w': ( 0.0,  1.0,  0.0), # Forward (linear.y +)
+    's': (0.0,  -1.0,  0.0), # Backward (linear.y -)
+    'a': ( 1.0,  0.0,  0.0), # Strafe Left (linear.x +)
+    'd': (-1.0,  0.0,  0.0), # Strafe Right (linear.x -)
     '\x1b[C': ( 0.0,  0.0, -1.0), # Right Arrow (angular.z -)
     '\x1b[D': ( 0.0,  0.0,  1.0), # Left Arrow (angular.z +)
 }
