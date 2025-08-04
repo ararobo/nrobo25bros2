@@ -28,6 +28,7 @@ class core_node(Node):
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
         self.serect_boxID = 0
+        self.armpose = 1
 
     def controller_callback(self, msg: String):
         self.get_logger().info(f'Received contrpller message: {msg}')
@@ -52,6 +53,14 @@ class core_node(Node):
                 self.serect_boxID = 3
             elif cmds[1] == "4":
                 self.serect_boxID = 4
+        elif cmds[0] == "armpose":
+            if cmds[1] == "open":
+                self.armpose = 1
+            elif cmds[1] == "close":
+                self.armpose = 0
+            elif cmds[1] == "catch":
+                self.armpose = 2
+        
 
     def goal_timer_callback(self):
         msg = Pose2D()
