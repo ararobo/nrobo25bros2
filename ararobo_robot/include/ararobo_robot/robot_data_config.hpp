@@ -19,13 +19,7 @@ struct operation_data_t
     float vx;    // x軸方向の速度[m/s]
     float vy;    // y軸方向の速度[m/s]
     float omega; // 回転速度[rad/s]
-    float ur;    // 上アーム右位置[m]
-    float ul;    // 上アーム左位置[m]
-    float lr;    // 下アーム右位置[m]
-    float ll;    // 下アーム左位置[m]
-    float ur_w;  // 右上アーム幅[m]
-    float ul_w;  // 左上アーム幅[m]
-    float lr_w;  // 右上アーム幅[m]
-    float ll_w;  // 左上アーム幅[m]
+    float width; // 上アーム開閉幅
+    float depth; // 上アーム出し入れ
     float lift;  // 昇降
 } __attribute__((__packed__));
