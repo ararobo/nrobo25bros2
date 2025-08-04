@@ -16,6 +16,9 @@ OperationNode::OperationNode()
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "/cmd_vel", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
+    lift_vel_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/lift_vel", 10,
+        std::bind(&OperationNode::lift_vel_callback, this, std::placeholders::_1));
     sub_md_data_ = this->create_subscription<ararobo_msgs::msg::MdData>(
         "/md_data", 10,
         std::bind(&OperationNode::md_data_callback, this, std::placeholders::_1));
@@ -38,19 +41,22 @@ void OperationNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr 
                 msg->linear.x, msg->linear.y, msg->angular.z);
 }
 
+void OperationNode::lift_vel_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    operation_data.lift = msg->data; // リフトの速度[m/s]
+    RCLCPP_INFO(this->get_logger(), "lift_vel: %f", msg->data);
+}
+
 void OperationNode::md_data_callback(const ararobo_msgs::msg::MdData::SharedPtr msg)
 {
-    operation_data.ur = msg->ur;     // 上アーム右位置[m]
-    operation_data.ul = msg->ul;     // 上アーム左位置[m]
-    operation_data.lr = msg->lr;     // 下アーム右位置[m]
-    operation_data.ll = msg->ll;     // 下アーム左位置[m]
-    operation_data.ur_w = msg->ur_w; // 右上アーム幅[m]
-    operation_data.ul_w = msg->ul_w; // 左上アーム幅[m]
-    operation_data.lr_w = msg->lr_w; // 右下アーム幅[m]
-    operation_data.ll_w = msg->ll_w; // 左下アーム幅[m]
-    RCLCPP_INFO(this->get_logger(), "MDData: ur: %f, ul: %f, lr: %f, ll: %f, ur_w: %f, ul_w: %f, lr_w: %f, ll_w: %f",
-                msg->ur, msg->ul, msg->lr, msg->ll,
-                msg->ur_w, msg->ul_w, msg->lr_w, msg->ll_w);
+    operation_data.ll = msg->ll;     // 左リフトの速度[m/s]
+    operation_data.lr = msg->lr;     // 右リフトの速度[m/s]
+    operation_data.ul = msg->ul;     // 左上アームの位置[m]
+    operation_data.ur = msg->ur;     // 右上アームの位置[m
+    operation_data.ll_w = msg->ll_w; // 左上アームの幅[m]
+    operation_data.lr_w = msg->lr_w; // 右上アームの幅
+    operation_data.ul_w = msg->ul_w; // 左下アームの幅[m]
+    operation_data.ur_w = msg->ur_w; // 右下アームの幅[m]
 }
 
 void OperationNode::timer_callback()
