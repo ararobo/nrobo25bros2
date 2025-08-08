@@ -5,14 +5,14 @@
 #include "ararobo_robot/robot_data_config.hpp"
 #include "ararobo_robot/simple_udp.hpp"
 #include "ararobo_robot/ethernet_config.hpp"
-#include "ararobo_msgs/msg/md_data.hpp"
+#include "ararobo_msgs/msg/arm_data.hpp"
 
 class OperationNode : public rclcpp::Node
 {
 private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lift_vel_;
-    rclcpp::Subscription<ararobo_msgs::msg::MdData>::SharedPtr sub_md_data_;
+    rclcpp::Subscription<ararobo_msgs::msg::ArmData>::SharedPtr sub_md_data_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> udp;
 
@@ -28,7 +28,7 @@ private:
 
     void lift_vel_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
-    void md_data_callback(const ararobo_msgs::msg::MdData::SharedPtr msg);
+    void md_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg);
 
     void timer_callback();
 

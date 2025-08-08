@@ -104,7 +104,7 @@ private:
         geometry_msgs::msg::PoseStamped target;
         bool found = false;
 
-        for (size_t i = closest_index; i < path.poses.size(); ++i)
+        for (size_t i = closest_index; i < path.poses.size(); i++)
         {
             double dx = path.poses[i].pose.position.x - current_pose.pose.position.x;
             double dy = path.poses[i].pose.position.y - current_pose.pose.position.y;

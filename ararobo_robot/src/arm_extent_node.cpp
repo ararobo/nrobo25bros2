@@ -10,7 +10,7 @@ ArmExtentNode::ArmExtentNode()
     sub_distance_ = this->create_subscription<std_msgs::msg::Float32>(
         "/distance", 10,
         std::bind(&ArmExtentNode::distance_callback, this, std::placeholders::_1));
-    pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::MdData>(
+    pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
         "/arm_width", 10);
 }
 
@@ -20,8 +20,8 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     box_info_converse(box_info.data, extent_data);
 
-    arm_extent_msg.width = extent_data[0] / diameter;
-    arm_extent_msg.depth = extent_data[1] * 2 * M_PI / lead;
+    arm_extent_msg.width = extent_data[0] / diameter / 2;
+    arm_extent_msg.depth = extent_data[1] * 2 * M_PI / lead / 2;
 
     pub_arm_extent_->publish(arm_extent_msg);
 }
@@ -53,14 +53,6 @@ void ArmExtentNode::box_info_converse(float box_info, float data[2])
         data[0] = box_c_width + 100.0f;
         data[1] = 0.0f;
         break;
-    case 4: // 開放(D)
-        data[0] = box_d_width + 100.0f;
-        data[1] = 0.0f;
-        break;
-    case 5: // 開放(E)
-        data[0] = box_e_width + 100.0f;
-        data[1] = 0.0f;
-        break;
     case 6: // 把持(A)
         data[0] = box_a_width;
         data[1] = 0.0f;
@@ -71,14 +63,6 @@ void ArmExtentNode::box_info_converse(float box_info, float data[2])
         break;
     case 8: // 把持(C)
         data[0] = box_c_width;
-        data[1] = 0.0f;
-        break;
-    case 9: // 把持(D)
-        data[0] = box_d_width;
-        data[1] = 0.0f;
-        break;
-    case 10: // 把持(E)
-        data[0] = box_e_width;
         data[1] = 0.0f;
         break;
     default:
