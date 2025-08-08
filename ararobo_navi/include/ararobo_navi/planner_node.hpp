@@ -13,6 +13,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <vector>
 #include <queue>
@@ -40,11 +41,12 @@ namespace aster
 
   private:
     // ---- コールバック ----
+
     void goal_callback(const geometry_msgs::msg::Pose2D::SharedPtr msg);
     void map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
     void enable_callback(const std_msgs::msg::Bool::SharedPtr msg);
     void timer_callback();
-
+    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
     // ---- A* ----
     bool isValid(int gx, int gy, const std::vector<std::vector<int>> &grid);
     double heuristic(int x1, int y1, int x2, int y2);
