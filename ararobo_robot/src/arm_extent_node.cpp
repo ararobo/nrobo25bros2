@@ -1,9 +1,12 @@
 #include "arm_extent_node.hpp"
-#include <math.h>
+#include <math.hpp>
 
 ArmExtentNode::ArmExtentNode()
     : Node("arm_extent_node")
 {
+    sub_current_pose_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/current_pose", 10,
+        std::bind(&ArmExtentNode::current_pose_callback, this, std::placeholders::_1));
     sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
@@ -18,10 +21,32 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 {
     box_info = *msg; // ボックス情報を取得
 
-    box_info_converse(box_info.data, extent_data);
+    box_info_converse(box_info.data, &arm_state, &box_width);
 
-    arm_extent_msg.width = extent_data[0] / diameter / 2;
-    arm_extent_msg.depth = extent_data[1] * 2 * M_PI / lead / 2;
+    if (arm_state == 0)
+    {
+        arm_width = 0.0;
+        arm_depth = 0.0;
+    }
+    else if (arm_state == 1)
+    {
+        if (step == 0)
+        {
+            // 開閉処理
+            step = 1;
+        }
+        if (step == 2)
+        {
+            // 出し入れ処理
+            step = 0;
+        }
+    }
+    else if (arm_state == 2)
+    {
+    }
+
+    arm_extent_msg.width = arm_width / diameter / 2;
+    arm_extent_msg.depth = arm_width * 2 * M_PI / lead / 2;
 
     pub_arm_extent_->publish(arm_extent_msg);
 }
@@ -32,48 +57,42 @@ void ArmExtentNode::distance_callback(const std_msgs::msg::Float32::SharedPtr ms
     // 位置微調整の処理
 }
 
-void ArmExtentNode::box_info_converse(float box_info, float data[2])
-
+void ArmExtentNode::current_pose_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    switch (int(box_info))
+    current_angle_info = *msg;
+    current_pose = current_angle_info.data * diameter;
+    if (current_pose >= box_width - error && current_pose <= box_width + error && step == 1)
     {
-    case 0: // ハンド収納
-        data[0] = 0.0f;
-        data[1] = 0.0f;
-        break;
-    case 1: // 開放(A)
-        data[0] = box_a_width + 100.0f;
-        data[1] = 0.0f;
-        break;
-    case 2: // 開放(B)
-        data[0] = box_b_width + 100.0f;
-        data[1] = 0.0f;
-        break;
-    case 3: // 開放(C)
-        data[0] = box_c_width + 100.0f;
-        data[1] = 0.0f;
-        break;
-    case 6: // 把持(A)
-        data[0] = box_a_width;
-        data[1] = 0.0f;
-        break;
-    case 7: // 把持(B)
-        data[0] = box_b_width;
-        data[1] = 0.0f;
-        break;
-    case 8: // 把持(C)
-        data[0] = box_c_width;
-        data[1] = 0.0f;
-        break;
-    default:
-        break;
+        step = 2;
     }
-    if (data[0] > u_arm_w_max)
+}
+
+void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *box_data)
+{
+    // ボックス情報に応じてアーム状態を設定
+    if (box_info == 0)
     {
-        data[0] = u_arm_w_max; // 上アーム最大開閉幅制限
+        *arm_data = 0; // strage
     }
-    if (data[1] > u_arm_d_max)
+    else if (box_info == 1 || box_info == 2 || box_info == 3)
     {
-        data[1] = u_arm_d_max; // 上アーム最大出し入れ制限
+        *arm_data = 1; // open
+    }
+    else if (box_info == 6 || box_info == 7 || box_info == 8)
+    {
+        *arm_data = 2; // grab
+    }
+    // ボックスの種類に応じて幅を設定
+    if (box_info == 1 || box_info == 6)
+    {
+        *box_data = box_a_width; // box A
+    }
+    else if (box_info == 2 || box_info == 7)
+    {
+        *box_data = box_b_width; // box B
+    }
+    else if (box_info == 3 || box_info == 8)
+    {
+        *box_data = box_c_width; // box C
     }
 }
