@@ -8,9 +8,9 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32
 from ararobo_msgs.msg import MdData
 
-LINEAR_SPEED = 0.3  # m/s (forward/backward)
-STRAFE_SPEED = 0.3  # m/s (left/right strafe)
-ANGULAR_SPEED = 1.0 # rad/s (rotation)
+LINEAR_SPEED = 0.5  # m/s (forward/backward)
+STRAFE_SPEED = 0.5  # m/s (left/right strafe)
+ANGULAR_SPEED = 3.0 # rad/s (rotation)
 LIFT_VELOCITY = 30.0  # rad/s (lift speed) max:40
 ARM_VELOCITY = 1.0  # m/s (arm speed)
 WIDTH_VELOCITY = 1.0  # m/s (width adjustment speed)

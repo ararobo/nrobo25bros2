@@ -49,14 +49,8 @@ void OperationNode::lift_vel_callback(const std_msgs::msg::Float32::SharedPtr ms
 
 void OperationNode::md_data_callback(const ararobo_msgs::msg::MdData::SharedPtr msg)
 {
-    operation_data.ll = msg->ll;     // 左リフトの速度[m/s]
-    operation_data.lr = msg->lr;     // 右リフトの速度[m/s]
-    operation_data.ul = msg->ul;     // 左上アームの位置[m]
-    operation_data.ur = msg->ur;     // 右上アームの位置[m
-    operation_data.ll_w = msg->ll_w; // 左上アームの幅[m]
-    operation_data.lr_w = msg->lr_w; // 右上アームの幅
-    operation_data.ul_w = msg->ul_w; // 左下アームの幅[m]
-    operation_data.ur_w = msg->ur_w; // 右下アームの幅[m]
+    operation_data.width = msg->width; // 上アーム開閉幅
+    operation_data.depth = msg->depth; // 上アーム出し入れ
 }
 
 void OperationNode::timer_callback()
