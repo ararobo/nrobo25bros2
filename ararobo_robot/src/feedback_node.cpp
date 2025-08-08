@@ -76,7 +76,7 @@ void FeedbackNode::timer_callback()
     // オドメトリ計算
     // `OdomCalculator::set_encoder_count` に `period_s` を渡す
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
-    odom_calculator->set_encoder_count(-feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
+    odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
     // `OdomCalculator::get_robot_coord` に `period_s` を渡す
     odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
 
