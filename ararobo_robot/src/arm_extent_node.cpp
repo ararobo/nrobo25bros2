@@ -21,7 +21,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 {
     box_info = *msg; // ボックス情報を取得
 
-    box_info_converse(box_info.data, &arm_state, &box_width);
+    box_info_converse(box_info.data, &arm_state, &target_width);
 
     if (arm_state == 0)
     {
@@ -30,23 +30,32 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (arm_state == 1)
     {
-        if (step == 0)
+        if (step_s1 == 0)
         {
             // 開閉処理
-            step = 1;
+            arm_width = target_width;
+            arm_depth = 0.0;
+            step_s1 = 1;
         }
-        if (step == 2)
+        if (step_s1 == 2)
         {
             // 出し入れ処理
-            step = 0;
+            arm_depth = target_width;
+            step_s1 = 0;
         }
     }
     else if (arm_state == 2)
     {
+        if (step_s2 == 0)
+        {
+        }
+        if (step_s2 == 1)
+        {
+        }
     }
 
     arm_extent_msg.width = arm_width / diameter / 2;
-    arm_extent_msg.depth = arm_width * 2 * M_PI / lead / 2;
+    arm_extent_msg.depth = arm_depth * 2 * M_PI / lead / 2;
 
     pub_arm_extent_->publish(arm_extent_msg);
 }
@@ -61,9 +70,15 @@ void ArmExtentNode::current_pose_callback(const std_msgs::msg::Float32::SharedPt
 {
     current_angle_info = *msg;
     current_pose = current_angle_info.data * diameter;
-    if (current_pose >= box_width - error && current_pose <= box_width + error && step == 1)
+    if (arm_state == 1 && step_s1 == 1 && current_pose >= target_width - error && current_pose <= target_width + error)
     {
-        step = 2;
+        step_s1 = 2;
+    }
+    else if (arm_state == 2)
+    {
+        if ((step_s2 == 0 || step_s2 == 1) && current_pose >= target_width - error && current_pose <= target_width + error)
+        {
+                }
     }
 }
 
@@ -85,14 +100,14 @@ void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *bo
     // ボックスの種類に応じて幅を設定
     if (box_info == 1 || box_info == 6)
     {
-        *box_data = box_a_width; // box A
+        *box_data = box_a_width + add_width; // box A
     }
     else if (box_info == 2 || box_info == 7)
     {
-        *box_data = box_b_width; // box B
+        *box_data = box_b_width + add_width; // box B
     }
     else if (box_info == 3 || box_info == 8)
     {
-        *box_data = box_c_width; // box C
+        *box_data = box_c_width + add_width; // box C
     }
 }

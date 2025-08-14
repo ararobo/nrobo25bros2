@@ -1,4 +1,5 @@
 #pragma once
+
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
@@ -30,13 +31,15 @@ private:
     float lead = 30.0;      // 上アーム リード[mm](出し入れ)
 
     // substitute
-    float arm_width; // 上アーム開閉幅[mm]
-    float arm_depth; // 上アーム出し入れ[mm]
-    int step = 0;    // 上アームの動作ステップ[初期:0, 開閉:1, 出し入れ:2]
-    float arm_state; // 上アーム幅[mm]
-    float box_width; // ボックス幅[mm]
-    float current_pose;
-    float error = 10.0; // 許容誤差[mm]
+    float arm_width;         // 上アーム開閉幅[mm]
+    float arm_depth;         // 上アーム出し入れ[mm]
+    int step_s1 = 0;         // 開放動作のステップ[初期:0, 開閉:1, 出し入れ:2]
+    int step_s2 = 0;         // 把持動作のステップ
+    float arm_state;         // 上アーム 目標動作[収納:0, 開放:1, 把持:2]
+    float target_width;      // ボックス幅[mm]
+    float current_pose;      // 現在のアーム幅
+    float error = 10.0;      // 許容誤差[mm]
+    float add_width = 100.0; //
 
     void current_pose_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void box_hold_callback(const std_msgs::msg::Float32::SharedPtr msg);
