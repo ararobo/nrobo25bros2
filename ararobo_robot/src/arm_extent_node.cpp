@@ -4,9 +4,12 @@
 ArmExtentNode::ArmExtentNode()
     : Node("arm_extent_node")
 {
-    sub_current_pose_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/current_pose", 10,
-        std::bind(&ArmExtentNode::current_pose_callback, this, std::placeholders::_1));
+    sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/current_width", 10,
+        std::bind(&ArmExtentNode::current_width_callback, this, std::placeholders::_1));
+    sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/current_depth", 10,
+        std::bind(&ArmExtentNode::current_depth_callback, this, std::placeholders::_1));
     sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
@@ -14,7 +17,7 @@ ArmExtentNode::ArmExtentNode()
         "/distance", 10,
         std::bind(&ArmExtentNode::distance_callback, this, std::placeholders::_1));
     pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
-        "/arm_width", 10);
+        "/arm_target", 10);
 }
 
 void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr msg)
@@ -32,16 +35,15 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     {
         if (step_s1 == 0)
         {
+            step_s1 = 1;
             // 開閉処理
             arm_width = target_width;
             arm_depth = 0.0;
-            step_s1 = 1;
         }
         if (step_s1 == 2)
         {
             // 出し入れ処理
             arm_depth = target_width;
-            step_s1 = 0;
         }
     }
     else if (arm_state == 2)
@@ -55,7 +57,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
 
     arm_extent_msg.width = arm_width / diameter / 2;
-    arm_extent_msg.depth = arm_depth * 2 * M_PI / lead / 2;
+    arm_extent_msg.depth = arm_depth * (2 * M_PI) / lead / 2;
 
     pub_arm_extent_->publish(arm_extent_msg);
 }
@@ -66,20 +68,30 @@ void ArmExtentNode::distance_callback(const std_msgs::msg::Float32::SharedPtr ms
     // 位置微調整の処理
 }
 
-void ArmExtentNode::current_pose_callback(const std_msgs::msg::Float32::SharedPtr msg)
+void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    current_angle_info = *msg;
-    current_pose = current_angle_info.data * diameter;
-    if (arm_state == 1 && step_s1 == 1 && current_pose >= target_width - error && current_pose <= target_width + error)
+    current_width_info = *msg;
+    current_width = current_width_info.data * diameter;
+    if (arm_state == 1)
     {
-        step_s1 = 2;
-    }
-    else if (arm_state == 2)
-    {
-        if ((step_s2 == 0 || step_s2 == 1) && current_pose >= target_width - error && current_pose <= target_width + error)
+        if (step_s1 == 1 && abs(current_width - target_width) >= error)
         {
-                }
+            step_s1 = 2; // 2 -> 3
+        }
+        else if (step_s1 == 2 && abs(current_depth - target_width) >= error)
+        {
+            step_s1 = 0; // 3/
+        }
     }
+    else if (arm_state == 2 && step_s2 == 1)
+    {
+    }
+}
+
+void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    current_depth_info = *msg;
+    current_depth = current_depth_info.data * lead / (2 * M_PI);
 }
 
 void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *box_data)
@@ -100,14 +112,14 @@ void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *bo
     // ボックスの種類に応じて幅を設定
     if (box_info == 1 || box_info == 6)
     {
-        *box_data = box_a_width + add_width; // box A
+        *box_data = box_a_width; // box A
     }
     else if (box_info == 2 || box_info == 7)
     {
-        *box_data = box_b_width + add_width; // box B
+        *box_data = box_b_width; // box B
     }
     else if (box_info == 3 || box_info == 8)
     {
-        *box_data = box_c_width + add_width; // box C
+        *box_data = box_c_width; // box C
     }
 }
