@@ -37,6 +37,7 @@ private:
 
     // subscribed_data
     float arm_state;     // 目標動作[収納:0, 開放:1, 把持:2]
+    float state_s;       // 目標動作保護
     float target_width;  // ボックス幅[mm]
     float current_width; // 現在のアーム幅
     float current_depth; // 現在のアーム出し入れ
@@ -46,6 +47,7 @@ private:
     float arm_depth; // 上アーム出し入れ[mm]
 
     // flag
+    int step_s0 = 0;
     int step_s1 = 0; // 開放動作のステップ[初期:0, 開閉:1, 出し入れ:2]
     int step_s2 = 0; // 把持動作のステップ
 
@@ -61,7 +63,9 @@ private:
      */
     void box_info_converse(float box_info, float *arm_data, float *box_data);
 
+    void state_0();
+    void state_1();
+
 public:
     ArmExtentNode();
-    ~ArmExtentNode();
 };
