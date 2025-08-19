@@ -26,44 +26,34 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     box_info_converse(box_info.data, &arm_state, &target_width);
 
-    if (arm_state == 0)
+    if (step == 1)
     {
-        if (step_s0 == 0)
-        {
-            step_s0 = 1;
-            arm_width = 0.0;
-            arm_depth = 0.0;
-        }
+        arm_width = 0.0;
+        arm_depth = 0.0; // 1
     }
-    else if (arm_state == 1)
+    else if (step == 2)
     {
-        if (step_s1 == 0)
-        {
-            step_s1 = 1;
-            arm_width = target_width + 100;
-        }
-        if (step_s1 == 2)
-        {
-            step_s1 = 3;
-            arm_depth = target_width + 100;
-        }
+        arm_width = target_width + 100; // 2
     }
-    else if (arm_state == 2)
+    else if (step == 3)
     {
-        if (step_s2 == 0)
-        {
-            step_s2 = 1;
-            arm_width = target_width;
-        }
-        if (step_s2 == 2)
-        {
-            step_s2 = 3;
-            arm_depth = target_width;
-        }
-        if (step_s2 == 4)
-        {
-            step_s2 = 5;
-        }
+        arm_depth = target_width + 100; // 3
+    }
+    else if (step == 4)
+    {
+        // 4
+    }
+    else if (step == 5)
+    {
+        arm_width = target_width; // 5
+    }
+    else if (step == 6)
+    {
+        // 6
+    }
+    else if (step == 7)
+    {
+        // 7
     }
 
     arm_extent_msg.width = arm_width / diameter / 2;
@@ -82,39 +72,8 @@ void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedP
 {
     current_width_info = *msg;
     current_width = current_width_info.data * diameter;
-    if (arm_state == 0)
-    {
-        if (step_s1 == 1 && abs(current_width) >= error)
-        {
-            step_s1 = 0;
-        }
-    }
-    else if (arm_state == 1)
-    {
-        if (step_s1 == 1 && abs(current_width - target_width) >= error)
-        {
-            step_s1 = 2; // 2 -> 3
-        }
-        else if (step_s1 == 3 && abs(current_depth - target_width) >= error)
-        {
-            step_s1 = 0; // 3/
-        }
-    }
-    else if (arm_state == 2)
-    {
-        if (step_s2 == 1 && abs(current_width - target_width) >= error)
-        {
-            step_s1 = 2; // 5 -> 6
-        }
-        else if (step_s2 == 3 && abs(current_depth - target_width) >= error)
-        {
-            step_s1 = 4; // 6 -> 7
-        }
-        else if (step_s2 == 5 && abs(current_depth - target_width) >= error)
-        {
-            step_s1 = 0; // 7/
-        }
-    }
+
+    step_update();
 }
 
 void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
@@ -153,10 +112,53 @@ void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *bo
     }
 }
 
-void ArmExtentNode::state_0()
+void ArmExtentNode::step_update()
 {
-}
-
-void ArmExtentNode::state_1()
-{
+    if (arm_state == 0)
+    {
+        if (step == 1)
+        {
+            if (abs(current_width - target_width) >= error)
+            {
+                step++;
+                arm_state == 3;
+            }
+        }
+        else
+        {
+            step == 1;
+        }
+    }
+    else if (arm_state == 1)
+    {
+        if (step == 2 || step == 3)
+        {
+            if (abs(current_width - target_width) >= error)
+            {
+                step++;
+                if (step == 3)
+                {
+                    arm_state == 3;
+                }
+            }
+        }
+        else
+        {
+            step == 2;
+        }
+    }
+    else if (arm_state == 2)
+    {
+        if (step != 1)
+        {
+            if (abs(current_width - target_width) >= error)
+            {
+                step++;
+            }
+        }
+        else
+        {
+            step == 1;
+        }
+    }
 }

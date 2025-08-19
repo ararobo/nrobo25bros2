@@ -36,7 +36,7 @@ private:
     float add_width = 100.0; // 追加のスペース
 
     // subscribed_data
-    float arm_state;     // 目標動作[収納:0, 開放:1, 把持:2]
+    float arm_state;     // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
     float state_s;       // 目標動作保護
     float target_width;  // ボックス幅[mm]
     float current_width; // 現在のアーム幅
@@ -50,6 +50,7 @@ private:
     int step_s0 = 0;
     int step_s1 = 0; // 開放動作のステップ[初期:0, 開閉:1, 出し入れ:2]
     int step_s2 = 0; // 把持動作のステップ
+    int step;
 
     void current_width_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg);
@@ -63,8 +64,7 @@ private:
      */
     void box_info_converse(float box_info, float *arm_data, float *box_data);
 
-    void state_0();
-    void state_1();
+    void step_update();
 
 public:
     ArmExtentNode();
