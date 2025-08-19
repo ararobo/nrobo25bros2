@@ -1,0 +1,49 @@
+<robot name="base_robot">
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.95 0.65 0.08"/>
+            </geometry>        
+        </visual>
+    </link>
+
+    <joint name = "wheel_fl/base_joint" type = "fixed">
+        <origin rpy="0 1.5708 1.5708" xyz="0.3 0.335 0.02"/>
+        <parent link="base_link"/>
+        <child link="wheel_fl/base_link"/>
+    </joint>
+    <link name="wheel_fl/base_link">
+        <visual>
+          <geometry>
+            <cylinder length="0.02" radius="0.1"/>
+          </geometry>  
+        </visual>
+    </link>
+
+<joint name = "wheel_fr/base_joint" type = "fixed">
+        <origin rpy="0 1.5708 1.5708" xyz="0.3 -0.335 0.02"/>
+        <parent link="base_link"/>
+        <child link="wheel_fr/base_link"/>
+    </joint>
+    <link name="wheel_fr/base_link">
+        <visual>
+          <geometry>
+            <cylinder length="0.02" radius="0.1"/>
+          </geometry>  
+        </visual>
+    </link>
+
+<joint name = "wheel_fl/base_joint" type = "fixed">
+        <origin rpy="0 1.5708 1.5708" xyz="0.3 -0.335 0.02"/>
+        <parent link="base_link"/>
+        <child link="wheel_fl/base_link"/>
+    </joint>
+    <link name="wheel_fl/base_link">
+        <visual>
+          <geometry>
+            <cylinder length="0.02" radius="0.1"/>
+          </geometry>  
+        </visual>
+    </link>
+
+</robot>
