@@ -13,9 +13,12 @@ ArmExtentNode::ArmExtentNode()
     sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
-    sub_distance_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/distance", 10,
-        std::bind(&ArmExtentNode::distance_callback, this, std::placeholders::_1));
+    sub_width_distance_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/width_distance", 10,
+        std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
+    sub_depth_distance_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/depth_distance", 10,
+        std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
     pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
         "/arm_target", 10);
 }
@@ -28,33 +31,51 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     if (step == 1)
     {
-        arm_width = 0.0;
-        arm_depth = 0.0; // 1
+        arm_width = 0.0; // 1
+        arm_depth = 0.0;
     }
     else if (step == 2)
     {
-        arm_width = target_width + 100; // 2
+        arm_width = target_width + add_width; // 2
+        arm_depth = 0.0;
     }
     else if (step == 3)
     {
-        arm_depth = target_width + 100; // 3
+        arm_width = target_width + add_width; // 3
+        arm_depth = target_width + add_width;
     }
     else if (step == 4)
     {
-        // 4
+        flag_sensor = false;
+        if (abs(current_width_distance - (add_width / 2)) <= error)
+        {
+            flag_sensor = true;
+        }
     }
     else if (step == 5)
     {
         arm_width = target_width; // 5
+        arm_depth = target_width + add_width;
     }
     else if (step == 6)
     {
-        // 6
+        flag_sensor = false;
+        if (current_depth_distance <= 0)
+        {
+            flag_sensor = true;
+        }
     }
     else if (step == 7)
     {
         // 7
     }
+
+    if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_sensor)
+    {
+        ready = true;
+    }
+
+    step_update();
 
     arm_extent_msg.width = arm_width / diameter / 2;
     arm_extent_msg.depth = arm_depth * (2 * M_PI) / lead / 2;
@@ -62,18 +83,22 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     pub_arm_extent_->publish(arm_extent_msg);
 }
 
-void ArmExtentNode::distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
+void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    distance_info = *msg; // 距離情報を取得
-    // 位置微調整の処理
+    current_width_distance_info = *msg;
+    current_width_distance = current_width_distance_info.data;
+}
+
+void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    current_depth_distance_info = *msg;
+    current_depth_distance = current_depth_distance_info.data;
 }
 
 void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     current_width_info = *msg;
     current_width = current_width_info.data * diameter;
-
-    step_update();
 }
 
 void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
@@ -82,7 +107,7 @@ void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedP
     current_depth = current_depth_info.data * lead / (2 * M_PI);
 }
 
-void ArmExtentNode::box_info_converse(float box_info, float *arm_data, float *box_data)
+void ArmExtentNode::box_info_converse(float box_info, int *arm_data, float *box_data)
 {
     // ボックス情報に応じてアーム状態を設定
     if (box_info == 0)
@@ -116,49 +141,62 @@ void ArmExtentNode::step_update()
 {
     if (arm_state == 0)
     {
-        if (step == 1)
+        if (state_s == arm_state)
         {
-            if (abs(current_width - target_width) >= error)
+            if (ready)
             {
-                step++;
-                arm_state == 3;
+                ready = false;
+                arm_state = 3;
+                state_s = 3;
             }
         }
         else
         {
-            step == 1;
+            state_s = arm_state;
+            step = 1;
         }
     }
     else if (arm_state == 1)
     {
-        if (step == 2 || step == 3)
+        if (state_s == arm_state)
         {
-            if (abs(current_width - target_width) >= error)
+            if (ready)
             {
-                step++;
+                ready = false;
+                if (step <= 3)
+                {
+                    step++;
+                }
                 if (step == 3)
                 {
-                    arm_state == 3;
+                    arm_state = 3;
+                    state_s = 3;
                 }
             }
         }
         else
         {
-            step == 2;
+            state_s = arm_state;
+            step = 2;
         }
     }
     else if (arm_state == 2)
     {
-        if (step != 1)
+        if (state_s == arm_state)
         {
-            if (abs(current_width - target_width) >= error)
+            if (ready)
             {
-                step++;
+                ready = false;
+                if (step < 7)
+                {
+                    step++;
+                }
             }
         }
         else
         {
-            step == 1;
+            state_s = arm_state;
+            step = 1;
         }
     }
 }
