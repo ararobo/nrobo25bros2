@@ -1,10 +1,10 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/twist.hpp>
+// #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
-#include "ararobo_robot/robot_data_config.hpp"
-#include "ararobo_robot/ethernet_config.hpp"
+// #include "ararobo_robot/robot_data_config.hpp"
+// #include "ararobo_robot/ethernet_config.hpp"
 #include "ararobo_msgs/msg/arm_data.hpp"
 
 class ArmExtentNode : public rclcpp::Node
@@ -26,8 +26,8 @@ private:
     std_msgs::msg::Float32 current_depth_distance_info; //
 
     // constant_data
-    float u_arm_w_max = 650;   // 開閉可動域[mm]
-    float u_arm_d_max = 550;   // 出し入れ可動域[mm]
+    float arm_w_max = 650;     // 開閉可動域[mm]
+    float arm_d_max = 550;     // 出し入れ可動域[mm]
     float box_a_width = 300.0; // ボックスAの幅[mm]
     float box_b_width = 400.0; // ボックスBの幅[mm]
     float box_c_width = 500.0; // ボックスCの幅[mm]

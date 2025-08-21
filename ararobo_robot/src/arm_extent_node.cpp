@@ -70,6 +70,24 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
         // 7
     }
 
+    // 最大,最小値制限
+    if (arm_width > arm_w_max)
+    {
+        arm_width = arm_w_max;
+    }
+    if (arm_width < 0)
+    {
+        arm_width = 0;
+    }
+    if (arm_depth > arm_d_max)
+    {
+        arm_depth = arm_d_max;
+    }
+    if (arm_depth < 0)
+    {
+        arm_depth = 0;
+    }
+
     if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_sensor)
     {
         ready = true;
@@ -109,7 +127,7 @@ void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedP
 
 void ArmExtentNode::box_info_converse(float box_info, int *arm_data, float *box_data)
 {
-    // ボックス情報に応じてアーム状態を設定
+    // 情報に応じてアーム状態を設定
     if (box_info == 0)
     {
         *arm_data = 0; // strage
