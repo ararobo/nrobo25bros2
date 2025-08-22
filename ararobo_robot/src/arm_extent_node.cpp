@@ -31,17 +31,17 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     if (step == 1)
     {
-        arm_width = 0.0; // 1
+        arm_width = 0.0;
         arm_depth = 0.0;
     }
     else if (step == 2)
     {
-        arm_width = target_width + add_width; // 2
+        arm_width = target_width + add_width;
         arm_depth = 0.0;
     }
     else if (step == 3)
     {
-        arm_width = target_width + add_width; // 3
+        arm_width = target_width + add_width;
         arm_depth = target_width + add_width;
     }
     else if (step == 4)
@@ -54,7 +54,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 5)
     {
-        arm_width = target_width; // 5
+        arm_width = target_width;
         arm_depth = target_width + add_width;
     }
     else if (step == 6)
@@ -181,11 +181,11 @@ void ArmExtentNode::step_update()
             if (ready)
             {
                 ready = false;
-                if (step <= 3)
+                if (step < 3)
                 {
                     step++;
                 }
-                if (step == 3)
+                else // if (step == 3)
                 {
                     arm_state = 3;
                     state_s = 3;
@@ -208,6 +208,11 @@ void ArmExtentNode::step_update()
                 if (step < 7)
                 {
                     step++;
+                }
+                else
+                {
+                    arm_state = 3;
+                    state_s = 3;
                 }
             }
         }
