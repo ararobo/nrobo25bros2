@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
-// #include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
 // #include "ararobo_robot/robot_data_config.hpp"
 // #include "ararobo_robot/ethernet_config.hpp"
@@ -15,6 +15,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_box_info_;       // box_infomation from core
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;     //
     rclcpp::Publisher<ararobo_msgs::msg::ArmData>::SharedPtr pub_arm_extent_;    // arm_extent to operation
 
     ararobo_msgs::msg::ArmData arm_extent_msg;          // arm width,depth
@@ -24,6 +25,7 @@ private:
     std_msgs::msg::Float32 current_depth_info;          // 現在のアーム出し入れ
     std_msgs::msg::Float32 current_width_distance_info; // 幅 tof_sensorの距離
     std_msgs::msg::Float32 current_depth_distance_info; // 出し入れ tof_sensorの距離
+    geometry_msgs::msg::Twist cmd_vel;                  //
 
     // constant_data
     float arm_w_max = 650;     // 開閉可動域[mm]
