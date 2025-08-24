@@ -59,28 +59,15 @@ void FeedbackNode::timer_callback()
     int recv_size = udp->recvPacket(feedback_union.code, sizeof(feedback_union));
     if (recv_size < 0)
     {
-        // エラーログを出すが、タイマーコールバックを続行することで、
-        // UDPパケットが一時的に途切れてもシステム全体が停止しないようにする
         RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
-        // ここでreturnすると、オドメトリやTFが更新されなくなるので注意
-        // 代わりに、前回のデータを使用するか、速度を0に設定するなどの対処が必要になる
-        // 今回はとりあえずログだけ出して続行するが、場合によってはreturnも考慮
-        // if (recv_size == 0) return; // データがない場合は処理しない
-        // if (recv_size < 0) return; // エラーの場合は処理しない
     }
-
-    // ヨー角はボードから直接送られてくる値を使用
-    // ここで feedback_union.data.yaw が [rad] 単位であることを確認
     theta = feedback_union.data.yaw;
 
     // オドメトリ計算
-    // `OdomCalculator::set_encoder_count` に `period_s` を渡す
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
     odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
-    // `OdomCalculator::get_robot_coord` に `period_s` を渡す
     odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
-
-    rclcpp::Time now = this->now(); // 現在のタイムスタンプを取得
+    rclcpp::Time now = this->now();
 
     // ヨー角からtf2::Quaternionを作成
     tf2::Quaternion q;
@@ -89,26 +76,20 @@ void FeedbackNode::timer_callback()
     // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
     geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q);
 
-    // 1. Odometryメッセージの配信
+    // odom
     nav_msgs::msg::Odometry odom_msg;
     odom_msg.header.stamp = now;
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
 
-    // `odom_calculator`で計算された速度 (m/s) をそのまま使用
     odom_msg.twist.twist.linear.x = -odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
     odom_msg.twist.twist.linear.y = -odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
 
     // 角速度の計算
-    // prev_time が正しく初期化されていることを確認
     double dt = (now.seconds() - prev_time.seconds());
     if (dt > 0.0) // ゼロ除算を避けるため
     {
-        // 角度は -PI から PI の範囲に正規化されていることが前提
         double dtheta = theta - prev_theta;
-        // 角度が180度以上異なる場合のラップアラウンドを処理 (オプション、必要であれば)
-        // if (dtheta > M_PI) dtheta -= 2 * M_PI;
-        // if (dtheta < -M_PI) dtheta += 2 * M_PI;
         odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
     }
     else
@@ -122,7 +103,7 @@ void FeedbackNode::timer_callback()
     odom_msg.pose.pose.orientation = odom_quat_msg;
     pub_odometry_->publish(odom_msg); // odometryデータの送信
 
-    // 2. TF変換のブロードキャスト
+    // tf2
     geometry_msgs::msg::TransformStamped odom_trans;
     odom_trans.header.stamp = now;
     odom_trans.header.frame_id = "odom";
