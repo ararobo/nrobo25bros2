@@ -20,8 +20,8 @@ OperationNode::OperationNode()
         "/lift_vel", 10,
         std::bind(&OperationNode::lift_vel_callback, this, std::placeholders::_1));
     sub_md_data_ = this->create_subscription<ararobo_msgs::msg::ArmData>(
-        "/md_data", 10,
-        std::bind(&OperationNode::md_data_callback, this, std::placeholders::_1));
+        "/arm_target", 10,
+        std::bind(&OperationNode::arm_data_callback, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&OperationNode::timer_callback, this));
 }
@@ -47,7 +47,7 @@ void OperationNode::lift_vel_callback(const std_msgs::msg::Float32::SharedPtr ms
     RCLCPP_INFO(this->get_logger(), "lift_vel: %f", msg->data);
 }
 
-void OperationNode::md_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg)
+void OperationNode::arm_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg)
 {
     operation_data.width = msg->width; // 上アーム開閉幅
     operation_data.depth = msg->depth; // 上アーム出し入れ

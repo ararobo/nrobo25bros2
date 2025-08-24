@@ -28,7 +28,7 @@ private:
 
     void lift_vel_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
-    void md_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg);
+    void arm_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg);
 
     void timer_callback();
 

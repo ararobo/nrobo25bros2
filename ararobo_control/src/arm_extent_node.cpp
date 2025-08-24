@@ -1,5 +1,5 @@
-#include "arm_extent_node.hpp"
-#include <math.hpp>
+#include "ararobo_control/arm_extent_node.hpp"
+#include <math.h>
 
 ArmExtentNode::ArmExtentNode()
     : Node("arm_extent_node")
@@ -18,9 +18,6 @@ ArmExtentNode::ArmExtentNode()
         std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
     sub_depth_distance_ = this->create_subscription<std_msgs::msg::Float32>(
         "/depth_distance", 10,
-        std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
-    sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
-        "/cmd_vel", 10,
         std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
     pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
         "/arm_target", 10);
@@ -225,4 +222,12 @@ void ArmExtentNode::step_update()
             step = 1;
         }
     }
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<ArmExtentNode>());
+    rclcpp::shutdown();
+    return 0;
 }
