@@ -32,6 +32,14 @@ FeedbackNode::FeedbackNode()
     // Odometryパブリッシャーの初期化
     pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10);
+    pub_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
+        "current_width", 10);
+    pub_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
+        "current_depth", 10);
+    pub_width_distance_ = this->create_publisher<std_msgs::msg::Float32>(
+        "width_distance", 10);
+    pub_depth_distance_ = this->create_publisher<std_msgs::msg::Float32>(
+        "depth_distance", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 

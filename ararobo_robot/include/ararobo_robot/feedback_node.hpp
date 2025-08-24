@@ -1,5 +1,6 @@
 #pragma once
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -16,6 +17,10 @@ private:
     uint8_t period_odom;       // オドメトリ計算周期[ms]
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_width_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_depth_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_width_distance_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_depth_distance_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 
