@@ -51,7 +51,7 @@ class core_node(Node):
         cmds = msg.data.split(',')
         if cmds[0] == "move":
             if cmds[1] == "red":
-                if cmds[2]=="tart":
+                if cmds[2]=="start":
                     self.gpub_x = self.startart_x
                     self.gpub_y = self.startart_y
                 elif cmds[2]== "pylon":
@@ -81,6 +81,37 @@ class core_node(Node):
                 elif cmds[2]== "trolleyconect":
                     self.gpub_x = self.trolleyconect_x
                     self.gpub_y = self.trolleyconect_y
+            elif cmds[1] == "blue":
+                if cmds[2]=="start":
+                    self.gpub_x = -self.startart_x
+                    self.gpub_y = -self.startart_y
+                elif cmds[2]== "pylon":
+                    self.gpub_x = -self.pylon_x
+                    self.gpub_y = -self.pylon_y
+                elif cmds[2]=="shareB":
+                    self.gpub_x = -self.share_B_x
+                    self.gpub_y = -self.share_B_y
+                elif cmds[2]== "shareC":
+                    self.gpub_x = -self.share_C_x
+                    self.gpub_y = -self.share_C_y
+                elif cmds[2]== "workspease":
+                    self.gpub_x = -self.workspease_x
+                    self.gpub_y = -self.workspease_y
+                elif cmds[2]== "cereategate":
+                    self.gpub_x = -self.cereategate_x
+                    self.gpub_y = -self.cereategate_y
+                elif cmds[2]== "proprietary_start":
+                    self.gpub_x = -self.proprietary_start_x
+                    self.gpub_y = -self.proprietary_start_y
+                elif cmds[2]== "proprietary_B":
+                    self.gpub_x = -self.proprietary_B_x
+                    self.gpub_y = -self.proprietary_B_y
+                elif cmds[2]== "proprietary_C":
+                    self.gpub_x = -self.proprietary_C_x
+                    self.gpub_y = -self.proprietary_C_y
+                elif cmds[2]== "trolleyconect":
+                    self.gpub_x = -self.trolleyconect_x
+                    self.gpub_y = -self.trolleyconect_y
         elif cmds[0] == "box":
             if cmds[1] == "1":
                 self.serect_boxID = 1
