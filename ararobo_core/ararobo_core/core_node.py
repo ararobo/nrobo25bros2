@@ -21,10 +21,24 @@ class core_node(Node):
         self.team = "red"
         self.startart_x = 0.0
         self.startart_y = 0.0
-        self.g2_x = 20.0
-        self.g2_y = 20.0
-        self.g3_x = 30.0
-        self.g3_y = 30.0
+        self.pylon_x = 20.0
+        self.pylon_y = 20.0
+        self.share_B_x = 30.0
+        self.share_B_y = 30.0
+        self.share_C_x = 40.0
+        self.share_C_y = 40.0
+        self.workspease_x = 50.0
+        self.workspease_y = 50.0
+        self.cereategate_x = 60.0
+        self.cereategate_y = 60.0
+        self.proprietary_start_x = 10.0
+        self.proprietary_start_y = 10.0
+        self.proprietary_B_x = 70.0
+        self.proprietary_B_y = 70.0
+        self.proprietary_C_x = 80.0
+        self.proprietary_C_y = 80.0
+        self.trolleyconect_x = 90.0
+        self.trolleyconect_y = 90.0
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
         self.serect_boxID = 0
@@ -35,15 +49,37 @@ class core_node(Node):
         # Process the goal message and publish to nav/goal if needed
         self.cmd = msg.data
         cmds = msg.data.split(',')
-        if msg.data == "start":
-            self.gpub_x = self.startart_x
-            self.gpub_y = self.startart_y
-        elif msg.data == "g2":
-            self.gpub_x = self.g2_x
-            self.gpub_y = self.g2_y
-        elif msg.data == "g3":
-            self.gpub_x = self.g3_x
-            self.gpub_y = self.g3_y
+        if cmds[0] == "move":
+            if cmds[1] == "start":
+                self.gpub_x = self.startart_x
+                self.gpub_y = self.startart_y
+            elif cmds[1] == "pylon":
+                self.gpub_x = self.pylon_x
+                self.gpub_y = self.pylon_y
+            elif cmds[1] == "shareB":
+                self.gpub_x = self.share_B_x
+                self.gpub_y = self.share_B_y
+            elif cmds[1] == "shareC":
+                self.gpub_x = self.share_C_x
+                self.gpub_y = self.share_C_y
+            elif cmds[1] == "workspease":
+                self.gpub_x = self.workspease_x
+                self.gpub_y = self.workspease_y
+            elif cmds[1] == "cereategate":
+                self.gpub_x = self.cereategate_x
+                self.gpub_y = self.cereategate_y
+            elif cmds[1] == "proprietary_start":
+                self.gpub_x = self.proprietary_start_x
+                self.gpub_y = self.proprietary_start_y
+            elif cmds[1] == "proprietary_B":
+                self.gpub_x = self.proprietary_B_x
+                self.gpub_y = self.proprietary_B_y
+            elif cmds[1] == "proprietary_C":
+                self.gpub_x = self.proprietary_C_x
+                self.gpub_y = self.proprietary_C_y
+            elif cmds[1] == "trolleyconect":
+                self.gpub_x = self.trolleyconect_x
+                self.gpub_y = self.trolleyconect_y
         elif cmds[0] == "box":
             if cmds[1] == "1":
                 self.serect_boxID = 1
@@ -54,13 +90,12 @@ class core_node(Node):
             elif cmds[1] == "4":
                 self.serect_boxID = 4
         elif cmds[0] == "armpose":
-            if cmds[1] == "open":
-                self.armpose = 1
-            elif cmds[1] == "close":
+            if cmds[1] == "close":
                 self.armpose = 0
+            elif cmds[1] == "open":
+                self.armpose = 1
             elif cmds[1] == "catch":
                 self.armpose = 2
-        
 
     def goal_timer_callback(self):
         msg = Pose2D()
