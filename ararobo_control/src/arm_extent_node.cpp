@@ -10,15 +10,15 @@ ArmExtentNode::ArmExtentNode()
     sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
         "/current_depth", 10,
         std::bind(&ArmExtentNode::current_depth_callback, this, std::placeholders::_1));
-    sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/box_hold", 10,
-        std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
     sub_width_distance_ = this->create_subscription<std_msgs::msg::Float32>(
         "/width_distance", 10,
         std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
     sub_depth_distance_ = this->create_subscription<std_msgs::msg::Float32>(
         "/depth_distance", 10,
         std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
+    sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/box_hold", 10,
+        std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
     pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
         "/arm_target", 10);
     pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
