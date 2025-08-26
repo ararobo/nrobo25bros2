@@ -21,6 +21,8 @@ ArmExtentNode::ArmExtentNode()
         std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
     pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
         "/arm_target", 10);
+    pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/centering_vel", 10);
 }
 
 void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr msg)
@@ -50,6 +52,14 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
         if (abs(current_width_distance - (add_width / 2)) <= error)
         {
             flag_sensor = true;
+        }
+        else if (current_width_distance - (add_width / 2) > 0)
+        {
+            centering_addend.data = -(current_width_distance - (add_width / 2));
+        }
+        else
+        {
+            centering_addend.data = current_width_distance - (add_width / 2);
         }
     }
     else if (step == 5)
@@ -99,18 +109,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     arm_extent_msg.depth = arm_depth * (2 * M_PI) / lead / 2;
 
     pub_arm_extent_->publish(arm_extent_msg);
-}
-
-void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_width_distance_info = *msg;
-    current_width_distance = current_width_distance_info.data;
-}
-
-void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_depth_distance_info = *msg;
-    current_depth_distance = current_depth_distance_info.data;
+    pub_centering_vel_->publish(centering_addend);
 }
 
 void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedPtr msg)
@@ -123,6 +122,18 @@ void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedP
 {
     current_depth_info = *msg;
     current_depth = current_depth_info.data * lead / (2 * M_PI);
+}
+
+void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    current_width_distance_info = *msg;
+    current_width_distance = current_width_distance_info.data;
+}
+
+void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    current_depth_distance_info = *msg;
+    current_depth_distance = current_depth_distance_info.data;
 }
 
 void ArmExtentNode::box_info_converse(float box_info, int *arm_data, float *box_data)

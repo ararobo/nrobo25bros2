@@ -13,8 +13,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_box_info_;       // box_infomation from core
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_cmd_vel_;     //
     rclcpp::Publisher<ararobo_msgs::msg::ArmData>::SharedPtr pub_arm_extent_;    // arm_extent to operation
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;     //
 
     ararobo_msgs::msg::ArmData arm_extent_msg;          // arm width,depth
     std_msgs::msg::Float32 box_info;                    // ボックスの種類
@@ -23,20 +23,20 @@ private:
     std_msgs::msg::Float32 current_depth_info;          // 現在のアーム出し入れ
     std_msgs::msg::Float32 current_width_distance_info; // 幅 tof_sensorの距離
     std_msgs::msg::Float32 current_depth_distance_info; // 出し入れ tof_sensorの距離
-    geometry_msgs::msg::Twist cmd_vel;                  //
+    std_msgs::msg::Float32 centering_addend;            //
 
     // constant_data
-    float arm_w_max = 650;     // 開閉可動域[mm]
-    float arm_d_max = 550;     // 出し入れ可動域[mm]
+    float arm_w_max = 650.0;   // 開閉可動域[mm]
+    float arm_d_max = 550.0;   // 出し入れ可動域[mm]
     float box_a_width = 300.0; // ボックスAの幅[mm]
     float box_b_width = 400.0; // ボックスBの幅[mm]
     float box_c_width = 500.0; // ボックスCの幅[mm]
 
-    float diameter = 25.46; // 上アーム 直径[mm](開閉)
-    float lead = 30.0;      // 上アーム リード[mm](出し入れ)
+    float diameter = 25.46;  // 上アーム 直径[mm](開閉)
+    float lead = 30.0;       // 上アーム リード[mm](出し入れ)
+    float add_width = 100.0; // 追加のスペース[mm]
 
-    float error = 10.0;      // 許容誤差[mm]
-    float add_width = 100.0; // 追加のスペース
+    float error = 10.0; // 許容誤差[mm]
 
     // subscrib_data
     int arm_state = 3;            // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
@@ -46,8 +46,6 @@ private:
     float current_depth;          // 現在のアーム出し入れ
     float current_width_distance; // 幅 tof_sensorの距離
     float current_depth_distance; // 出し入れ tof_sensorの距離
-    // int received_state;
-    // float received_width;
 
     // publish_data
     float arm_width; // 上アーム開閉幅[mm]
