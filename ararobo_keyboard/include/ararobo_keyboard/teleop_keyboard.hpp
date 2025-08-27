@@ -35,7 +35,6 @@ private:
     double hand_depth_speed_ = 20.0;
     double hand_width_speed_ = 20.0;
     double lift_speed_ = 20.0;
-    double shift_rate_ = 0.5;
 
 public:
     TeleopKeyboard(/* args */);
