@@ -70,7 +70,7 @@ void TeleopKeyboard::timer_callback()
     {
         hand_width += hand_width_speed_;
     }
-    // lower_hand
+    // under_hand
     if (key->y.is_pushed)
     {
         left_raise -= raise_speed_;
@@ -120,6 +120,10 @@ void TeleopKeyboard::timer_callback()
         hand_depth *= shift_rate_;
         hand_width *= shift_rate_;
         lift_vel *= shift_rate_;
+        left_raise *= shift_rate_;
+        right_raise *= shift_rate_;
+        left_slide *= shift_rate_;
+        right_slide *= shift_rate_;
     }
 
     geometry_msgs::msg::Twist twist_msg;
@@ -130,6 +134,10 @@ void TeleopKeyboard::timer_callback()
     ararobo_msgs::msg::ArmData arm_msg;
     arm_msg.upper_hand_depth = hand_depth;
     arm_msg.upper_hand_width = hand_width;
+    arm_msg.left_raise = left_raise;
+    arm_msg.left_slide = left_slide;
+    arm_msg.right_raise = right_raise;
+    arm_msg.right_slide = right_slide;
     pub_arm_->publish(arm_msg);
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_vel;
