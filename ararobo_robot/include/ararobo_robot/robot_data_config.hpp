@@ -24,6 +24,6 @@ struct operation_data_t
     float lift;        // 昇降
     float right_slide; // 右下ハンド前後スライド
     float right_raise; // 右下ハンド上下回転
-    float left_slide;  // 　左下ハンド前後スライド
+    float left_slide;  // 左下ハンド前後スライド
     float left_raise;  // 左下ハンド上下回転
 } __attribute__((__packed__));
