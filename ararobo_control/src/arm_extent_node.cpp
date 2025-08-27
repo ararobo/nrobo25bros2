@@ -27,19 +27,21 @@ ArmExtentNode::ArmExtentNode()
 
 void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    box_info = *msg; // ボックス情報を取得
+    box_info = msg->data; // ボックス情報を取得
 
-    box_info_converse(box_info.data, &arm_state, &target_width);
+    box_info_converse(box_info, &arm_state, &target_width);
+
+    centering_addend.data = 0.0f;
 
     if (step == 1)
     {
-        arm_width = 0.0;
-        arm_depth = 0.0;
+        arm_width = 0.0f;
+        arm_depth = 0.0f;
     }
     else if (step == 2)
     {
         arm_width = target_width + add_width;
-        arm_depth = 0.0;
+        arm_depth = 0.0f;
     }
     else if (step == 3)
     {
@@ -48,18 +50,17 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 4)
     {
-        flag_sensor = false;
-        if (abs(current_width_distance - (add_width / 2)) <= error)
+        flag_sensor = abs(current_width_distance - (add_width / 2.0f)) <= error;
+        if (!flag_sensor)
         {
-            flag_sensor = true;
-        }
-        else if (current_width_distance - (add_width / 2) > 0)
-        {
-            centering_addend.data = -(current_width_distance - (add_width / 2));
-        }
-        else
-        {
-            centering_addend.data = current_width_distance - (add_width / 2);
+            if (current_width_distance - (add_width / 2) > 0.0f)
+            {
+                centering_addend.data = -(current_width_distance - (add_width / 2.0f));
+            }
+            else
+            {
+                centering_addend.data = current_width_distance - (add_width / 2.0f);
+            }
         }
     }
     else if (step == 5)
@@ -70,7 +71,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     else if (step == 6)
     {
         flag_sensor = false;
-        if (current_depth_distance <= 0)
+        if (current_depth_distance <= 0.0f)
         {
             flag_sensor = true;
         }
@@ -80,7 +81,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
         // 7
     }
 
-    // 最大,最小値制限
+    // 最大,最小値制限 // clamp()
     if (arm_width > arm_w_max)
     {
         arm_width = arm_w_max;
@@ -105,8 +106,8 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     step_update();
 
-    arm_extent_msg.width = arm_width / diameter / 2;
-    arm_extent_msg.depth = arm_depth * (2 * M_PI) / lead / 2;
+    arm_extent_msg.width = arm_width / diameter / 2.0f;
+    arm_extent_msg.depth = arm_depth * (2.0f * M_PI) / lead / 2.0f;
 
     pub_arm_extent_->publish(arm_extent_msg);
     pub_centering_vel_->publish(centering_addend);
@@ -114,26 +115,22 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
 void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    current_width_info = *msg;
-    current_width = current_width_info.data * diameter;
+    current_width = msg->data * diameter;
 }
 
 void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    current_depth_info = *msg;
-    current_depth = current_depth_info.data * lead / (2 * M_PI);
+    current_depth = msg->data * lead / (2 * M_PI);
 }
 
 void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    current_width_distance_info = *msg;
-    current_width_distance = current_width_distance_info.data;
+    current_width_distance = msg->data;
 }
 
 void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    current_depth_distance_info = *msg;
-    current_depth_distance = current_depth_distance_info.data;
+    current_depth_distance = msg->data;
 }
 
 void ArmExtentNode::box_info_converse(float box_info, int *arm_data, float *box_data)
