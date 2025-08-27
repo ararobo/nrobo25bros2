@@ -134,9 +134,14 @@ void KeyState::update_state(uint8_t code, uint8_t state)
         case key_code::t:
             t.is_pushed = state;
             break;
-
+        case key_code::f:
+            f.is_pushed = state;
+            break;
         case key_code::g:
             g.is_pushed = state;
+            break;
+        case key_code::h:
+            h.is_pushed = state;
             break;
         case key_code::y:
             y.is_pushed = state;
