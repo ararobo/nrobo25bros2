@@ -1,2 +1,6 @@
-float32 width
-float32 depth
+float32 upper_hand_width
+float32 upper_hand_depth
+float32 right_slide
+float32 right_raise
+float32 left_slide
+float32 left_raise

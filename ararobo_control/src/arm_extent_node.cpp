@@ -106,8 +106,8 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     step_update();
 
-    arm_extent_msg.width = arm_width / diameter / 2.0f;
-    arm_extent_msg.depth = arm_depth * (2.0f * M_PI) / lead / 2.0f;
+    arm_extent_msg.upper_hand_width = arm_width / diameter / 2.0f;
+    arm_extent_msg.upper_hand_depth = arm_depth * (2.0f * M_PI) / lead / 2.0f;
 
     pub_arm_extent_->publish(arm_extent_msg);
     pub_centering_vel_->publish(centering_addend);

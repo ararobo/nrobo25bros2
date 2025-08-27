@@ -49,8 +49,12 @@ void OperationNode::lift_vel_callback(const std_msgs::msg::Float32::SharedPtr ms
 
 void OperationNode::arm_data_callback(const ararobo_msgs::msg::ArmData::SharedPtr msg)
 {
-    operation_data.width = msg->width; // 上アーム開閉幅
-    operation_data.depth = msg->depth; // 上アーム出し入れ
+    operation_data.width = msg->upper_hand_width; // 上アーム開閉幅
+    operation_data.depth = msg->upper_hand_depth; // 上アーム出し入れ
+    operation_data.right_slide = msg->right_slide;
+    operation_data.right_raise = msg->right_raise;
+    operation_data.left_slide = msg->left_slide;
+    operation_data.left_raise = msg->left_raise;
 }
 
 void OperationNode::timer_callback()

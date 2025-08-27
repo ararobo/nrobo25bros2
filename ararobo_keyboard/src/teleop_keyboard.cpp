@@ -26,6 +26,7 @@ void TeleopKeyboard::timer_callback()
     double x = 0.0, y = 0.0, omega = 0.0;
     double hand_width = 0.0, hand_depth = 0.0;
     double lift_vel = 0.0;
+    double right_slide = 0.0, right_raise = 0.0, left_slide = 0.0, left_raise = 0.0;
     key->update_state(key_code, key_state);
     // mecanum
     if (key->w.is_pushed)
@@ -70,11 +71,37 @@ void TeleopKeyboard::timer_callback()
         hand_width += hand_width_speed_;
     }
     // lower_hand
+    if (key->y.is_pushed)
+    {
+        left_raise -= raise_speed_;
+    }
     if (key->u.is_pushed)
     {
+        left_raise += raise_speed_;
+    }
+    if (key->i.is_pushed)
+    {
+        right_raise += raise_speed_;
+    }
+    if (key->o.is_pushed)
+    {
+        right_raise -= raise_speed_;
     }
     if (key->j.is_pushed)
     {
+        left_slide += slide_speed_;
+    }
+    if (key->n.is_pushed)
+    {
+        left_slide -= slide_speed_;
+    }
+    if (key->k.is_pushed)
+    {
+        right_slide += slide_speed_;
+    }
+    if (key->m.is_pushed)
+    {
+        right_slide -= slide_speed_;
     }
     // lift
     if (key->up.is_pushed)
@@ -101,8 +128,8 @@ void TeleopKeyboard::timer_callback()
     twist_msg.angular.z = omega;
     pub_cmd_->publish(twist_msg);
     ararobo_msgs::msg::ArmData arm_msg;
-    arm_msg.depth = hand_depth;
-    arm_msg.width = hand_width;
+    arm_msg.upper_hand_depth = hand_depth;
+    arm_msg.upper_hand_width = hand_width;
     pub_arm_->publish(arm_msg);
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_vel;
@@ -163,6 +190,12 @@ void KeyState::update_state(uint8_t code, uint8_t state)
             break;
         case key_code::p:
             p.is_pushed = state;
+            break;
+        case key_code::n:
+            n.is_pushed = state;
+            break;
+        case key_code::m:
+            m.is_pushed = state;
             break;
         case key_code::up:
             up.is_pushed = state;

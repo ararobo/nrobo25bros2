@@ -16,10 +16,14 @@ struct feedback_data_t
 
 struct operation_data_t
 {
-    float vx;    // x軸方向の速度[m/s]
-    float vy;    // y軸方向の速度[m/s]
-    float omega; // 回転速度[rad/s]
-    float width; // 上アーム開閉幅
-    float depth; // 上アーム出し入れ
-    float lift;  // 昇降
+    float vx;          // x軸方向の速度[m/s]
+    float vy;          // y軸方向の速度[m/s]
+    float omega;       // 回転速度[rad/s]
+    float width;       // 上アーム開閉幅
+    float depth;       // 上アーム出し入れ
+    float lift;        // 昇降
+    float right_slide; // 右下ハンド前後スライド
+    float right_raise; // 右下ハンド上下回転
+    float left_slide;  // 　左下ハンド前後スライド
+    float left_raise;  // 左下ハンド上下回転
 } __attribute__((__packed__));
