@@ -32,9 +32,9 @@ private:
     double linear_speed_ = 1.0;
     double angular_speed_ = 1.0;
     double shift_rate_ = 0.5;
-    double hand_depth_speed_ = 20.0;
-    double hand_width_speed_ = 20.0;
-    double lift_speed_ = 20.0;
+    double hand_depth_speed_ = 10.0;
+    double hand_width_speed_ = 10.0;
+    double lift_speed_ = 10.0;
     double raise_speed_ = 0.1;
     double slide_speed_ = 0.1;
 
