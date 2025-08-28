@@ -81,23 +81,9 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
         // 7
     }
 
-    // 最大,最小値制限 // clamp()
-    if (arm_width > arm_w_max)
-    {
-        arm_width = arm_w_max;
-    }
-    if (arm_width < 0)
-    {
-        arm_width = 0;
-    }
-    if (arm_depth > arm_d_max)
-    {
-        arm_depth = arm_d_max;
-    }
-    if (arm_depth < 0)
-    {
-        arm_depth = 0;
-    }
+    // 最大,最小値制限
+    arm_width = clamp(arm_width, arm_w_max, 0.0f);
+    arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
 
     if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_sensor)
     {
@@ -131,6 +117,22 @@ void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::Shared
 void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     current_depth_distance = msg->data;
+}
+
+float ArmExtentNode::clamp(float variable, float max, float min)
+{
+    if (variable > max)
+    {
+        return max;
+    }
+    else if (variable < min)
+    {
+        return min;
+    }
+    else
+    {
+        return variable;
+    }
 }
 
 void ArmExtentNode::box_info_converse(float box_info, int *arm_data, float *box_data)

@@ -59,6 +59,8 @@ private:
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
+    float clamp(float variable, float max, float min);
+
     /**
      * @brief ボックス情報をデータ配列に変換
      * @param box_info ボックス情報
