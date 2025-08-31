@@ -29,8 +29,8 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_cmd_;
     rclcpp::Publisher<ararobo_msgs::msg::ArmData>::SharedPtr pub_arm_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_lift_;
-    double linear_speed_ = 3.0;
-    double angular_speed_ = 3.0;
+    double linear_speed_ = 1.0;
+    double angular_speed_ = 2.0;
     double shift_rate_ = 1.0;
     double hand_depth_speed_ = 10.0;
     double hand_width_speed_ = 1.0;
