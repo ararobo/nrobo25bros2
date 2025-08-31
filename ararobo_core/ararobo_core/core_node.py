@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Bool
+from std_msgs.msg import Int8
 from visualization_msgs.msg import Marker
 from std_msgs.msg import String
 
@@ -10,11 +10,12 @@ class core_node(Node):
         super().__init__('core_node')
         self.get_logger().info('CoreNode has been initialized.')
         self.box = self.create_subscription(Marker,"/box/box",self.box_callback,10)
-        self.box_select = self.create_publisher(Marker,"/box/boxselect",10)
+        self.box_select = self.create_publisher(Int8,"/box/boxselect",10)
         self.goal = self.create_publisher(Pose2D,"goal_pose",10)
         self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
         #self.timer = self.create_timer(0.5, self.controller_callback)
         self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
+        self.timer_box = self.create_timer(1.0, self.box_timer_callback)
         #self.timer_box = self.create_timer(0.5, self.box_callback)
 
         self.box_coller = 0
@@ -41,7 +42,7 @@ class core_node(Node):
         self.trolleyconect_y = 90.0
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
-        self.serect_boxID = 0
+        self.serect_boxID = 13
         self.armpose = 1
 
     def controller_callback(self, msg: String):
@@ -122,12 +123,32 @@ class core_node(Node):
             elif cmds[1] == "4":
                 self.serect_boxID = 4
         elif cmds[0] == "armpose":
-            if cmds[1] == "close":
+            if cmds[1] == "hand_close":
                 self.armpose = 0
-            elif cmds[1] == "open":
+            elif cmds[1] == "A_open":
                 self.armpose = 1
-            elif cmds[1] == "catch":
+            elif cmds[1] == "B_open":
                 self.armpose = 2
+            elif cmds[1] == "C_open":
+                self.armpose = 3
+            elif cmds[1] == "D_open":
+                self.armpose = 4
+            elif cmds[1] == "E_open":
+                self.armpose = 5
+            elif cmds[1] == "A_close":
+                self.armpose = 6
+            elif cmds[1] == "B_close":
+                self.armpose = 7
+            elif cmds[1] == "C_close":
+                self.armpose = 8
+            elif cmds[1] == "D_close":
+                self.armpose = 9
+            elif cmds[1] == "E_close":
+                self.armpose = 10
+            elif cmds[1] == "ON":
+                self.armpose = 11
+            elif cmds[1] == "OFF":
+                self.armpose = 12
 
     def goal_timer_callback(self):
         msg = Pose2D()
@@ -137,9 +158,19 @@ class core_node(Node):
             self.goal.publish(msg)
             self.get_logger().info(f'Published_goal: x={msg.x}, y={msg.y}')
         else:
-            self.get_logger().warn('No valid goal to publish, skipping.')
+            self.get_logger().warn('No goal to publish, skipping.')
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
+        
+    def box_timer_callback(self):
+        msg = Int8()
+        msg.data = self.armpose
+        if msg.data !=13:
+            self.box_select.publish(msg)
+            self.get_logger().info(f"Published_armpose: pose={msg}")
+        else:
+            self.get_logger().warn("NO armpose to publish, skipping")
+        self.armpose = 13
                 
     def box_callback(self, msg):
         self.get_logger().info(f'Received box message: {msg}')
