@@ -14,7 +14,7 @@ public:
         bool is_long_pushed;
         uint32_t long_pushed_count;
     };
-    KeyState::keystate w, a, s, d, t, f, g, h, up, down, left, right, y, u, j, i, k, o, l, p, n, m, shift;
+    KeyState::keystate w, a, s, d, t, f, g, h, up, down, left, right, y, u, j, i, k, o, l, p, n, m, shift, x;
 
     void update_state(uint8_t code, uint8_t state);
 };
@@ -31,12 +31,14 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_lift_;
     double linear_speed_ = 1.0;
     double angular_speed_ = 2.0;
-    double shift_rate_ = 1.0;
-    double hand_depth_speed_ = 10.0;
+    double shift_rate_ = 0.4;
+    double hand_depth_speed_ = 15.0;
     double hand_width_speed_ = 1.0;
     double lift_speed_ = 20.0;
     double raise_speed_ = 0.5;
     double slide_speed_ = 0.5;
+
+    bool hold_flag_ = false;
 
 public:
     TeleopKeyboard(/* args */);

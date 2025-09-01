@@ -54,19 +54,30 @@ void TeleopKeyboard::timer_callback()
         omega += angular_speed_;
     }
     // upper_hand
-    if (key->t.is_pushed)
+    if (key->h.is_pushed)
     {
         hand_depth += hand_depth_speed_;
     }
-    if (key->f.is_pushed)
+    if (key->t.is_pushed)
     {
         hand_width -= hand_width_speed_;
     }
-    if (key->g.is_pushed)
+    if (key->f.is_pushed)
     {
         hand_depth -= hand_depth_speed_;
+        if (key->x.is_pushed)
+        {
+            hold_flag_ = true;
+        }
     }
-    if (key->h.is_pushed)
+    else
+    {
+        if (key->x.is_pushed)
+        {
+            hold_flag_ = false;
+        }
+    }
+    if (key->g.is_pushed)
     {
         hand_width += hand_width_speed_;
     }
@@ -124,6 +135,11 @@ void TeleopKeyboard::timer_callback()
         right_raise *= shift_rate_;
         left_slide *= shift_rate_;
         right_slide *= shift_rate_;
+    }
+
+    if (hold_flag_)
+    {
+        hand_depth = -hand_depth_speed_;
     }
 
     geometry_msgs::msg::Twist twist_msg;
@@ -219,6 +235,9 @@ void KeyState::update_state(uint8_t code, uint8_t state)
             break;
         case key_code::shift_l:
             shift.is_pushed = state;
+            break;
+        case key_code::x:
+            x.is_pushed = state;
             break;
 
         default:
