@@ -15,7 +15,7 @@ class core_node(Node):
         self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
         #self.timer = self.create_timer(0.5, self.controller_callback)
         self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
-        self.timer_box = self.create_timer(1.0, self.box_timer_callback)
+        self.timer_box = self.create_timer(0.5, self.box_timer_callback)
         #self.timer_box = self.create_timer(0.5, self.box_callback)
 
         self.box_coller = 0
