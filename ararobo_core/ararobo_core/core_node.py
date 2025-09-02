@@ -45,7 +45,6 @@ class core_node(Node):
 
     def controller_callback(self, msg: String):
         self.get_logger().info(f'Received contrpller message: {msg}')
-        # Process the goal message and publish to nav/goal if needed
         self.cmd = msg.data
         cmds = msg.data.split(',')
         if cmds[0] == "move":
