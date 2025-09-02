@@ -13,10 +13,8 @@ class core_node(Node):
         self.box_select = self.create_publisher(Int8,"/box/boxselect",10)
         self.goal = self.create_publisher(Pose2D,"goal_pose",10)
         self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
-        #self.timer = self.create_timer(0.5, self.controller_callback)
         self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
         self.timer_box = self.create_timer(0.5, self.box_timer_callback)
-        #self.timer_box = self.create_timer(0.5, self.box_callback)
 
         self.box_coller = 0
         self.team = "red"
@@ -113,15 +111,6 @@ class core_node(Node):
                 elif cmds[2]== "trolleyconect":
                     self.gpub_x = -self.trolleyconect_x
                     self.gpub_y = -self.trolleyconect_y
-        elif cmds[0] == "box":
-            if cmds[1] == "1":
-                self.serect_boxID = 1
-            elif cmds[1] == "2":
-                self.serect_boxID = 2
-            elif cmds[1] == "3":
-                self.serect_boxID = 3
-            elif cmds[1] == "4":
-                self.serect_boxID = 4
         elif cmds[0] == "armpose":
             if cmds[1] == "hand_close":
                 self.armpose = 0
