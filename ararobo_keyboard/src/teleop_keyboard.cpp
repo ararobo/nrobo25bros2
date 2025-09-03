@@ -7,7 +7,10 @@ TeleopKeyboard::TeleopKeyboard() : Node("teleop_keyboard")
     key = std::make_shared<KeyState>();
     keyboard->init(event_path_.c_str());
     pub_cmd_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-    pub_arm_ = this->create_publisher<ararobo_msgs::msg::ArmData>("arm_target", 10);
+    pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/upper_hand/width", 10);
+    pub_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/upper_hand/depth", 10);
     pub_lift_ = this->create_publisher<std_msgs::msg::Float32>("lift_vel", 10);
     timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&TeleopKeyboard::timer_callback, this));
     RCLCPP_INFO(this->get_logger(), "start");
@@ -147,14 +150,10 @@ void TeleopKeyboard::timer_callback()
     twist_msg.linear.y = y;
     twist_msg.angular.z = omega;
     pub_cmd_->publish(twist_msg);
-    ararobo_msgs::msg::ArmData arm_msg;
-    arm_msg.upper_hand_depth = hand_depth;
-    arm_msg.upper_hand_width = hand_width;
-    arm_msg.left_raise = left_raise;
-    arm_msg.left_slide = left_slide;
-    arm_msg.right_raise = right_raise;
-    arm_msg.right_slide = right_slide;
-    pub_arm_->publish(arm_msg);
+    std_msgs::msg::Float32 upper_hand_width_msg;
+    upper_hand_width_msg.data = hand_width;
+    std_msgs::msg::Float32 upper_hand_depth_msg;
+    upper_hand_depth_msg.data = hand_depth;
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_vel;
     pub_lift_->publish(lift_msg);

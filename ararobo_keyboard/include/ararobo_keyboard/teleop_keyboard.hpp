@@ -1,7 +1,6 @@
 #pragma once
 #include "ararobo_keyboard/linux_keyboard_driver.hpp"
 #include <geometry_msgs/msg/twist.hpp>
-#include "ararobo_msgs/msg/arm_data.hpp"
 #include <std_msgs/msg/float32.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -27,7 +26,8 @@ private:
     std::string event_path_ = "/dev/input/event3";
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_cmd_;
-    rclcpp::Publisher<ararobo_msgs::msg::ArmData>::SharedPtr pub_arm_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_lift_;
     double linear_speed_ = 1.0;
     double angular_speed_ = 2.0;
