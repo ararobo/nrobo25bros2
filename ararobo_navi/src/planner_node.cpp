@@ -42,29 +42,7 @@ namespace aster
         return std::hypot(x1 - x2, y1 - y2);
     }
 
-    void PlannerNode::pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
-    {
-        geometry_msgs::msg::PoseStamped pose_odom, pose_map;
-
-        pose_odom.header = msg->header;
-        pose_odom.pose = msg->pose.pose;
-
-        try
-        {
-            tf_buffer_->transform(pose_odom, pose_map, "map", tf2::durationFromSec(0.5));
-            current_pose_.position = pose_map.pose.position;
-            current_pose_.orientation = pose_map.pose.orientation;
-
-            RCLCPP_INFO(get_logger(), "[POSE] (odom→map変換後) x=%.2f y=%.2f",
-                        current_pose_.position.x, current_pose_.position.y);
-        }
-        catch (const tf2::TransformException &ex)
-        {
-            RCLCPP_WARN(get_logger(), "TF変換失敗 (odom→map): %s", ex.what());
-        }
-    }
-
-    std::vector<std::pair<int, int>> PlannerNode::a_star(
+        std::vector<std::pair<int, int>> PlannerNode::a_star(
         const std::vector<std::vector<int>> &g, int sx, int sy, int gx, int gy)
     {
         using NodePtr = std::shared_ptr<AStarNode>;
