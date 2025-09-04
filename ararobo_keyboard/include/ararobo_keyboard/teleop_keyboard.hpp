@@ -28,6 +28,8 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_cmd_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_hand_slide_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_hand_raise_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_lift_;
     double linear_speed_ = 1.0;
     double angular_speed_ = 2.0;
