@@ -43,14 +43,14 @@ private:
     float error = 0.0100; // 許容誤差[m]
 
     // subscribe_data
-    float box_info;               // ボックスに関する情報
-    int arm_state = 3;            // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
-    int state_s;                  // 目標動作保護
-    float target_width;           // ボックス幅[m]
-    float current_width;          // 現在のアーム幅
-    float current_depth;          // 現在のアーム出し入れ
-    float current_width_distance; // 幅 tof_sensorの距離
-    float current_depth_distance; // 出し入れ tof_sensorの距離
+    float box_info;                      // ボックスに関する情報
+    int arm_state = 3;                   // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
+    int state_s;                         // 目標動作保護
+    float target_width;                  // ボックス幅[m]
+    float current_width;                 // 現在のアーム幅
+    float current_depth;                 // 現在のアーム出し入れ
+    float current_width_distance = 0.0f; // 幅 tof_sensorの距離
+    float current_depth_distance = 0.0f; // 出し入れ tof_sensorの距離
 
     // publish_data
     float arm_width; // 上アーム開閉幅[mm]
