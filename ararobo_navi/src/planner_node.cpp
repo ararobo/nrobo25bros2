@@ -232,15 +232,6 @@ namespace aster
                 m.data[gy * w + gx] = 50;
         map_with_path_pub_->publish(m);
     }
-    void PlannerNode::pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
-    {
-        current_pose_.position = msg->pose.pose.position;
-        current_pose_.orientation = msg->pose.pose.orientation;
-
-        RCLCPP_INFO(get_logger(), "[POSE] x=%.2f y=%.2f",
-                    current_pose_.position.x, current_pose_.position.y);
-    }
-
 } // namespace aster
 int main(int argc, char **argv)
 {

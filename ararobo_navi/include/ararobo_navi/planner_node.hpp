@@ -51,7 +51,6 @@ namespace aster
     double heuristic(int x1, int y1, int x2, int y2);
     std::vector<std::pair<int, int>> a_star(const std::vector<std::vector<int>> &grid,
                                             int sx, int sy, int gx, int gy);
-    void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
     // ---- 座標変換 ----
     bool worldToGrid(double wx, double wy, int &gx, int &gy) const;

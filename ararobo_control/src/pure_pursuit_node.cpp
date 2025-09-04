@@ -16,7 +16,7 @@ public:
     {
         tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-        this->declare_parameter("lookahead_distance", 0.03);
+        this->declare_parameter("lookahead_distance", 0.1);
         this->get_parameter("lookahead_distance", lookahead_distance);
         RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
 
@@ -156,8 +156,8 @@ private:
 
         double dx = target.pose.position.x - current_pose.pose.position.x;
         double dy = target.pose.position.y - current_pose.pose.position.y;
-        double local_x = std::cos(-yaw) * dx - std::sin(-yaw) * dy;
-        double local_y = std::sin(-yaw) * dx + std::cos(-yaw) * dy;
+        double local_x = std::cos(yaw) * dx - std::sin(yaw) * dy;
+        double local_y = std::sin(yaw) * dx + std::cos(yaw) * dy;
         RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
 
         geometry_msgs::msg::Twist cmd;
