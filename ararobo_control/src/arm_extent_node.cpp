@@ -52,7 +52,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 4)
     {
-        flag_sensor = abs(current_width_distance - (add_width / 2.0f)) <= error;
+        flag_sensor = true; // abs(current_width_distance - (add_width / 2.0f)) <= error;
         if (!flag_sensor)
         {
             if (current_width_distance - (add_width / 2) > 0.0f)
@@ -72,7 +72,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 6)
     {
-        flag_sensor = false;
+        flag_sensor = true; // false;
         if (current_depth_distance <= 0.0f)
         {
             flag_sensor = true;
