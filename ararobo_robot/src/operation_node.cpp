@@ -39,7 +39,7 @@ OperationNode::OperationNode()
     sub_under_hand_raise_ = this->create_subscription<std_msgs::msg::Float32>(
         "/under_hand/raise", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
-        { operation_data.left_raise = -msg->data;
+        { operation_data.left_raise = msg->data;
         operation_data.right_raise = msg->data; });
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
