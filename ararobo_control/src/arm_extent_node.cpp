@@ -35,22 +35,22 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     centering_addend.data = 0.0f;
 
-    if (step == 1)
+    if (step == 1) // アームを原点へ移動（収納）
     {
         arm_width = 0.0f;
         arm_depth = 0.0f;
     }
-    else if (step == 2)
+    else if (step == 2) // ボックスよりも広く開く
     {
         arm_width = target_width + add_width;
         arm_depth = 0.0f;
     }
-    else if (step == 3)
+    else if (step == 3) // ボックスを囲う
     {
         arm_width = target_width + add_width;
         arm_depth = target_width + add_width;
     }
-    else if (step == 4)
+    else if (step == 4) // ロボットを前後に移動してボックスとの位置を合わせる
     {
         flag_sensor = true; // abs(current_width_distance - (add_width / 2.0f)) <= error;
         if (!flag_sensor)
@@ -65,7 +65,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
             }
         }
     }
-    else if (step == 5)
+    else if (step == 5) // 横で挟む
     {
         arm_width = target_width;
         arm_depth = target_width + add_width;

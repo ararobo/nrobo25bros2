@@ -26,4 +26,5 @@ struct operation_data_t
     float right_raise; // 右下ハンド上下回転
     float left_slide;  // 左下ハンド前後スライド
     float left_raise;  // 左下ハンド上下回転
+    uint8_t task_kind; // 動作の種類
 } __attribute__((__packed__));

@@ -5,6 +5,7 @@
 #include "ararobo_robot/robot_data_config.hpp"
 #include "ararobo_robot/simple_udp.hpp"
 #include "ararobo_robot/ethernet_config.hpp"
+#include <std_msgs/msg/u_int8.hpp>
 
 class OperationNode : public rclcpp::Node
 {
@@ -15,6 +16,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_upper_hand_depth_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_slide_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_raise_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_task_kind_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> udp;
 
