@@ -19,8 +19,10 @@ ArmExtentNode::ArmExtentNode()
     sub_box_info_ = this->create_subscription<std_msgs::msg::Float32>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
-    pub_arm_extent_ = this->create_publisher<ararobo_msgs::msg::ArmData>(
-        "/arm_target", 10);
+    pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/upper_hand/width", 10);
+    pub_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/upper_hand/depth", 10);
     pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
         "/centering_vel", 10);
 }
@@ -50,7 +52,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 4)
     {
-        flag_sensor = abs(current_width_distance - (add_width / 2.0f)) <= error;
+        flag_sensor = true; // abs(current_width_distance - (add_width / 2.0f)) <= error;
         if (!flag_sensor)
         {
             if (current_width_distance - (add_width / 2) > 0.0f)
@@ -70,7 +72,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
     }
     else if (step == 6)
     {
-        flag_sensor = false;
+        flag_sensor = true; // false;
         if (current_depth_distance <= 0.0f)
         {
             flag_sensor = true;
@@ -92,10 +94,11 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
 
     step_update();
 
-    arm_extent_msg.upper_hand_width = arm_width / diameter / 2.0f;
-    arm_extent_msg.upper_hand_depth = arm_depth * (2.0f * M_PI) / lead / 2.0f;
+    upper_hand_width_msg.data = arm_width / diameter / 2.0f;
+    upper_hand_depth_msg.data = arm_depth * (2.0f * M_PI) / lead / 2.0f;
 
-    pub_arm_extent_->publish(arm_extent_msg);
+    pub_upper_hand_width_->publish(upper_hand_width_msg);
+    pub_upper_hand_depth_->publish(upper_hand_depth_msg);
     pub_centering_vel_->publish(centering_addend);
 }
 

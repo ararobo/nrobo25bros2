@@ -3,8 +3,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
-#include "ararobo_msgs/msg/arm_data.hpp"
 
+/*
+float32 upper_hand_width
+float32 upper_hand_depth
+float32 right_slide
+float32 right_raise
+float32 left_slide
+float32 left_raise
+*/
 class ArmExtentNode : public rclcpp::Node
 {
 private:
@@ -13,12 +20,14 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_box_info_;       // box_infomation from core
-    rclcpp::Publisher<ararobo_msgs::msg::ArmData>::SharedPtr pub_arm_extent_;    // arm_extent to operation
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;     //
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;
     // ararobo_msgs::msg::ArmData
 
-    ararobo_msgs::msg::ArmData arm_extent_msg; // arm width,depth
-    std_msgs::msg::Float32 centering_addend;   //
+    std_msgs::msg::Float32 upper_hand_width_msg;
+    std_msgs::msg::Float32 upper_hand_depth_msg;
+    std_msgs::msg::Float32 centering_addend;
 
     // constant_data
     float arm_w_max = 0.650;   // 開閉可動域[m]
@@ -34,14 +43,14 @@ private:
     float error = 0.0100; // 許容誤差[m]
 
     // subscribe_data
-    float box_info;               // ボックスに関する情報
-    int arm_state = 3;            // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
-    int state_s;                  // 目標動作保護
-    float target_width;           // ボックス幅[m]
-    float current_width;          // 現在のアーム幅
-    float current_depth;          // 現在のアーム出し入れ
-    float current_width_distance; // 幅 tof_sensorの距離
-    float current_depth_distance; // 出し入れ tof_sensorの距離
+    float box_info;                      // ボックスに関する情報
+    int arm_state = 3;                   // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
+    int state_s;                         // 目標動作保護
+    float target_width;                  // ボックス幅[m]
+    float current_width;                 // 現在のアーム幅
+    float current_depth;                 // 現在のアーム出し入れ
+    float current_width_distance = 0.0f; // 幅 tof_sensorの距離
+    float current_depth_distance = 0.0f; // 出し入れ tof_sensorの距離
 
     // publish_data
     float arm_width; // 上アーム開閉幅[mm]
