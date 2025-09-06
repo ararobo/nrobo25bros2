@@ -55,13 +55,10 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Float32::SharedPtr ms
         flag_sensor = true; // abs(current_width_distance - (add_width / 2.0f)) <= error;
         if (!flag_sensor)
         {
+            centering_addend.data = current_width_distance - (add_width / 2.0f);
             if (current_width_distance - (add_width / 2) > 0.0f)
             {
-                centering_addend.data = -(current_width_distance - (add_width / 2.0f));
-            }
-            else
-            {
-                centering_addend.data = current_width_distance - (add_width / 2.0f);
+                centering_addend.data *= -1;
             }
         }
     }

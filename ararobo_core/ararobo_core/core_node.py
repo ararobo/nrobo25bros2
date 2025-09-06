@@ -17,7 +17,6 @@ class core_node(Node):
         self.timer_box = self.create_timer(0.5, self.box_timer_callback)
 
         self.box_coller = 0
-        self.team = "red"
         self.startart_x = 0.0
         self.startart_y = 0.0
         self.pylon_x = 20.0
@@ -44,7 +43,7 @@ class core_node(Node):
         self.armpose = 1
 
     def controller_callback(self, msg: String):
-        self.get_logger().info(f'Received contrpller message: {msg}')
+        self.get_logger().info(f'Received controller message: {msg}')
         self.cmd = msg.data
         cmds = msg.data.split(',')
         if cmds[0] == "move":
@@ -162,7 +161,6 @@ class core_node(Node):
                 
     def box_callback(self, msg):
         self.get_logger().info(f'Received box message: {msg}')
-        # Process the box message and publish to box/boxselect if needed
         self.box_coller = msg.id
         
 

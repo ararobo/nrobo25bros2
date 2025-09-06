@@ -23,7 +23,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;
-    // ararobo_msgs::msg::ArmData
 
     std_msgs::msg::Float32 upper_hand_width_msg;
     std_msgs::msg::Float32 upper_hand_depth_msg;
