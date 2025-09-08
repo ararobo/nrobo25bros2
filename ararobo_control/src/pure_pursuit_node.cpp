@@ -12,20 +12,22 @@
 class PurePursuitNode : public rclcpp::Node
 {
 public:
-    PurePursuitNode() : Node("pure_pursuit")
+    PurePursuitNode() : Node("pure_pursuit"), current_vel(0.0)
     {
         tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-        this->declare_parameter("lookahead_distance", 0.1);
+        this->declare_parameter("lookahead_distance", 0.5);
+        this->declare_parameter("max_vel", 0.5); // m/s
+        this->declare_parameter("accel", 0.2);   // m/s^2
         this->get_parameter("lookahead_distance", lookahead_distance);
-        RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance);
+        this->get_parameter("max_vel", v_max);
+        this->get_parameter("accel", accel);
 
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
-        // タイマーのコールバックを timer_callback() に変更
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&PurePursuitNode::timer_callback, this));
@@ -45,7 +47,8 @@ private:
     geometry_msgs::msg::PoseStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
-
+    double v_max, accel;
+    double current_vel; // 現在の速度[m/s]
     void path_callback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         path = *msg;
@@ -124,52 +127,53 @@ private:
         if (!found)
         {
             target = path.poses.back();
-            double dx = target.pose.position.x - current_pose.pose.position.x;
-            double dy = target.pose.position.y - current_pose.pose.position.y;
-            double dist = std::hypot(dx, dy);
+        }
+        double dx = target.pose.position.x - current_pose.pose.position.x;
+        double dy = target.pose.position.y - current_pose.pose.position.y;
+        double dist_to_goal = std::hypot(dx, dy);
 
-            RCLCPP_INFO(this->get_logger(), "Using last point as target: x=%.2f, y=%.2f (dist=%.2f)",
-                        target.pose.position.x, target.pose.position.y, dist);
+        if (dist_to_goal < 0.1) // ゴール到達
+        {
+            geometry_msgs::msg::Twist stop;
+            stop.linear.x = 0.0;
+            stop.linear.y = 0.0;
+            stop.angular.z = 0.0;
+            cmd_pub->publish(stop);
+            current_vel = 0.0;
+            RCLCPP_INFO(this->get_logger(), "Reached final goal, stopping robot.");
+            return;
+        }
 
-            // If we're very close to the final point, stop the robot
-            if (dist < 0.1) // 10cm tolerance
+        // 進行方向ベクトル（正規化）
+        double direction_x = dx / dist_to_goal;
+        double direction_y = dy / dist_to_goal;
+
+        // 減速に必要な距離
+        double stop_dist = (current_vel * current_vel) / (2 * accel);
+
+        // --- 台形制御 ---
+        if (dist_to_goal <= stop_dist)
+        {
+            // 減速
+            current_vel -= accel * 0.1; // Δt = 0.1s
+            if (current_vel < 0.0)
+                current_vel = 0.0;
+        }
+        else
+        {
+            // 加速 or 定速
+            if (current_vel < v_max)
             {
-                geometry_msgs::msg::Twist cmd;
-                cmd.linear.x = 0.0;
-                cmd.linear.y = 0.0;
-                cmd.angular.z = 0.0;
-                cmd_pub->publish(cmd);
-                RCLCPP_INFO(this->get_logger(), "Reached final goal, stopping robot.");
-                return;
+                current_vel += accel * 0.1;
+                if (current_vel > v_max)
+                    current_vel = v_max;
             }
         }
 
-        tf2::Quaternion q(
-            current_pose.pose.orientation.x,
-            current_pose.pose.orientation.y,
-            current_pose.pose.orientation.z,
-            current_pose.pose.orientation.w);
-        tf2::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        RCLCPP_INFO(this->get_logger(), "Current Yaw: %.2f rad", yaw);
-
-        double dx = target.pose.position.x - current_pose.pose.position.x;
-        double dy = target.pose.position.y - current_pose.pose.position.y;
-        double local_x = std::cos(yaw) * dx - std::sin(yaw) * dy;
-        double local_y = std::sin(yaw) * dx + std::cos(yaw) * dy;
-        RCLCPP_INFO(this->get_logger(), "Target in robot frame: x=%.2f, y=%.2f", local_x, local_y);
-
+        // --- 出力 ---
         geometry_msgs::msg::Twist cmd;
-        if (local_x > 1.0)
-            local_x = 1.0;
-        if (local_y > 1.0)
-            local_y = 1.0;
-        cmd.linear.x = local_x;
-        cmd.linear.y = local_y;
-
-        RCLCPP_INFO(this->get_logger(), "Publishing cmd_vel: linear.x=%.2f, linear.y=%.2f",
-                    cmd.linear.x, cmd.linear.y);
+        cmd.linear.x = current_vel * direction_x;
+        cmd.linear.y = current_vel * direction_y;
         cmd_pub->publish(cmd);
     }
 };
