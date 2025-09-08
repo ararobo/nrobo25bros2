@@ -80,18 +80,18 @@ void FeedbackNode::timer_callback()
     double roll, pitch, yaw;
     matrix.getRPY(roll, pitch, yaw);
 
+    theta = pitch;
+
+    RCLCPP_INFO(this->get_logger(), "R:%f, P:%f, Y:%f", roll, pitch, yaw);
+
     // オドメトリ計算
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
     odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
     odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
     rclcpp::Time now = this->now();
 
-    // ヨー角からtf2::Quaternionを作成
-    tf2::Quaternion q;
-    q.setRPY(0, 0, theta); // ロール、ピッチ、ヨー
-
     // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
-    geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q);
+    geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q_tf2);
 
     // odom
     nav_msgs::msg::Odometry odom_msg;
@@ -137,8 +137,8 @@ void FeedbackNode::timer_callback()
     prev_theta = theta; // 前回のヨー角を更新
 
     // ログ出力 (より詳細に速度も出力)
-    RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f, linear_vx: %f, linear_vy: %f, angular_wz: %f",
-                x, y, theta, odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.angular.z);
+    // RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f, linear_vx: %f, linear_vy: %f, angular_wz: %f",
+    //             x, y, theta, odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.angular.z);
 }
 
 int main(int argc, char const *argv[])
