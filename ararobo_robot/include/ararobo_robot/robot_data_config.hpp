@@ -3,7 +3,10 @@
 
 struct feedback_data_t
 {
-    float yaw;         // ヨー角[rad]
+    float q_x;
+    float q_y;
+    float q_z;
+    float q_w;
     int16_t encoder_x; // x軸方向のエンコーダ値
     int16_t encoder_y; // y軸方向のエンコーダ値
     uint16_t distance_base_rf;

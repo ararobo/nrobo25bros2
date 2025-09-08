@@ -2,6 +2,7 @@
 #include <cmath> // M_PI のために必要 (thetaから角速度を計算するため)
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp> // tf2::toMsg のために必要
+#include <tf2/LinearMath/Matrix3x3.h>
 
 FeedbackNode::FeedbackNode()
     : Node("feedback_node")
@@ -69,7 +70,15 @@ void FeedbackNode::timer_callback()
     {
         RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
     }
-    theta = feedback_union.data.yaw;
+    tf2::Quaternion q_tf2;
+    q_tf2.setX(feedback_union.data.q_x);
+    q_tf2.setY(feedback_union.data.q_y);
+    q_tf2.setZ(feedback_union.data.q_z);
+    q_tf2.setW(feedback_union.data.q_w);
+
+    tf2::Matrix3x3 matrix(q_tf2);
+    double roll, pitch, yaw;
+    matrix.getRPY(roll, pitch, yaw);
 
     // オドメトリ計算
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
