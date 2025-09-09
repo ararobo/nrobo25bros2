@@ -145,7 +145,7 @@ private:
         }
 
         // 進行方向ベクトル（正規化）
-        double direction_x = dx / dist_to_goal;
+        double direction_x = dx / dist_to_goal; // 向きを出す
         double direction_y = dy / dist_to_goal;
 
         // 減速に必要な距離
