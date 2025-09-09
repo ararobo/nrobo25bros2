@@ -80,13 +80,15 @@ void FeedbackNode::timer_callback()
     double roll, pitch, yaw;
     matrix.getRPY(roll, pitch, yaw);
 
-    theta = pitch;
+    q_tf2.setRPY(0.0, 0.0, 0.0);
+
+    theta = 0.0;
 
     RCLCPP_INFO(this->get_logger(), "R:%f, P:%f, Y:%f", roll, pitch, yaw);
 
     // オドメトリ計算
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
-    odom_calculator->set_encoder_count(feedback_union.data.encoder_x, feedback_union.data.encoder_y, current_period_s);
+    odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
     odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
     rclcpp::Time now = this->now();
 
