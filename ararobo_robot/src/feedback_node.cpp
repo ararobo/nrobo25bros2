@@ -1,16 +1,16 @@
 #include "ararobo_robot/feedback_node.hpp"
-#include <cmath> // M_PI のために必要 (thetaから角速度を計算するため)
+#include <cmath>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp> // tf2::toMsg のために必要
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 
 FeedbackNode::FeedbackNode()
     : Node("feedback_node")
 {
     // 機体固有値の初期化
-    encoder_resolution = 4096.0; // エンコーダの分解能 (CPR)
-    wheel_radius = 0.03;         // 車輪の半径 (m)
-    period_odom = 20;            // オドメトリ計算周期 (ms)
+    const double encoder_resolution = 4096.0; // エンコーダの分解能 (CPR)
+    const double wheel_radius = 0.03;         // 車輪の半径 (m)
+    const int period_odom = 20;            // オドメトリ計算周期 (ms)
 
     // UDP通信の初期化
     udp = std::make_shared<SimpleUDP>();
@@ -20,14 +20,14 @@ FeedbackNode::FeedbackNode()
     if (!udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
-        return; // 初期化失敗で終了
+        return;
     }
 
     // 受信ポートの設定
     if (!udp->bindSocket(ethernet_config::pc::ip, ethernet_config::main_board::port_feedback))
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to bind UDP socket");
-        return; // 初期化失敗で終了
+        return;
     }
 
     // Odometryパブリッシャーの初期化
@@ -48,13 +48,10 @@ FeedbackNode::FeedbackNode()
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(period_odom),
         std::bind(&FeedbackNode::timer_callback, this));
-
-    // prev_timeの初期化 (必須)
+    
+    // prev_timeの初期化
     prev_time = this->now();
-    prev_theta = 0.0; // 初期ヨー角も0に設定
-    x = 0.0;          // ロボットの初期位置x
-    y = 0.0;          // ロボットの初期位置y
-
+    
     RCLCPP_INFO(this->get_logger(), "FeedbackNode initialized");
 }
 
@@ -68,10 +65,16 @@ void FeedbackNode::timer_callback()
 {
     // UDPパケットの受信
     int recv_size = udp->recvPacket(feedback_union.code, sizeof(feedback_union));
-    if (recv_size < 0)
+    if (recv_size != sizeof(feedback_union))
     {
-        RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
+        if (recv_size < 0) {
+            RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet. Recv size: %d", recv_size);
+        } else {
+            RCLCPP_WARN(this->get_logger(), "Received packet size mismatch. Expected: %zu, Received: %d", sizeof(feedback_union), recv_size);
+        }
+        return;
     }
+
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
     q_tf2.setY(feedback_union.data.q_y);
@@ -81,84 +84,47 @@ void FeedbackNode::timer_callback()
     tf2::Matrix3x3 matrix(q_tf2);
     double roll, pitch, yaw;
     matrix.getRPY(roll, pitch, yaw);
+    double theta = yaw;
 
-    // ヨー角はIMUから取得
-    theta = yaw;
+    // 現在時刻を取得し、時間差分を計算
+    rclcpp::Time current_time = this->now();
+    double dt = (current_time - prev_time).seconds();
+    prev_time = current_time;
 
-    RCLCPP_INFO(this->get_logger(), "R:%f, P:%f, Y:%f", roll, pitch, yaw);
-
-    // オドメトリ計算
-    double current_period_s = static_cast<double>(period_odom) / 1000.0;
-    odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
-    
-    // ロボット座標系での速度を取得
-    double vx_robot = odom_calculator->robot_velocity[0];
-    double vy_robot = odom_calculator->robot_velocity[1];
-
-    // 座標を更新
-    double dtheta = theta - prev_theta;
-    while (dtheta > M_PI) dtheta -= 2.0 * M_PI;
-    while (dtheta < -M_PI) dtheta += 2.0 * M_PI;
-    
-    double theta_avg = prev_theta + dtheta / 2.0;
-    
-    // ロボット座標系での速度をフィールド座標系に変換
-    double vx_field = cos(theta_avg) * vx_robot - sin(theta_avg) * vy_robot;
-    double vy_field = sin(theta_avg) * vx_robot + cos(theta_avg) * vy_robot;
-
-    x += vx_field * current_period_s;
-    y += vy_field * current_period_s;
-
-    rclcpp::Time now = this->now();
+    // オドメトリ計算をOdomCalculatorに委譲
+    odom_calculator->update_odom(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, theta, dt);
 
     // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
     geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q_tf2);
 
     // odom
     nav_msgs::msg::Odometry odom_msg;
-    odom_msg.header.stamp = now;
+    odom_msg.header.stamp = current_time;
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
 
-    odom_msg.twist.twist.linear.x = vx_robot; // ロボット座標系でのx速度 (m/s)
-    odom_msg.twist.twist.linear.y = vy_robot; // ロボット座標系でのy速度 (m/s)
+    odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0];
+    odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1];
+    odom_msg.twist.twist.angular.z = odom_calculator->robot_angular_velocity;
 
-    // 角速度の計算
-    double dt = (now.seconds() - prev_time.seconds());
-    if (dt > 0.0) // ゼロ除算を避けるため
-    {
-        odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
-    }
-    else
-    {
-        odom_msg.twist.twist.angular.z = 0.0;
-    }
-
-    odom_msg.pose.pose.position.x = x;
-    odom_msg.pose.pose.position.y = y;
+    odom_msg.pose.pose.position.x = odom_calculator->robot_coord[0];
+    odom_msg.pose.pose.position.y = odom_calculator->robot_coord[1];
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = odom_quat_msg;
-    pub_odometry_->publish(odom_msg); // odometryデータの送信
+    pub_odometry_->publish(odom_msg);
 
     // tf2
     geometry_msgs::msg::TransformStamped odom_trans;
-    odom_trans.header.stamp = now;
+    odom_trans.header.stamp = current_time;
     odom_trans.header.frame_id = "odom";
     odom_trans.child_frame_id = "base_link";
 
-    odom_trans.transform.translation.x = x;
-    odom_trans.transform.translation.y = y;
+    odom_trans.transform.translation.x = odom_calculator->robot_coord[0];
+    odom_trans.transform.translation.y = odom_calculator->robot_coord[1];
     odom_trans.transform.translation.z = 0.0;
-    odom_trans.transform.rotation = odom_quat_msg; // 同じ変換されたクォータニオンを使用
+    odom_trans.transform.rotation = odom_quat_msg;
 
     tf_broadcaster_->sendTransform(odom_trans);
-
-    prev_time = now;    // 前回のタイムスタンプを更新
-    prev_theta = theta; // 前回のヨー角を更新
-
-    // ログ出力 (より詳細に速度も出力)
-    // RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f, linear_vx: %f, linear_vy: %f, angular_wz: %f",
-    //             x, y, theta, odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.angular.z);
 }
 
 int main(int argc, char const *argv[])
