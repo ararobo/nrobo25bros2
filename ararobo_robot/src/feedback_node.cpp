@@ -52,8 +52,6 @@ FeedbackNode::FeedbackNode()
     // prev_timeの初期化 (必須)
     prev_time = this->now();
     prev_theta = 0.0; // 初期ヨー角も0に設定
-    x = 0.0;          // ロボットの初期位置x
-    y = 0.0;          // ロボットの初期位置y
 
     RCLCPP_INFO(this->get_logger(), "FeedbackNode initialized");
 }
@@ -82,7 +80,6 @@ void FeedbackNode::timer_callback()
     double roll, pitch, yaw;
     matrix.getRPY(roll, pitch, yaw);
 
-    // ヨー角はIMUから取得
     theta = yaw;
 
     RCLCPP_INFO(this->get_logger(), "R:%f, P:%f, Y:%f", roll, pitch, yaw);
@@ -90,19 +87,7 @@ void FeedbackNode::timer_callback()
     // オドメトリ計算
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
     odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
-    
-    // ロボット座標系での速度を取得
-    double vx_robot = odom_calculator->robot_velocity[0];
-    double vy_robot = odom_calculator->robot_velocity[1];
-
-    // ロボット座標系での速度をフィールド座標系に変換
-    double vx_field = cos(theta) * vx_robot - sin(theta) * vy_robot;
-    double vy_field = sin(theta) * vx_robot + cos(theta) * vy_robot;
-
-    // 座標を更新
-    x += vx_field * current_period_s;
-    y += vy_field * current_period_s;
-
+    odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
     rclcpp::Time now = this->now();
 
     // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
@@ -114,23 +99,14 @@ void FeedbackNode::timer_callback()
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
 
-    odom_msg.twist.twist.linear.x = vx_robot; // ロボット座標系でのx速度 (m/s)
-    odom_msg.twist.twist.linear.y = vy_robot; // ロボット座標系でのy速度 (m/s)
+    odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
+    odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
 
     // 角速度の計算
     double dt = (now.seconds() - prev_time.seconds());
     if (dt > 0.0) // ゼロ除算を避けるため
     {
         double dtheta = theta - prev_theta;
-        // -PI < dtheta < PI に正規化
-        while (dtheta > M_PI)
-        {
-            dtheta -= 2.0 * M_PI;
-        }
-        while (dtheta < -M_PI)
-        {
-            dtheta += 2.0 * M_PI;
-        }
         odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
     }
     else
@@ -139,7 +115,7 @@ void FeedbackNode::timer_callback()
     }
 
     odom_msg.pose.pose.position.x = x;
-    odom_msg.pose.pose.position.y = y;
+    odom_msg.pose.pose.position.y = y - 0.475;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = odom_quat_msg;
     pub_odometry_->publish(odom_msg); // odometryデータの送信
@@ -151,7 +127,7 @@ void FeedbackNode::timer_callback()
     odom_trans.child_frame_id = "base_link";
 
     odom_trans.transform.translation.x = x;
-    odom_trans.transform.translation.y = y;
+    odom_trans.transform.translation.y = y - 0.475;
     odom_trans.transform.translation.z = 0.0;
     odom_trans.transform.rotation = odom_quat_msg; // 同じ変換されたクォータニオンを使用
 

@@ -31,25 +31,32 @@ void OdomCalculator::set_encoder_count(int16_t vx_count, int16_t vy_count, doubl
     }
 }
 
-// ロボットの座標はFeedbackNodeでIMUと統合して計算するため、この関数は削除
-// void OdomCalculator::get_robot_coord(double *x, double *y, double theta, double period)
+void OdomCalculator::get_robot_coord(double *x, double *y, double theta, double period)
+{
+    // robot_velocity は既にロボット座標系での速度 (m/s)
+    double vx_robot_frame = robot_velocity[0];
+    double vy_robot_frame = robot_velocity[1];
+
+    // ロボット座標系での速度をフィールド座標系に変換
+    // 標準的な2D回転行列: [ cos(theta) -sin(theta) ]
+    //                   [ sin(theta)  cos(theta) ]
+    double vx_field_frame = cos(theta) * vx_robot_frame - sin(theta) * vy_robot_frame;
+    double vy_field_frame = sin(theta) * vx_robot_frame + cos(theta) * vy_robot_frame;
+
+    // フィールド座標系での速度に時間間隔を掛けて距離を出し、座標を更新
+    robot_coord[0] += vx_field_frame * period; // x座標を更新
+    robot_coord[1] += vy_field_frame * period; // y座標を更新
+
+    *x = robot_coord[0]; // x座標を返す
+    *y = robot_coord[1]; // y座標を返す
+}
+
+// convert_coord は get_robot_coord の内部に統合したため不要
+// void OdomCalculator::convert_coord(double *vx, double *vy, double theta)
 // {
-//     // robot_velocity は既にロボット座標系での速度 (m/s)
-//     double vx_robot_frame = robot_velocity[0];
-//     double vy_robot_frame = robot_velocity[1];
-
-//     // ロボット座標系での速度をフィールド座標系に変換
-//     // 標準的な2D回転行列: [ cos(theta) -sin(theta) ]
-//     //                   [ sin(theta)  cos(theta) ]
-//     double vx_field_frame = cos(theta) * vx_robot_frame - sin(theta) * vy_robot_frame;
-//     double vy_field_frame = sin(theta) * vx_robot_frame + cos(theta) * vy_robot_frame;
-
-//     // フィールド座標系での速度に時間間隔を掛けて距離を出し、座標を更新
-//     robot_coord[0] += vx_field_frame * period; // x座標を更新
-//     robot_coord[1] += vy_field_frame * period; // y座標を更新
-
-//     *x = robot_coord[0]; // x座標を返す
-//     *y = robot_coord[1]; // y座標を返す
+//     double original_vx = *vx; // 変更前のvxを保持
+//     *vx = cos(theta) * original_vx - sin(theta) * *vy; // x軸方向の速度
+//     *vy = sin(theta) * original_vx + cos(theta) * *vy; // y軸方向の速度
 // }
 
 void OdomCalculator::reset_robot_coord()
