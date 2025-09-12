@@ -97,7 +97,7 @@ void FeedbackNode::timer_callback()
     nav_msgs::msg::Odometry odom_msg;
     odom_msg.header.stamp = now;
     odom_msg.header.frame_id = "odom";
-    odom_msg.child_frame_id = "base_link";
+    odom_msg.child_frame_id = "odom_link";
 
     odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
     odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
@@ -127,7 +127,7 @@ void FeedbackNode::timer_callback()
     geometry_msgs::msg::TransformStamped odom_trans;
     odom_trans.header.stamp = now;
     odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
+    odom_trans.child_frame_id = "odom_link";
 
     odom_trans.transform.translation.x = x;
     odom_trans.transform.translation.y = y;
