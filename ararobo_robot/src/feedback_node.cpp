@@ -117,7 +117,7 @@ void FeedbackNode::timer_callback()
         odom_msg.twist.twist.angular.z = 0.0;
     }
 
-    odom_msg.pose.pose.position.x = x + theta * 0.475;
+    odom_msg.pose.pose.position.x = x - theta * 0.475;
     odom_msg.pose.pose.position.y = y - 0.475;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = odom_quat_msg;
@@ -129,7 +129,7 @@ void FeedbackNode::timer_callback()
     odom_trans.header.frame_id = "odom";
     odom_trans.child_frame_id = "base_link";
 
-    odom_trans.transform.translation.x = x + theta * 0.475;
+    odom_trans.transform.translation.x = x - theta * 0.475;
     odom_trans.transform.translation.y = y - 0.475;
     odom_trans.transform.translation.z = 0.0;
     odom_trans.transform.rotation = odom_quat_msg; // 同じ変換されたクォータニオンを使用
