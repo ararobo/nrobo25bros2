@@ -95,17 +95,11 @@ void FeedbackNode::timer_callback()
     double vx_robot = odom_calculator->robot_velocity[0];
     double vy_robot = odom_calculator->robot_velocity[1];
 
-    // 座標を更新
-    double dtheta = theta - prev_theta;
-    while (dtheta > M_PI) dtheta -= 2.0 * M_PI;
-    while (dtheta < -M_PI) dtheta += 2.0 * M_PI;
-    
-    double theta_avg = prev_theta + dtheta / 2.0;
-    
     // ロボット座標系での速度をフィールド座標系に変換
-    double vx_field = cos(theta_avg) * vx_robot - sin(theta_avg) * vy_robot;
-    double vy_field = sin(theta_avg) * vx_robot + cos(theta_avg) * vy_robot;
+    double vx_field = cos(theta) * vx_robot - sin(theta) * vy_robot;
+    double vy_field = sin(theta) * vx_robot + cos(theta) * vy_robot;
 
+    // 座標を更新
     x += vx_field * current_period_s;
     y += vy_field * current_period_s;
 
@@ -127,6 +121,16 @@ void FeedbackNode::timer_callback()
     double dt = (now.seconds() - prev_time.seconds());
     if (dt > 0.0) // ゼロ除算を避けるため
     {
+        double dtheta = theta - prev_theta;
+        // -PI < dtheta < PI に正規化
+        while (dtheta > M_PI)
+        {
+            dtheta -= 2.0 * M_PI;
+        }
+        while (dtheta < -M_PI)
+        {
+            dtheta += 2.0 * M_PI;
+        }
         odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
     }
     else
