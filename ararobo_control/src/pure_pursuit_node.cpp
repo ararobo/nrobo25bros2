@@ -187,18 +187,52 @@ private:
 
     void distance_left(std_msgs::msg::Float32MultiArray msg)
     {
-        float distance_front0 = msg.data[0];
-        float distance_front1 = msg.data[1];
-        float distance_front2 = msg.data[2];
-        float distance_front3 = msg.data[3];
+        float distance_left0 = msg.data[0];
+        float distance_left1 = msg.data[1];
+        float distance_left2 = msg.data[2];
+        float distance_left3 = msg.data[3];
+        const float lefthold = 0.3;
+        if (distance_left0 < lefthold)
+        {
+        }
+
+        if (distance_left1 < lefthold)
+        {
+        }
+
+        if (distance_left2 < lefthold)
+        {
+        }
+
+        if (distance_left3 < lefthold)
+        {
+        }
     }
 
-    void distance_right(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    void distance_right(const std_msgs::msg::Float32MultiArray msg)
     {
-        float distance_right0 = msg->data[0];
-        float distance_right1 = msg->data[1];
-        float distance_right2 = msg->data[2];
-        float distance_right3 = msg->data[3];
+        float distance_right0 = msg.data[0];
+        float distance_right1 = msg.data[1];
+        float distance_right2 = msg.data[2];
+        float distance_right3 = msg.data[3];
+
+        const float righthold = 0.3;
+
+        if (distance_right0 < righthold)
+        {
+        }
+
+        if (distance_right1 < righthold)
+        {
+        }
+
+        if (distance_right2 < righthold)
+        {
+        }
+
+        if (distance_right3 < righthold)
+        {
+        }
     }
 };
 
