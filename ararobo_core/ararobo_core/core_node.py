@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Int8
+from std_msgs.msg import UInt8
 from visualization_msgs.msg import Marker
 from std_msgs.msg import String
 
@@ -10,13 +10,12 @@ class core_node(Node):
         super().__init__('core_node')
         self.get_logger().info('CoreNode has been initialized.')
         self.box = self.create_subscription(Marker,"/box/box",self.box_callback,10)
-        self.box_select = self.create_publisher(Int8,"/box/boxselect",10)
+        self.box_select = self.create_publisher(UInt8,"/box/boxselect",10)
         self.goal = self.create_publisher(Pose2D,"goal_pose",10)
         self.controller = self.create_subscription(String,"/controller",self.controller_callback,10)
         self.timer_goal = self.create_timer(0.5, self.goal_timer_callback)
         self.timer_box = self.create_timer(0.5, self.box_timer_callback)
 
-        self.box_coller = 0
         self.startart_x = 0.0
         self.startart_y = 0.0
         self.pylon_x = 20.0
@@ -39,7 +38,6 @@ class core_node(Node):
         self.trolleyconect_y = 90.0
         self.gpub_x = -10000.0
         self.gpub_y = -10000.0
-        self.serect_boxID = 13
         self.armpose = 1
 
     def controller_callback(self, msg: String):
@@ -150,7 +148,7 @@ class core_node(Node):
         self.gpub_y = -10000.0
         
     def box_timer_callback(self):
-        msg = Int8()
+        msg = UInt8()
         msg.data = self.armpose
         if msg.data !=13:
             self.box_select.publish(msg)
@@ -158,14 +156,6 @@ class core_node(Node):
         else:
             self.get_logger().warn("NO armpose to publish, skipping")
         self.armpose = 13
-                
-    def box_callback(self, msg):
-        self.get_logger().info(f'Received box message: {msg}')
-        self.box_coller = msg.id
-        
-
-        self.goal.publish(msg)
-
 
 
 def main(args=None):
