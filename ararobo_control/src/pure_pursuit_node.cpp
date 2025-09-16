@@ -3,6 +3,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "std_msgs/msg/float32_multi_array.hpp"
 #include <cmath>
 #include <limits>
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
@@ -26,6 +27,11 @@ public:
         path_sub = this->create_subscription<nav_msgs::msg::Path>(
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
+        distance_sub_left = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+            "distance_left", 10, std::bind(&distance_left, this));
+        distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+            "distance_right", 10, std::bind(&distance_right, this));
+
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
         timer_ = this->create_wall_timer(
@@ -37,6 +43,8 @@ public:
 
 private:
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub;
+    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr distance_sub_left;
+    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr distance_sub_right;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -175,6 +183,22 @@ private:
         cmd.linear.x = current_vel * direction_x;
         cmd.linear.y = current_vel * direction_y;
         cmd_pub->publish(cmd);
+    }
+
+    void distance_left(std_msgs::msg::Float32MultiArray msg)
+    {
+        float distance_front0 = msg.data[0];
+        float distance_front1 = msg.data[1];
+        float distance_front2 = msg.data[2];
+        float distance_front3 = msg.data[3];
+    }
+
+    void distance_right(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    {
+        float distance_right0 = msg->data[0];
+        float distance_right1 = msg->data[1];
+        float distance_right2 = msg->data[2];
+        float distance_right3 = msg->data[3];
     }
 };
 
