@@ -29,7 +29,7 @@ private:
     std_msgs::msg::Float32 centering_addend;
 
     // constant_data
-    float arm_w_max = 0.650;   // 開閉可動域[m]
+    float arm_w_max = 0.010;   // 開閉可動域[m]
     float arm_d_max = 0.550;   // 出し入れ可動域[m]
     float box_a_width = 0.300; // ボックスAの幅[m]
     float box_b_width = 0.400; // ボックスBの幅[m]
