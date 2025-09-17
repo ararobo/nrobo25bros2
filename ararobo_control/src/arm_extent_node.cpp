@@ -34,7 +34,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     box_hold = msg->data; // ボックス情報を取得
 
-    box_info_converse(box_hold, box_info, &arm_state, &target_width);
+    box_info_converse(box_info, &target_width);
 
     if (step == 1) // strage
     {
@@ -43,12 +43,12 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     }
     else if (step == 2) // open for u_grap
     {
-        arm_width = target_width;
+        arm_width = arm_w_max;
         arm_depth = arm_d_max;
     }
     else if (step == 3) // open for l_grap
     {
-        arm_width = arm_w_max;
+        arm_width = target_width;
         arm_depth = arm_d_max;
     }
     else if (step == 4) // close for l_grap
@@ -61,7 +61,7 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     arm_width = clamp(arm_width, arm_w_max, 0.0f);
     arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
 
-    if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_sensor)
+    if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_)
     {
         ready = true;
     }
@@ -117,82 +117,53 @@ float ArmExtentNode::clamp(float variable, float max, float min)
     }
 }
 
-void ArmExtentNode::box_info_converse(bool box_hold, int8_t box_info, int *arm_data, float *box_data)
+void ArmExtentNode::box_info_converse(int8_t box_info_, float *box_data)
 {
     // old_model
-    if (box_hold)
+    if (box_info_ == 1)
     {
+        *box_data = box_a_width;
     }
-    else
+    else if (box_info_ == 2)
     {
+        *box_data = box_b_width;
+    }
+    else if (box_info_)
+    {
+        *box_data = box_c_width;
     }
 }
 
 void ArmExtentNode::step_update()
 { // old model
-    if (arm_state == 0)
+    if (box_info)
     {
-        if (state_s == arm_state)
+        if (box_info && info_save)
         {
-            if (ready)
+            if (step < 4 /*&& (step == 1 && lift~~)*/)
             {
-                ready = false;
-                arm_state = 3;
-                state_s = 3;
+                step++;
             }
         }
         else
         {
-            state_s = arm_state;
-            step = 1;
+            info_save == box_info;
+            step == 1;
         }
     }
-    else if (arm_state == 1)
+    else
     {
-        if (state_s == arm_state)
+        if (box_info && info_save)
         {
-            if (ready)
+            if (step > 1 /*&& (step == 2 && lift~~)*/)
             {
-                ready = false;
-                if (step < 3)
-                {
-                    step++;
-                }
-                else // if (step == 3)
-                {
-                    arm_state = 3;
-                    state_s = 3;
-                }
+                step--;
             }
         }
         else
         {
-            state_s = arm_state;
-            step = 2;
-        }
-    }
-    else if (arm_state == 2)
-    {
-        if (state_s == arm_state)
-        {
-            if (ready)
-            {
-                ready = false;
-                if (step < 7)
-                {
-                    step++;
-                }
-                else
-                {
-                    arm_state = 3;
-                    state_s = 3;
-                }
-            }
-        }
-        else
-        {
-            state_s = arm_state;
-            step = 1;
+            info_save == box_info;
+            step == 4;
         }
     }
 }

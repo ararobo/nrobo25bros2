@@ -47,8 +47,6 @@ private:
     // subscribe_data
     bool box_hold;                       //
     uint8_t box_info;                    //
-    int arm_state = 3;                   // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
-    int state_s;                         // 目標動作保護
     float target_width;                  // ボックス幅[m]
     float current_width;                 // 現在のアーム幅
     float current_depth;                 // 現在のアーム出し入れ
@@ -60,9 +58,10 @@ private:
     float arm_depth; // 上アーム出し入れ[mm]
 
     // flag
-    int step;                // 手順
-    bool ready;              // 手順終了
-    bool flag_sensor = true; // tof_sensor距離判定
+    int step;          // 手順
+    bool ready;        // 手順終了
+    bool flag_ = true; // tof_sensor距離判定
+    bool info_save;
 
     // callback
     void current_width_callback(const std_msgs::msg::Float32::SharedPtr msg);
@@ -79,7 +78,7 @@ private:
      * @param box_info ボックス情報
      * @param data     データ配列
      */
-    void box_info_converse(bool box_hold, int8_t box_info, int *arm_data, float *box_data);
+    void box_info_converse(int8_t box_info_, float *box_data);
 
     /**
      * @brief 実行手順の更新
