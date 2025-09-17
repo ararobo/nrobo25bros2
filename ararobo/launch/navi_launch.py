@@ -27,11 +27,4 @@ def generate_launch_description():
             name='pure_pursuit_node',
             output='screen'
         ),
-        # 子となるlaunchファイルをインクルード
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([ydlidar_launch_file_path])
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([slam_launch_file_path])
-        )
     ])
