@@ -33,10 +33,12 @@ FeedbackNode::FeedbackNode()
     // Odometryパブリッシャーの初期化
     pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10);
-    pub_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
+    pub_current_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
         "current_width", 10);
-    pub_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
+    pub_current_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
         "current_depth", 10);
+    pub_current_lift_ = this->create_publisher<std_msgs::msg::Float32>(
+        "current_lift", 10);
     pub_width_distance_ = this->create_publisher<std_msgs::msg::Float32>(
         "width_distance", 10);
     pub_depth_distance_ = this->create_publisher<std_msgs::msg::Float32>(
@@ -72,10 +74,10 @@ void FeedbackNode::timer_callback()
     }
     auto current_width = std_msgs::msg::Float32();
     current_width.data = feedback_union.data.upper_hand_current_width;
-    pub_hand_width_->publish(current_width);
+    pub_current_hand_width_->publish(current_width);
     auto current_depth = std_msgs::msg::Float32();
     current_depth.data = feedback_union.data.upper_hand_current_depth;
-    pub_hand_depth_->publish(current_depth);
+    pub_current_hand_depth_->publish(current_depth);
 
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
