@@ -63,6 +63,32 @@ private:
         RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
 
+    std::array<float, 4> left_distance = {1.0, 1.0, 1.0, 1.0};
+    std::array<float, 4> right_distance = {1.0, 1.0, 1.0, 1.0};
+
+    // --- センサーコールバック ---
+    void distance_left(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    {
+        if (msg->data.size() >= 4)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                left_distance[i] = msg->data[i];
+            }
+        }
+    }
+
+    void distance_right(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+    {
+        if (msg->data.size() >= 4)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                right_distance[i] = msg->data[i];
+            }
+        }
+    }
+
     // compute_control -> timer_callback に変更
     void timer_callback()
     {
@@ -177,62 +203,32 @@ private:
                     current_vel = v_max;
             }
         }
-
-        // --- 出力 ---
-        geometry_msgs::msg::Twist cmd;
-        cmd.linear.x = current_vel * direction_x;
-        cmd.linear.y = current_vel * direction_y;
-        cmd_pub->publish(cmd);
-    }
-
-    void distance_left(std_msgs::msg::Float32MultiArray::SharedPtr msg)
-    {
-        float distance_left0 = msg->data[0];
-        float distance_left1 = msg->data[1];
-        float distance_left2 = msg->data[2];
-        float distance_left3 = msg->data[3];
+        float y_correction = 0.0;
         const float lefthold = 0.3;
-        if (distance_left0 < lefthold)
-        {
-        }
-
-        if (distance_left1 < lefthold)
-        {
-        }
-
-        if (distance_left2 < lefthold)
-        {
-        }
-
-        if (distance_left3 < lefthold)
-        {
-        }
-    }
-
-    void distance_right(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
-    {
-        float distance_right0 = msg->data[0];
-        float distance_right1 = msg->data[1];
-        float distance_right2 = msg->data[2];
-        float distance_right3 = msg->data[3];
-
         const float righthold = 0.3;
+        const float avoid_speed = 0.2;
 
-        if (distance_right0 < righthold)
+        // 左センサー判定
+        for (int i = 0; i < 4; i++)
         {
+            if (left_distance[i] < lefthold)
+            {
+                y_correction += avoid_speed;
+            }
         }
 
-        if (distance_right1 < righthold)
+        // 右センサー判定
+        for (int i = 0; i < 4; i++)
         {
+            if (right_distance[i] < righthold)
+            {
+                y_correction -= avoid_speed;
+            }
         }
 
-        if (distance_right2 < righthold)
-        {
-        }
-
-        if (distance_right3 < righthold)
-        {
-        }
+        geometry_msgs::msg::Twist cmd;
+        cmd.linear.y += y_correction;
+        cmd_pub->publish(cmd);
     }
 };
 
