@@ -70,6 +70,13 @@ void FeedbackNode::timer_callback()
     {
         RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
     }
+    auto current_width = std_msgs::msg::Float32();
+    current_width.data = feedback_union.data.upper_hand_current_width;
+    pub_hand_width_->publish(current_width);
+    auto current_depth = std_msgs::msg::Float32();
+    current_depth.data = feedback_union.data.upper_hand_current_depth;
+    pub_hand_depth_->publish(current_depth);
+
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
     q_tf2.setY(feedback_union.data.q_y);

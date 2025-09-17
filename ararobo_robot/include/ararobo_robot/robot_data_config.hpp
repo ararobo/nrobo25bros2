@@ -3,18 +3,21 @@
 
 struct feedback_data_t
 {
-    float q_x;                 // ロボットの回転クォータニオン
-    float q_y;                 // ロボットの回転クォータニオン
-    float q_z;                 // ロボットの回転クォータニオン
-    float q_w;                 // ロボットの回転クォータニオン
-    int16_t encoder_x;         // x軸方向のエンコーダ値[CRP]
-    int16_t encoder_y;         // y軸方向のエンコーダ値[CRP]
-    uint16_t distance_base_rf; // 右前の距離センサ[mm]
-    uint16_t distance_base_rm; // 右中央の距離センサ[mm]
-    uint16_t distance_base_rb; // 右後の距離センサ[mm]
-    uint16_t distance_base_lf; // 左前の距離センサ[mm]
-    uint16_t distance_base_lm; // 左中央の距離センサ[mm]
-    uint16_t distance_base_lb; // 左後の距離センサ[mm]
+    float q_x;                      // ロボットの回転クォータニオン
+    float q_y;                      // ロボットの回転クォータニオン
+    float q_z;                      // ロボットの回転クォータニオン
+    float q_w;                      // ロボットの回転クォータニオン
+    int16_t encoder_x;              // x軸方向のエンコーダ値[CRP]
+    int16_t encoder_y;              // y軸方向のエンコーダ値[CRP]
+    uint16_t distance_base_rf;      // 右前の距離センサ[mm]
+    uint16_t distance_base_rm;      // 右中央の距離センサ[mm]
+    uint16_t distance_base_rb;      // 右後の距離センサ[mm]
+    uint16_t distance_base_lf;      // 左前の距離センサ[mm]
+    uint16_t distance_base_lm;      // 左中央の距離センサ[mm]
+    uint16_t distance_base_lb;      // 左後の距離センサ[mm]
+    float upper_hand_current_depth; // 上ハンド機構位置制御現在値
+    float upper_hand_current_width; // 上ハンド機構位置制御現在値
+    float current_lift;             // 昇降機構位置制御現在値
 } __attribute__((__packed__));
 
 struct operation_data_t
