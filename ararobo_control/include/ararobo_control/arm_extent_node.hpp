@@ -3,6 +3,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/int8.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 /*
 float32 upper_hand_width
@@ -19,7 +21,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_depth_;  // current depth of arm
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_box_info_;       // box_infomation from core
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_box_hold_;          // box_infomation from core
+    rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr sub_box_info_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;
@@ -42,7 +45,8 @@ private:
     float error = 0.0100; // 許容誤差[m]
 
     // subscribe_data
-    float box_info;                      // ボックスに関する情報
+    bool box_hold;                       //
+    uint8_t box_info;                    //
     int arm_state = 3;                   // 目標動作[収納:0, 開放:1, 把持:2, 現状維持:3]
     int state_s;                         // 目標動作保護
     float target_width;                  // ボックス幅[m]
@@ -63,7 +67,8 @@ private:
     // callback
     void current_width_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void box_hold_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg);
+    void box_info_callback(const std_msgs::msg::Int8::SharedPtr msg);
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
@@ -74,7 +79,7 @@ private:
      * @param box_info ボックス情報
      * @param data     データ配列
      */
-    void box_info_converse(float box_info, int *arm_data, float *box_data);
+    void box_info_converse(bool box_hold, int8_t box_info, int *arm_data, float *box_data);
 
     /**
      * @brief 実行手順の更新
