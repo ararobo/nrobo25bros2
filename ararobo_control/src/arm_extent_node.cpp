@@ -10,6 +10,9 @@ ArmExtentNode::ArmExtentNode()
     sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
         "/current_depth", 10,
         std::bind(&ArmExtentNode::current_depth_callback, this, std::placeholders::_1));
+    sub_current_lift_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/current_lift", 10,
+        std::bind(&ArmExtentNode::current_lift_callback, this, std::placeholders::_1));
     sub_width_distance_ = this->create_subscription<std_msgs::msg::Float32>(
         "/width_distance", 10,
         std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
@@ -34,22 +37,32 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     box_hold = msg->data; // ボックス情報を取得
 
-    box_info_converse(box_info, &target_width);
+    box_info_converse(box_info, &target_width, &lift_info);
 
-    if (step == 1) // strage
+    if (step == 0) // strage
     {
         arm_width = arm_w_max;
         arm_depth = 0.0f;
     }
-    else if (step == 2) // open for u_grap
+    else if (step == 1) // open for u_grap
     {
         arm_width = arm_w_max;
         arm_depth = arm_d_max;
     }
-    else if (step == 3) // open for l_grap
+    else if (step == 2) // open for l_grap
     {
         arm_width = target_width;
         arm_depth = arm_d_max;
+    }
+    else if (step == 3)
+    {
+        flag_ == false;
+        if ((box_info == 1 && lift_info) ||
+            (box_info == 2 && lift_info) ||
+            box_info == 3)
+        {
+            flag_ == true;
+        }
     }
     else if (step == 4) // close for l_grap
     {
@@ -61,7 +74,9 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     arm_width = clamp(arm_width, arm_w_max, 0.0f);
     arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
 
-    if ((abs(current_width - arm_width) <= error && abs(current_depth - arm_depth) <= error) && flag_)
+    if ((abs(current_width - arm_width) <= error &&
+         abs(current_depth - arm_depth) <= error) &&
+        flag_)
     {
         ready = true;
     }
@@ -91,6 +106,11 @@ void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedP
     current_depth = msg->data * lead / (2 * M_PI);
 }
 
+void ArmExtentNode::current_lift_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    current_lift = msg->data;
+}
+
 void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     current_width_distance = msg->data;
@@ -117,30 +137,31 @@ float ArmExtentNode::clamp(float variable, float max, float min)
     }
 }
 
-void ArmExtentNode::box_info_converse(int8_t box_info_, float *box_data)
+void ArmExtentNode::box_info_converse(int8_t box_info_, float *box_data, bool *lift_info_)
 {
-    // old_model
     if (box_info_ == 1)
     {
         *box_data = box_a_width;
+        *lift_info_ = (abs(current_lift - (box_b_width + robot_lift_add)) <= error);
     }
     else if (box_info_ == 2)
     {
         *box_data = box_b_width;
+        *lift_info_ = (abs(current_lift - (box_c_width + robot_lift_add)) <= error);
     }
-    else if (box_info_)
+    else if (box_info_ = 3)
     {
         *box_data = box_c_width;
     }
 }
 
 void ArmExtentNode::step_update()
-{ // old model
+{
     if (box_info)
     {
         if (box_info && info_save)
         {
-            if (step < 4 /*&& (step == 1 && lift~~)*/)
+            if (step < 4 && ready)
             {
                 step++;
             }
@@ -148,14 +169,14 @@ void ArmExtentNode::step_update()
         else
         {
             info_save == box_info;
-            step == 1;
+            step == 0;
         }
     }
     else
     {
         if (box_info && info_save)
         {
-            if (step > 1 /*&& (step == 2 && lift~~)*/)
+            if (step > 0 && ready)
             {
                 step--;
             }
