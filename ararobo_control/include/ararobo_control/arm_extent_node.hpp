@@ -17,8 +17,9 @@ float32 left_raise
 class ArmExtentNode : public rclcpp::Node
 {
 private:
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_width_;  // current width of arm
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_depth_;  // current depth of arm
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_width_; // current width of arm
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_depth_; // current depth of arm
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_lift_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_box_hold_;          // box_infomation from core
@@ -42,14 +43,17 @@ private:
     float lead = 0.0300;      // 上アーム リード[m](出し入れ)
     float add_width = 0.100;  // 追加のスペース[m]
 
+    float robot_lift_add = 0.010;
+
     float error = 0.0100; // 許容誤差[m]
 
     // subscribe_data
-    bool box_hold;                       //
-    uint8_t box_info;                    //
-    float target_width;                  // ボックス幅[m]
-    float current_width;                 // 現在のアーム幅
-    float current_depth;                 // 現在のアーム出し入れ
+    bool box_hold;       //
+    uint8_t box_info;    //
+    float target_width;  // ボックス幅[m]
+    float current_width; // 現在のアーム幅
+    float current_depth; // 現在のアーム出し入れ
+    float current_lift;
     float current_width_distance = 0.0f; // 幅 tof_sensorの距離
     float current_depth_distance = 0.0f; // 出し入れ tof_sensorの距離
 
@@ -62,10 +66,12 @@ private:
     bool ready;        // 手順終了
     bool flag_ = true; // tof_sensor距離判定
     bool info_save;
+    bool lift_info;
 
     // callback
     void current_width_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void current_lift_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg);
     void box_info_callback(const std_msgs::msg::Int8::SharedPtr msg);
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
@@ -78,7 +84,7 @@ private:
      * @param box_info ボックス情報
      * @param data     データ配列
      */
-    void box_info_converse(int8_t box_info_, float *box_data);
+    void box_info_converse(int8_t box_info_, float *box_data, bool *lift_info_);
 
     /**
      * @brief 実行手順の更新
