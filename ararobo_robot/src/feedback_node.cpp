@@ -78,6 +78,9 @@ void FeedbackNode::timer_callback()
     auto current_depth = std_msgs::msg::Float32();
     current_depth.data = feedback_union.data.upper_hand_current_depth;
     pub_current_hand_depth_->publish(current_depth);
+    auto current_lift = std_msgs::msg::Float32();
+    current_lift.data = feedback_union.data.current_lift;
+    pub_current_lift_->publish(current_lift);
 
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
