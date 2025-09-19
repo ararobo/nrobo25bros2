@@ -34,3 +34,10 @@ CoreNode::CoreNode() : Node("core_node")
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&CoreNode::timer_callback, this));
 }
+
+void CoreNode::timer_callback()
+{
+    if (udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
+    {
+    }
+}

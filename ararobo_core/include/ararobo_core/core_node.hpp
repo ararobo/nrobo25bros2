@@ -5,6 +5,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include "ararobo_core/simple_udp.hpp"
+#include "ararobo_core/robot_data_config.hpp"
 
 class CoreNode : public rclcpp::Node
 {
@@ -13,6 +14,12 @@ private:
     geometry_msgs::msg::Twist cmd_vel_msg;
     uint8_t mode = 0;
     bool acceleration = false;
+    union controller_data_union_t
+    {
+        uint8_t code[sizeof(controller_data_t)];
+        controller_data_t data;
+    } controller_union;
+
     // timer
     rclcpp::TimerBase::SharedPtr timer_;
     // phone auto
