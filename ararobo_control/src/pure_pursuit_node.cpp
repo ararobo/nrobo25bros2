@@ -9,12 +9,14 @@
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
+#include "std_msgs/msg/bool.hpp"
 
 class PurePursuitNode : public rclcpp::Node
 {
 public:
     PurePursuitNode() : Node("pure_pursuit"), current_vel(0.0)
     {
+
         tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
         this->declare_parameter("lookahead_distance", 0.5);
@@ -31,6 +33,7 @@ public:
             "distance_left", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
         distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "distance_right", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
+        led_pub = this->create_publisher<std_msgs::msg::Bool>("led_control", 10);
 
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
@@ -48,7 +51,7 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
     rclcpp::TimerBase::SharedPtr timer_;
-
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr led_pub;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
@@ -206,9 +209,7 @@ private:
         float y_correction = 0.0;
         const float lefthold = 0.3;
         const float righthold = 0.3;
-        const float avoid_speed = 0.2;
-
-        // 左センサー判定
+        const float avoid_speed = 0.0;
         for (int i = 0; i < 4; i++)
         {
             if (left_distance[i] < lefthold)
@@ -217,7 +218,6 @@ private:
             }
         }
 
-        // 右センサー判定
         for (int i = 0; i < 4; i++)
         {
             if (right_distance[i] < righthold)
@@ -226,9 +226,19 @@ private:
             }
         }
 
-        geometry_msgs::msg::Twist cmd;
-        cmd.linear.y += y_correction;
-        cmd_pub->publish(cmd);
+        std_msgs::msg::Bool led_msg;
+
+        // 障害物を検知したらLED ON
+        if (y_correction != 0.0)
+        {
+            led_msg.data = true;
+        }
+        else
+        {
+            led_msg.data = false;
+        }
+
+        led_pub->publish(led_msg);
     }
 };
 
