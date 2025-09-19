@@ -14,6 +14,7 @@ float32 right_raise
 float32 left_slide
 float32 left_raise
 */
+
 class ArmExtentNode : public rclcpp::Node
 {
 private:
@@ -33,38 +34,38 @@ private:
     std_msgs::msg::Float32 centering_addend;
 
     // constant_data
-    float arm_w_max = 0.010;   // 開閉可動域[m]
-    float arm_d_max = 0.550;   // 出し入れ可動域[m]
-    float box_a_width = 0.300; // ボックスAの幅[m]
-    float box_b_width = 0.400; // ボックスBの幅[m]
-    float box_c_width = 0.500; // ボックスCの幅[m]
+    float arm_w_max = 0.010;   // width, range of motion[m]
+    float arm_d_max = 0.550;   // depth, range of motion[m]
+    float box_a_width = 0.300; // [m]
+    float box_b_width = 0.400; // [m]
+    float box_c_width = 0.500; // [m]
 
-    float diameter = 0.02546; // 上アーム 直径[m](開閉)
-    float lead = 0.0300;      // 上アーム リード[m](出し入れ)
-    float add_width = 0.100;  // 追加のスペース[m]
+    float diameter = 0.02546; // width diameter[m]
+    float lead = 0.0300;      // depth lesd[m]
+    float add_width = 0.100;  // [m]
 
-    float robot_lift_add = 0.010;
+    float robot_lift_add = 0.010; // feet height
 
-    float error = 0.0100; // 許容誤差[m]
+    float error = 0.0100; // Tolerance range[m]
 
     // subscribe_data
     bool box_hold;       //
     uint8_t box_info;    //
-    float target_width;  // ボックス幅[m]
-    float current_width; // 現在のアーム幅
-    float current_depth; // 現在のアーム出し入れ
+    float target_width;  // [m]
+    float current_width; // [m]
+    float current_depth; // [m]
     float current_lift;
-    float current_width_distance = 0.0f; // 幅 tof_sensorの距離
-    float current_depth_distance = 0.0f; // 出し入れ tof_sensorの距離
+    float current_width_distance = 0.0f; // width tof_sensor
+    float current_depth_distance = 0.0f; // depth tof_sensor
 
     // publish_data
-    float arm_width; // 上アーム開閉幅[mm]
-    float arm_depth; // 上アーム出し入れ[mm]
+    float arm_width; // publish width[mm]
+    float arm_depth; // publish depthmm]
 
     // flag
-    int step;          // 手順
-    bool ready;        // 手順終了
-    bool flag_ = true; // tof_sensor距離判定
+    int step;
+    bool ready;        // step complete
+    bool flag_ = true; // lift ready
     bool info_save;
     bool lift_info;
 
@@ -77,17 +78,26 @@ private:
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
+    /**
+     * @brief maximum and minimum limit
+     *
+     * @param[in] variable number of targets
+     * @param[in] max      maximum
+     * @param[in] min      minimum
+     */
     float clamp(float variable, float max, float min);
 
     /**
-     * @brief ボックス情報をデータ配列に変換
-     * @param box_info ボックス情報
-     * @param data     データ配列
+     * @brief converse box info
+     *
+     * @param box_info_  box type
+     * @param data       data array
+     * @param lift_info_ lift_complete flag
      */
     void box_info_converse(int8_t box_info_, float *box_data, bool *lift_info_);
 
     /**
-     * @brief 実行手順の更新
+     * @brief step update
      */
     void step_update();
 
