@@ -28,9 +28,9 @@ ArmExtentNode::ArmExtentNode()
         std::bind(&ArmExtentNode::box_info_callback, this, std::placeholders::_1));
     // publish
     pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/upper_hand/width", 10);
+        "/robot/upper_hand/width", 10);
     pub_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/upper_hand/depth", 10);
+        "/robot/upper_hand/depth", 10);
     pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
         "/centering_vel", 10);
 }

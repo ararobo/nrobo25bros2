@@ -17,7 +17,7 @@ OperationNode::OperationNode()
         "/robot/cmd_vel", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
     lift_vel_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/robot/lift_vel", 10,
+        "/robot/lift", 10,
         std::bind(&OperationNode::lift_vel_callback, this, std::placeholders::_1));
 
     sub_upper_hand_width_ = this->create_subscription<std_msgs::msg::Float32>(
