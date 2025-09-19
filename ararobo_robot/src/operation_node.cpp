@@ -14,36 +14,36 @@ OperationNode::OperationNode()
     udp->setTxAddr(ethernet_config::main_board::ip,
                    ethernet_config::main_board::port_operation);
     sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
-        "/cmd_vel", 10,
+        "/robot/cmd_vel", 10,
         std::bind(&OperationNode::cmd_vel_callback, this, std::placeholders::_1));
     lift_vel_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/lift_vel", 10,
+        "/robot/lift_vel", 10,
         std::bind(&OperationNode::lift_vel_callback, this, std::placeholders::_1));
 
     sub_upper_hand_width_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/upper_hand/width", 10,
+        "/robot/upper_hand/width", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { operation_data.width = msg->data; });
 
     sub_upper_hand_depth_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/upper_hand/depth", 10,
+        "/robot/upper_hand/depth", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { operation_data.depth = msg->data; });
 
     sub_under_hand_slide_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/under_hand/slide", 10,
+        "/robot/under_hand/slide", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         {   operation_data.left_slide = -msg->data;
             operation_data.right_slide = msg->data; });
 
     sub_under_hand_raise_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/under_hand/raise", 10,
+        "/robot/under_hand/raise", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { operation_data.left_raise = -msg->data;
         operation_data.right_raise = msg->data; });
 
     sub_task_kind_ = this->create_subscription<std_msgs::msg::UInt8>(
-        "/task_kind", 10,
+        "/robot/task_kind", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { operation_data.task_kind = msg->data; });
 
