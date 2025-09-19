@@ -206,39 +206,6 @@ private:
                     current_vel = v_max;
             }
         }
-        float y_correction = 0.0;
-        const float lefthold = 0.3;
-        const float righthold = 0.3;
-        const float avoid_speed = 0.0;
-        for (int i = 0; i < 4; i++)
-        {
-            if (left_distance[i] < lefthold)
-            {
-                y_correction += avoid_speed;
-            }
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (right_distance[i] < righthold)
-            {
-                y_correction -= avoid_speed;
-            }
-        }
-
-        std_msgs::msg::Bool led_msg;
-
-        // 障害物を検知したらLED ON
-        if (y_correction != 0.0)
-        {
-            led_msg.data = true;
-        }
-        else
-        {
-            led_msg.data = false;
-        }
-
-        led_pub->publish(led_msg);
     }
 };
 
