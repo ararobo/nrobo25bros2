@@ -56,7 +56,7 @@ void CoreNode::timer_callback()
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 1.5f;
+        cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
     }
     float x = cmd_vel_msg.linear.x;
     float y = cmd_vel_msg.linear.y;
