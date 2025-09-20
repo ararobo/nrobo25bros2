@@ -6,11 +6,15 @@
 #include <std_msgs/msg/float32.hpp>
 #include "ararobo_core/simple_udp.hpp"
 #include "ararobo_core/robot_data_config.hpp"
+#include "ararobo_core/trapezoidal_controller.hpp"
 
 class CoreNode : public rclcpp::Node
 {
 private:
     std::shared_ptr<SimpleUDP> udp;
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_x;
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_y;
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_z;
     geometry_msgs::msg::Twist cmd_vel_msg;
     uint8_t mode = 0;
     bool acceleration = false;
@@ -26,7 +30,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_phone_cmd_vel;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_phone_mode;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_upper_depth;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_acceleration;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_phone_acceleration;
     // robot
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_robot_cmd_vel;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_right_raise;
