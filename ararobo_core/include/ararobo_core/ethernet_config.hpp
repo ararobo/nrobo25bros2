@@ -13,10 +13,11 @@ namespace ethernet_config
 
     namespace pc
     {
-        uint8_t ip[4] = {192, 168, 1, 12}; // PCのIPアドレス
-        uint16_t port_operation = 5000;    // PCの操作用ポート番号
-        uint16_t port_feedback = 5001;     // PCのフィードバック用ポート番号
-        uint16_t port_controller = 5002;   // コントローラー用ポート番号
+        uint8_t ip[4] = {192, 168, 1, 12};      // PCのIPアドレス
+        uint8_t ip_wifi[4] = {192, 168, 2, 15}; // PCのIPアドレス (WiFi)
+        uint16_t port_operation = 5000;         // PCの操作用ポート番号
+        uint16_t port_feedback = 5001;          // PCのフィードバック用ポート番号
+        uint16_t port_controller = 5002;        // コントローラー用ポート番号
     }
 
     namespace controller

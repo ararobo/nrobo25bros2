@@ -17,7 +17,7 @@ CoreNode::CoreNode() : Node("core_node")
     cmd_vel_msg.angular.y = 0.0;
     cmd_vel_msg.angular.z = 0.0;
     sub_phone_cmd_vel = this->create_subscription<geometry_msgs::msg::Twist>(
-        "/phone/cmd_vel", 10, std::bind(&CoreNode::cmd_vel_callback, this, std::placeholders::_1));
+        "/robot/cmd_vel", 10, std::bind(&CoreNode::cmd_vel_callback, this, std::placeholders::_1));
     sub_phone_mode = this->create_subscription<std_msgs::msg::UInt8>(
         "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { mode = msg->data; });
@@ -41,8 +41,11 @@ CoreNode::CoreNode() : Node("core_node")
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
         return;
     }
-    udp->bindSocket(ethernet_config::controller::ip,
-                    ethernet_config::controller::port_controller);
+    if (!udp->bindSocket(ethernet_config::pc::ip_wifi,
+                         ethernet_config::controller::port_controller))
+    {
+        RCLCPP_ERROR(this->get_logger(), "bind error\n");
+    }
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&CoreNode::timer_callback, this));
 }
@@ -53,7 +56,7 @@ void CoreNode::timer_callback()
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        cmd_vel_msg.angular.z = controller_union.data.right_stick_x / 127.0f * 1.5f;
+        cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 1.5f;
     }
     float x = cmd_vel_msg.linear.x;
     float y = cmd_vel_msg.linear.y;
@@ -77,6 +80,11 @@ void CoreNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
 
 void CoreNode::upper_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
+}
+
+CoreNode::~CoreNode()
+{
+    udp->closeSocket();
 }
 
 int main(int argc, char const *argv[])

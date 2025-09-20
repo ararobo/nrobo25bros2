@@ -43,4 +43,5 @@ public:
     void timer_callback();
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
     void upper_depth_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    ~CoreNode();
 };
