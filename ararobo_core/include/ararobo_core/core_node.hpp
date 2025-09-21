@@ -18,6 +18,8 @@ private:
     geometry_msgs::msg::Twist cmd_vel_msg;
     uint8_t mode = 0;
     bool acceleration = false;
+    bool hold = false;
+    float lift_pos = 0.0f;
     union controller_data_union_t
     {
         uint8_t code[sizeof(controller_data_t)];
@@ -33,10 +35,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_phone_acceleration;
     // robot
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_robot_cmd_vel;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_right_raise;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_right_slide;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_left_raise;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_left_slide;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_raise;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_slide;
 
 public:
     CoreNode();

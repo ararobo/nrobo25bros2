@@ -17,7 +17,7 @@ CoreNode::CoreNode() : Node("core_node")
     cmd_vel_msg.angular.y = 0.0;
     cmd_vel_msg.angular.z = 0.0;
     sub_phone_cmd_vel = this->create_subscription<geometry_msgs::msg::Twist>(
-        "/robot/cmd_vel", 10, std::bind(&CoreNode::cmd_vel_callback, this, std::placeholders::_1));
+        "/phone/cmd_vel", 10, std::bind(&CoreNode::cmd_vel_callback, this, std::placeholders::_1));
     sub_phone_mode = this->create_subscription<std_msgs::msg::UInt8>(
         "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { mode = msg->data; });
@@ -28,14 +28,10 @@ CoreNode::CoreNode() : Node("core_node")
         { acceleration = msg->data; });
     pub_robot_cmd_vel = this->create_publisher<geometry_msgs::msg::Twist>(
         "/robot/cmd_vel", 10);
-    pub_robot_under_right_raise = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/right_raise", 10);
-    pub_robot_under_right_slide = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/right_slide", 10);
-    pub_robot_under_left_raise = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/left_raise", 10);
-    pub_robot_under_left_slide = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/left_slide", 10);
+    pub_robot_under_raise = this->create_publisher<std_msgs::msg::Float32>(
+        "/robot/under_hand/raise", 10);
+    pub_robot_under_slide = this->create_publisher<std_msgs::msg::Float32>(
+        "/robot/under_hand/slide", 10);
     if (!udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
