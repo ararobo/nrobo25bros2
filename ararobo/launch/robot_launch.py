@@ -34,10 +34,16 @@ def generate_launch_description():
             name='static_tf_pub_laser',
             arguments=['0', '-0.35', '0.02','-1.57075', '0', '-3.1415','base_link','laser'],
         ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([urg_launch_file_path])
+        Node(
+            package='ararobo_core',
+            executable='core_node',
+            name='core_node',
+            output='screen'
         ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([ydlidar_launch_file_path])
-        ),
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([urg_launch_file_path])
+        # ),
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([ydlidar_launch_file_path])
+        # ),
     ])
