@@ -40,10 +40,10 @@ def generate_launch_description():
             name='core_node',
             output='screen'
         ),
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource([urg_launch_file_path])
-        # ),
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource([ydlidar_launch_file_path])
-        # ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([urg_launch_file_path])
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([ydlidar_launch_file_path])
+        ),
     ])

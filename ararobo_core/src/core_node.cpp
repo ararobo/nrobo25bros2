@@ -50,13 +50,14 @@ CoreNode::CoreNode() : Node("core_node")
 
 void CoreNode::timer_callback()
 {
+
     if (udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
         if (controller_union.data.right_stick_y > 100 || controller_union.data.right_stick_y < -100)
         {
-            lift_vel = controller_union.data.right_stick_y / 127.0f * 5.0f;
+            lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
         }
         else
         {
@@ -79,6 +80,15 @@ void CoreNode::timer_callback()
     pub_robot_cmd_vel->publish(cmd_vel_msg);
     RCLCPP_INFO(this->get_logger(), "cmd_vel x: %.2f y: %.2f z: %.2f", x, y, z);
     lift_pos += lift_vel;
+    if (lift_pos > -0.0f)
+    {
+        lift_pos = -0.0f;
+    }
+    if (lift_pos < -158.0f)
+    {
+        lift_pos = -158.0f;
+    }
+
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_pos;
     pub_robot_lift->publish(lift_msg);
