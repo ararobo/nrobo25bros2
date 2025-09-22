@@ -32,6 +32,8 @@ CoreNode::CoreNode() : Node("core_node")
         "/robot/under_hand/raise", 10);
     pub_robot_under_slide = this->create_publisher<std_msgs::msg::Float32>(
         "/robot/under_hand/slide", 10);
+    pub_robot_lift = this->create_publisher<std_msgs::msg::Float32>(
+        "/robot/lift", 10);
     if (!udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
@@ -42,7 +44,7 @@ CoreNode::CoreNode() : Node("core_node")
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
                                      std::bind(&CoreNode::timer_callback, this));
 }
 
@@ -52,7 +54,15 @@ void CoreNode::timer_callback()
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
+        if (controller_union.data.right_stick_y > 100 || controller_union.data.right_stick_y < -100)
+        {
+            lift_vel = controller_union.data.right_stick_y / 127.0f * 5.0f;
+        }
+        else
+        {
+            lift_vel = 0.0f;
+            cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
+        }
     }
     float x = cmd_vel_msg.linear.x;
     float y = cmd_vel_msg.linear.y;
@@ -68,6 +78,11 @@ void CoreNode::timer_callback()
     cmd_vel_msg.angular.z = z;
     pub_robot_cmd_vel->publish(cmd_vel_msg);
     RCLCPP_INFO(this->get_logger(), "cmd_vel x: %.2f y: %.2f z: %.2f", x, y, z);
+    lift_pos += lift_vel;
+    std_msgs::msg::Float32 lift_msg;
+    lift_msg.data = lift_pos;
+    pub_robot_lift->publish(lift_msg);
+    RCLCPP_INFO(this->get_logger(), "lift: %.2f", lift_pos);
 }
 
 void CoreNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)

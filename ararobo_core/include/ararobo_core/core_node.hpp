@@ -19,6 +19,7 @@ private:
     uint8_t mode = 0;
     bool acceleration = false;
     bool hold = false;
+    float lift_vel = 0.0f;
     float lift_pos = 0.0f;
     union controller_data_union_t
     {
@@ -37,6 +38,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_robot_cmd_vel;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_raise;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_slide;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_lift;
 
 public:
     CoreNode();
