@@ -17,10 +17,15 @@ private:
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_z;
     geometry_msgs::msg::Twist cmd_vel_msg;
     uint8_t mode = 0;
+    bool auto_mode = false;
     bool acceleration = false;
     bool hold = false;
     float lift_vel = 0.0f;
     float lift_pos = 0.0f;
+    float upper_depth_speed = 20.0f;
+    float upper_width_speed = 1.0f;
+    float under_hand_raise_speed = 1.0f;
+    float under_hand_slide_speed = 1.0f;
     union controller_data_union_t
     {
         uint8_t code[sizeof(controller_data_t)];
@@ -34,6 +39,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_phone_mode;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_upper_depth;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_phone_acceleration;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_phone_auto_mode;
     // robot
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_robot_cmd_vel;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_raise;

@@ -26,6 +26,9 @@ CoreNode::CoreNode() : Node("core_node")
     sub_phone_acceleration = this->create_subscription<std_msgs::msg::Bool>(
         "/phone/acceleration", 10, [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
         { acceleration = msg->data; });
+    sub_phone_auto_mode = this->create_subscription<std_msgs::msg::Bool>(
+        "/phone/auto", 10, [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
+        { auto_mode = msg->data; });
     pub_robot_cmd_vel = this->create_publisher<geometry_msgs::msg::Twist>(
         "/robot/cmd_vel", 10);
     pub_robot_under_raise = this->create_publisher<std_msgs::msg::Float32>(
@@ -50,7 +53,10 @@ CoreNode::CoreNode() : Node("core_node")
 
 void CoreNode::timer_callback()
 {
-
+    float upper_depth = 0.0f;
+    float upper_width = 0.0f;
+    float under_hand_raise = 0.0f;
+    float under_hand_slide = 0.0f;
     if (udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
@@ -63,6 +69,38 @@ void CoreNode::timer_callback()
         {
             lift_vel = 0.0f;
             cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
+        }
+        if (controller_union.data.buttons.l_up)
+        {
+            upper_depth += upper_depth_speed;
+        }
+        if (controller_union.data.buttons.l_down)
+        {
+            upper_depth -= upper_depth_speed;
+        }
+        if (controller_union.data.buttons.l_left)
+        {
+            upper_width -= upper_width_speed;
+        }
+        if (controller_union.data.buttons.l_right)
+        {
+            upper_width += upper_width_speed;
+        }
+        if (controller_union.data.buttons.r_up)
+        {
+            under_hand_raise += under_hand_raise_speed;
+        }
+        if (controller_union.data.buttons.r_down)
+        {
+            under_hand_raise -= under_hand_raise_speed;
+        }
+        if (controller_union.data.buttons.r_left)
+        {
+            under_hand_slide -= under_hand_slide_speed;
+        }
+        if (controller_union.data.buttons.r_right)
+        {
+            under_hand_slide += under_hand_slide_speed;
         }
     }
     float x = cmd_vel_msg.linear.x;
@@ -93,6 +131,18 @@ void CoreNode::timer_callback()
     lift_msg.data = lift_pos;
     pub_robot_lift->publish(lift_msg);
     RCLCPP_INFO(this->get_logger(), "lift: %.2f", lift_pos);
+    std_msgs::msg::Float32 upper_depth_msg;
+    upper_depth_msg.data = upper_depth;
+    pub_robot_lift->publish(upper_depth_msg);
+    std_msgs::msg::Float32 upper_width_msg;
+    upper_width_msg.data = upper_width;
+    pub_robot_lift->publish(upper_width_msg);
+    std_msgs::msg::Float32 under_hand_raise_msg;
+    under_hand_raise_msg.data = under_hand_raise;
+    pub_robot_under_raise->publish(under_hand_raise_msg);
+    std_msgs::msg::Float32 under_hand_slide_msg;
+    under_hand_slide_msg.data = under_hand_slide;
+    pub_robot_under_slide->publish(under_hand_slide_msg);
 }
 
 void CoreNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
