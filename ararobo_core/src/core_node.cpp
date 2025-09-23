@@ -55,7 +55,7 @@ void CoreNode::timer_callback()
     {
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        if (controller_union.data.right_stick_y > 100 || controller_union.data.right_stick_y < -100)
+        if (controller_union.data.right_stick_y > 90 || controller_union.data.right_stick_y < -100)
         {
             lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
         }
@@ -84,9 +84,9 @@ void CoreNode::timer_callback()
     {
         lift_pos = -0.0f;
     }
-    if (lift_pos < -158.0f)
+    if (lift_pos < -157.0f)
     {
-        lift_pos = -158.0f;
+        lift_pos = -157.0f;
     }
 
     std_msgs::msg::Float32 lift_msg;
