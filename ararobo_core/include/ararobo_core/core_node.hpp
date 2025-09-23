@@ -26,6 +26,11 @@ private:
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.0f;
     float under_hand_slide_speed = 1.0f;
+    float upper_depth = 0.0f;
+    float upper_width = 0.0f;
+    float under_hand_raise = 0.0f;
+    float under_hand_slide = 0.0f;
+    float upper_depth_phone = 0.0f;
     union controller_data_union_t
     {
         uint8_t code[sizeof(controller_data_t)];
@@ -42,6 +47,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_phone_auto_mode;
     // robot
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_robot_cmd_vel;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_upper_depth;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_upper_width;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_raise;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_slide;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_lift;

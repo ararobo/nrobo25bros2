@@ -22,7 +22,7 @@ CoreNode::CoreNode() : Node("core_node")
         "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { mode = msg->data; });
     sub_phone_upper_depth = this->create_subscription<std_msgs::msg::Float32>(
-        "/phone/upper_depth", 10, std::bind(&CoreNode::upper_depth_callback, this, std::placeholders::_1));
+        "/phone/upper_hand/depth", 10, std::bind(&CoreNode::upper_depth_callback, this, std::placeholders::_1));
     sub_phone_acceleration = this->create_subscription<std_msgs::msg::Bool>(
         "/phone/acceleration", 10, [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
         { acceleration = msg->data; });
@@ -31,6 +31,10 @@ CoreNode::CoreNode() : Node("core_node")
         { auto_mode = msg->data; });
     pub_robot_cmd_vel = this->create_publisher<geometry_msgs::msg::Twist>(
         "/robot/cmd_vel", 10);
+    pub_robot_upper_depth = this->create_publisher<std_msgs::msg::Float32>(
+        "/robot/upper_hand/depth", 10);
+    pub_robot_upper_width = this->create_publisher<std_msgs::msg::Float32>(
+        "/robot/upper_hand/width", 10);
     pub_robot_under_raise = this->create_publisher<std_msgs::msg::Float32>(
         "/robot/under_hand/raise", 10);
     pub_robot_under_slide = this->create_publisher<std_msgs::msg::Float32>(
@@ -53,17 +57,18 @@ CoreNode::CoreNode() : Node("core_node")
 
 void CoreNode::timer_callback()
 {
-    float upper_depth = 0.0f;
-    float upper_width = 0.0f;
-    float under_hand_raise = 0.0f;
-    float under_hand_slide = 0.0f;
     if (udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
+        upper_depth = 0.0f;
+        upper_width = 0.0f;
+        under_hand_raise = 0.0f;
+        under_hand_slide = 0.0f;
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        if (controller_union.data.right_stick_y > 90 || controller_union.data.right_stick_y < -100)
+        if (controller_union.data.right_stick_y > 80 || controller_union.data.right_stick_y < -100)
         {
             lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
+            cmd_vel_msg.angular.z = 0.0f;
         }
         else
         {
@@ -127,16 +132,21 @@ void CoreNode::timer_callback()
         lift_pos = -157.0f;
     }
 
+    if (upper_depth_phone < -10.0f)
+    {
+        upper_depth = upper_depth_phone;
+    }
+
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_pos;
     pub_robot_lift->publish(lift_msg);
     RCLCPP_INFO(this->get_logger(), "lift: %.2f", lift_pos);
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
-    pub_robot_lift->publish(upper_depth_msg);
+    pub_robot_upper_depth->publish(upper_depth_msg);
     std_msgs::msg::Float32 upper_width_msg;
     upper_width_msg.data = upper_width;
-    pub_robot_lift->publish(upper_width_msg);
+    pub_robot_upper_width->publish(upper_width_msg);
     std_msgs::msg::Float32 under_hand_raise_msg;
     under_hand_raise_msg.data = under_hand_raise;
     pub_robot_under_raise->publish(under_hand_raise_msg);
@@ -151,6 +161,7 @@ void CoreNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
 
 void CoreNode::upper_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
+    upper_depth_phone = msg->data;
 }
 
 CoreNode::~CoreNode()
