@@ -32,7 +32,7 @@ def generate_launch_description():
         Node(package='tf2_ros',
             executable='static_transform_publisher',
             name='static_tf_pub_laser',
-            arguments=['0', '-0.35', '0.02','-1.57075', '0', '-3.1415','base_link','laser'],
+            arguments=['0', '-0.35', '0.02','-1.57075', '0', '-3.1415','base_link','urg_laser'],
         ),
        Node(
            package='ararobo_core',
