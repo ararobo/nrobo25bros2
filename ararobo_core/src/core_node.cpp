@@ -133,7 +133,6 @@ void CoreNode::timer_callback()
     cmd_vel_msg.linear.y = y;
     cmd_vel_msg.angular.z = z;
     pub_robot_cmd_vel->publish(cmd_vel_msg);
-    RCLCPP_INFO(this->get_logger(), "cmd_vel x: %.2f y: %.2f z: %.2f", x, y, z);
     lift_pos += lift_vel;
     if (lift_pos > -0.0f)
     {
@@ -152,7 +151,6 @@ void CoreNode::timer_callback()
     std_msgs::msg::Float32 lift_msg;
     lift_msg.data = lift_pos;
     pub_robot_lift->publish(lift_msg);
-    RCLCPP_INFO(this->get_logger(), "lift: %.2f", lift_pos);
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
     pub_robot_upper_depth->publish(upper_depth_msg);

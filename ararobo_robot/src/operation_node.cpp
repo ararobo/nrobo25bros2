@@ -64,14 +64,11 @@ void OperationNode::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr 
     operation_data.vx = msg->linear.x;     // x軸方向の速度[m/s]
     operation_data.vy = msg->linear.y;     // y軸方向の速度[m/s]
     operation_data.omega = msg->angular.z; // 回転速度[rad/s]
-    RCLCPP_INFO(this->get_logger(), "cmd_vel: linear.x: %f, linear.y: %f, angular.z: %f",
-                msg->linear.x, msg->linear.y, msg->angular.z);
 }
 
 void OperationNode::lift_vel_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     operation_data.lift = msg->data; // リフトの速度[m/s]
-    RCLCPP_INFO(this->get_logger(), "lift_vel: %f", msg->data);
 }
 
 void OperationNode::timer_callback()

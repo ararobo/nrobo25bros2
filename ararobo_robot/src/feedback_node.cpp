@@ -124,8 +124,6 @@ void FeedbackNode::timer_callback()
 
     theta = yaw;
 
-    RCLCPP_INFO(this->get_logger(), "R:%f, P:%f, Y:%f", roll, pitch, yaw);
-
     // オドメトリ計算
     double current_period_s = static_cast<double>(period_odom) / 1000.0;
     odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
