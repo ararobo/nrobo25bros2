@@ -59,7 +59,7 @@ CoreNode::CoreNode() : Node("core_node")
         return;
     }
     if (!mainboard_udp->bindSocket(ethernet_config::pc::ip_wifi,
-                                   ethernet_config::mainboard::port_mainboard))
+                                   ethernet_config::main_board::port_controller_ble))
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
