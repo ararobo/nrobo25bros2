@@ -3,7 +3,7 @@
 
 CoreNode::CoreNode() : Node("core_node")
 {
-    udp = std::make_shared<SimpleUDP>();
+    controller_udp = std::make_shared<SimpleUDP>();
     trapezoidal_controller_x = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_y = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_z = std::make_shared<TrapezoidalController<float>>();
@@ -41,13 +41,13 @@ CoreNode::CoreNode() : Node("core_node")
         "/hand/under/slide", 10);
     pub_robot_lift = this->create_publisher<std_msgs::msg::Float32>(
         "/lift/target", 10);
-    if (!udp->initSocket())
+    if (!controller_udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
         return;
     }
-    if (!udp->bindSocket(ethernet_config::pc::ip_wifi,
-                         ethernet_config::controller::port_controller))
+    if (!controller_udp->bindSocket(ethernet_config::pc::ip_wifi,
+                                    ethernet_config::controller::port_controller))
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
@@ -57,7 +57,7 @@ CoreNode::CoreNode() : Node("core_node")
 
 void CoreNode::timer_callback()
 {
-    if (udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
+    if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
         upper_depth = 0.0f;
         upper_width = 0.0f;
@@ -166,7 +166,7 @@ void CoreNode::upper_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
 
 CoreNode::~CoreNode()
 {
-    udp->closeSocket();
+    controller_udp->closeSocket();
 }
 
 int main(int argc, char const *argv[])

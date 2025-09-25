@@ -17,7 +17,8 @@ namespace ethernet_config
         uint8_t ip_wifi[4] = {192, 168, 2, 15}; // PCのIPアドレス (WiFi)
         uint16_t port_operation = 5000;         // PCの操作用ポート番号
         uint16_t port_feedback = 5001;          // PCのフィードバック用ポート番号
-        uint16_t port_controller = 5002;        // コントローラー用ポート番号
+        uint16_t port_controller_wifi = 5002;   // コントローラー用ポート番号 (WiFi)
+        uint16_t port_controller_ble = 5003;    // コントローラー用ポート番号 (BLE)
     }
 
     namespace controller
