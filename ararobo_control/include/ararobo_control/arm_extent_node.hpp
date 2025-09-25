@@ -21,9 +21,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_width_; // current width of arm
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_depth_; // current depth of arm
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_lift_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_width_distance_; // width_distance from box by tof_sensor
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_depth_distance_; // depth_distance from box by tof_sensor
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_box_hold_;          // box_infomation from core
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_box_hold_; // box_infomation from core
     rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr sub_box_info_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
@@ -55,8 +53,6 @@ private:
     float current_width; // [m]
     float current_depth; // [m]
     float current_lift;
-    float current_width_distance = 0.0f; // width tof_sensor
-    float current_depth_distance = 0.0f; // depth tof_sensor
 
     // publish_data
     float arm_width; // publish width[mm]

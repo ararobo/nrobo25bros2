@@ -34,15 +34,15 @@ FeedbackNode::FeedbackNode()
     pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10);
     pub_current_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
-        "current_width", 10);
+        "/hand/upper/current/width", 10);
     pub_current_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
-        "current_depth", 10);
+        "/hand/upper/current/depth", 10);
     pub_current_lift_ = this->create_publisher<std_msgs::msg::Float32>(
-        "current_lift", 10);
+        "/lift/current/pos", 10);
     pub_distance_right_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "distance/right", 10);
+        "/base/distance/right", 10);
     pub_distance_left_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "distance/left", 10);
+        "/base/distance/left", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 

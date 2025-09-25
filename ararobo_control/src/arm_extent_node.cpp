@@ -6,20 +6,14 @@ ArmExtentNode::ArmExtentNode()
 {
     // subscribe
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/current_width", 10,
+        "/hand/upper/current/width", 10,
         std::bind(&ArmExtentNode::current_width_callback, this, std::placeholders::_1));
     sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/current_depth", 10,
+        "/hand/upper/current/depth", 10,
         std::bind(&ArmExtentNode::current_depth_callback, this, std::placeholders::_1));
     sub_current_lift_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/current_lift", 10,
+        "/lift/current/pos", 10,
         std::bind(&ArmExtentNode::current_lift_callback, this, std::placeholders::_1));
-    sub_width_distance_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/width_distance", 10,
-        std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
-    sub_depth_distance_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/depth_distance", 10,
-        std::bind(&ArmExtentNode::depth_distance_callback, this, std::placeholders::_1));
     sub_box_hold_ = this->create_subscription<std_msgs::msg::Bool>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
@@ -114,16 +108,6 @@ void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedP
 void ArmExtentNode::current_lift_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     current_lift = msg->data;
-}
-
-void ArmExtentNode::width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_width_distance = msg->data;
-}
-
-void ArmExtentNode::depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_depth_distance = msg->data;
 }
 
 float ArmExtentNode::clamp(float variable, float max, float min)

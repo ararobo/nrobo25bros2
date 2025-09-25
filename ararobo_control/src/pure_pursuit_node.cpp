@@ -33,7 +33,6 @@ public:
             "distance_left", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
         distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "distance_right", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
-        led_pub = this->create_publisher<std_msgs::msg::Bool>("led_control", 10);
 
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
@@ -51,7 +50,6 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub;
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr led_pub;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 

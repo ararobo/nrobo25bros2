@@ -30,17 +30,17 @@ CoreNode::CoreNode() : Node("core_node")
         "/phone/auto", 10, [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
         { auto_mode = msg->data; });
     pub_robot_cmd_vel = this->create_publisher<geometry_msgs::msg::Twist>(
-        "/robot/cmd_vel", 10);
+        "/cmd_vel", 10);
     pub_robot_upper_depth = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/upper_hand/depth", 10);
+        "/hand/upper/depth", 10);
     pub_robot_upper_width = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/upper_hand/width", 10);
+        "/hand/upper/width", 10);
     pub_robot_under_raise = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/raise", 10);
+        "/hand/under/raise", 10);
     pub_robot_under_slide = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/under_hand/slide", 10);
+        "/hand/under/slide", 10);
     pub_robot_lift = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/lift", 10);
+        "/lift/target", 10);
     if (!udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
