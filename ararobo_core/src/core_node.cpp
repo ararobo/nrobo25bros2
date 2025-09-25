@@ -127,9 +127,9 @@ void CoreNode::timer_callback()
     {
         lift_pos = -0.0f;
     }
-    if (lift_pos < -157.0f)
+    if (lift_pos < -160.0f)
     {
-        lift_pos = -157.0f;
+        lift_pos = -160.0f;
     }
 
     if (upper_depth_phone < -10.0f)

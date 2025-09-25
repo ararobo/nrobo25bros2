@@ -22,7 +22,7 @@ private:
     bool hold = false;
     float lift_vel = 0.0f;
     float lift_pos = 0.0f;
-    float upper_depth_speed = 20.0f;
+    float upper_depth_speed = 25.0f;
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.0f;
     float under_hand_slide_speed = 1.0f;
