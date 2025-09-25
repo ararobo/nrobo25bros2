@@ -1,6 +1,7 @@
 #pragma once
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/float32_multi_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -20,8 +21,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_lift_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_width_distance_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_depth_distance_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_distance_right_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_distance_left_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 

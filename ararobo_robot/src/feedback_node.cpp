@@ -39,10 +39,10 @@ FeedbackNode::FeedbackNode()
         "current_depth", 10);
     pub_current_lift_ = this->create_publisher<std_msgs::msg::Float32>(
         "current_lift", 10);
-    pub_width_distance_ = this->create_publisher<std_msgs::msg::Float32>(
-        "width_distance", 10);
-    pub_depth_distance_ = this->create_publisher<std_msgs::msg::Float32>(
-        "depth_distance", 10);
+    pub_distance_right_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+        "distance/right", 10);
+    pub_distance_left_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+        "distance/left", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -81,6 +81,18 @@ void FeedbackNode::timer_callback()
     auto current_lift = std_msgs::msg::Float32();
     current_lift.data = feedback_union.data.current_lift;
     pub_current_lift_->publish(current_lift);
+    auto distance_right = std_msgs::msg::Float32MultiArray();
+    distance_right.data.resize(3);
+    distance_right.data[0] = feedback_union.data.distance_base_rf;
+    distance_right.data[1] = feedback_union.data.distance_base_rm;
+    distance_right.data[2] = feedback_union.data.distance_base_rb;
+    pub_distance_right_->publish(distance_right);
+    auto distance_left = std_msgs::msg::Float32MultiArray();
+    distance_left.data.resize(3);
+    distance_left.data[0] = feedback_union.data.distance_base_lf;
+    distance_left.data[1] = feedback_union.data.distance_base_lm;
+    distance_left.data[2] = feedback_union.data.distance_base_lb;
+    pub_distance_left_->publish(distance_left);
 
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
