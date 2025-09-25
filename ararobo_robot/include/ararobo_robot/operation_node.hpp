@@ -16,7 +16,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_upper_hand_depth_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_slide_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_raise_;
-    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_task_kind_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_communication_status_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> udp;
 

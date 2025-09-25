@@ -2,8 +2,8 @@
  * @file robot_data_config.hpp
  * @author aiba-gento
  * @brief ロボットの通信データ構造体定義
- * @version 1.0
- * @date 2025-09-25
+ * @version 1.1
+ * @date 2025-09-26
  *
  * @copyright Copyright (c) 2025
  *
@@ -35,17 +35,17 @@ struct feedback_data_t
 
 struct operation_data_t
 {
-    float vx;          // x軸方向の速度[m/s]
-    float vy;          // y軸方向の速度[m/s]
-    float omega;       // 回転速度[rad/s]
-    float width;       // 上アーム開閉幅
-    float depth;       // 上アーム出し入れ
-    float lift;        // 昇降
-    float right_slide; // 右下ハンド前後スライド
-    float right_raise; // 右下ハンド上下回転
-    float left_slide;  // 左下ハンド前後スライド
-    float left_raise;  // 左下ハンド上下回転
-    uint8_t task_kind; // 動作の種類
+    float vx;                    // x軸方向の速度[m/s]
+    float vy;                    // y軸方向の速度[m/s]
+    float omega;                 // 回転速度[rad/s]
+    float width;                 // 上アーム開閉幅
+    float depth;                 // 上アーム出し入れ
+    float lift;                  // 昇降
+    float right_slide;           // 右下ハンド前後スライド
+    float right_raise;           // 右下ハンド上下回転
+    float left_slide;            // 左下ハンド前後スライド
+    float left_raise;            // 左下ハンド上下回転
+    uint8_t comunication_status; // 通信状態 (0:なし 1:PC-main間通信 2:WiFi 3:BLE)
 } __attribute__((__packed__));
 
 struct controller_data_t

@@ -41,9 +41,16 @@ OperationNode::OperationNode()
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { operation_data.left_raise = -msg->data;
         operation_data.right_raise = msg->data; });
+    sub_communication_status_ = this->create_subscription<std_msgs::msg::UInt8>(
+        "/communication_status", 10,
+        [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
+        { operation_data.comunication_status = msg->data; });
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20),
                                      std::bind(&OperationNode::timer_callback, this));
+
+    operation_data.comunication_status = 1; // PC-main間通信
+    RCLCPP_INFO(this->get_logger(), "OperationNode started");
 }
 
 OperationNode::~OperationNode()
