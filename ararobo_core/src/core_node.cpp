@@ -4,6 +4,7 @@
 CoreNode::CoreNode() : Node("core_node")
 {
     controller_udp = std::make_shared<SimpleUDP>();
+    mainboard_udp = std::make_shared<SimpleUDP>();
     trapezoidal_controller_x = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_y = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_z = std::make_shared<TrapezoidalController<float>>();
@@ -43,11 +44,22 @@ CoreNode::CoreNode() : Node("core_node")
         "/lift/target", 10);
     if (!controller_udp->initSocket())
     {
-        RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
+        RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
         return;
     }
     if (!controller_udp->bindSocket(ethernet_config::pc::ip_wifi,
                                     ethernet_config::controller::port_controller))
+    {
+        RCLCPP_ERROR(this->get_logger(), "bind error\n");
+    }
+
+    if (!mainboard_udp->initSocket())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to initialize mainboard UDP socket");
+        return;
+    }
+    if (!mainboard_udp->bindSocket(ethernet_config::pc::ip_wifi,
+                                   ethernet_config::mainboard::port_mainboard))
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }

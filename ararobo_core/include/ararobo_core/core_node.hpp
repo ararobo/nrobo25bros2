@@ -12,6 +12,7 @@ class CoreNode : public rclcpp::Node
 {
 private:
     std::shared_ptr<SimpleUDP> controller_udp;
+    std::shared_ptr<SimpleUDP> mainboard_udp;
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_x;
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_y;
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_z;
