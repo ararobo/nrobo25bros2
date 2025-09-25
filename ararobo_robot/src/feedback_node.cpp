@@ -43,6 +43,12 @@ FeedbackNode::FeedbackNode()
         "/base/distance/right", 10);
     pub_distance_left_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
         "/base/distance/left", 10);
+    pub_position_control_lift_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/lift/position_control", 10);
+    pub_position_control_upper_hand_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/position_control", 10);
+    pub_position_control_under_hand_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/under/position_control", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -68,10 +74,11 @@ void FeedbackNode::timer_callback()
 {
     // UDPパケットの受信
     int recv_size = udp->recvPacket(feedback_union.code, sizeof(feedback_union));
-    if (recv_size < 0)
+    if (!(recv_size > 0 && recv_size == sizeof(feedback_union)))
     {
         RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
     }
+    // 受信データサイズの確認
     auto current_width = std_msgs::msg::Float32();
     current_width.data = feedback_union.data.upper_hand_current_width;
     pub_current_hand_width_->publish(current_width);
@@ -81,6 +88,7 @@ void FeedbackNode::timer_callback()
     auto current_lift = std_msgs::msg::Float32();
     current_lift.data = feedback_union.data.current_lift;
     pub_current_lift_->publish(current_lift);
+    // 距離センサの情報をMultiArray型でパブリッシュ
     auto distance_right = std_msgs::msg::Float32MultiArray();
     distance_right.data.resize(3);
     distance_right.data[0] = feedback_union.data.distance_base_rf;
@@ -93,6 +101,16 @@ void FeedbackNode::timer_callback()
     distance_left.data[1] = feedback_union.data.distance_base_lm;
     distance_left.data[2] = feedback_union.data.distance_base_lb;
     pub_distance_left_->publish(distance_left);
+    // ポジション制御モードの情報をBool型でパブリッシュ
+    auto position_control_lift = std_msgs::msg::Bool();
+    position_control_lift.data = feedback_union.data.position_control_lift ? true : false;
+    pub_position_control_lift_->publish(position_control_lift);
+    auto position_control_upper_hand = std_msgs::msg::Bool();
+    position_control_upper_hand.data = feedback_union.data.position_control_upper_hand ? true : false;
+    pub_position_control_upper_hand_->publish(position_control_upper_hand);
+    auto position_control_under_hand = std_msgs::msg::Bool();
+    position_control_under_hand.data = feedback_union.data.position_control_under_hand ? true : false;
+    pub_position_control_under_hand_->publish(position_control_under_hand);
 
     tf2::Quaternion q_tf2;
     q_tf2.setX(feedback_union.data.q_x);
