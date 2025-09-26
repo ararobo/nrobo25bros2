@@ -65,15 +65,11 @@ private:
     bool flag_ = true; // lift ready
     bool info_save;
     bool lift_info;
+    bool mode_auto; // auto/manual mode
 
     // callback
-    void current_width_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void current_lift_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg);
-    void box_info_callback(const std_msgs::msg::Int8::SharedPtr msg);
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void depth_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
     /**
      * @brief maximum and minimum limit

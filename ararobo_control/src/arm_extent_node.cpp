@@ -7,7 +7,8 @@ ArmExtentNode::ArmExtentNode()
     // subscribe
     sub_mode_auto_ = this->create_subscription<std_msgs::msg::Bool>(
         "/mode_auto", 10,
-        std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
+        [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
+        { mode_auto = msg->data; });
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/current/width", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
