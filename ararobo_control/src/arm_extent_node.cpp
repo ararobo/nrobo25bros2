@@ -55,12 +55,12 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     }
     else if (step == 3)
     {
-        flag_ == false;
+        flag_ = false;
         if ((box_info == 1 && lift_info) ||
             (box_info == 2 && lift_info) ||
             box_info == 3)
         {
-            flag_ == true;
+            flag_ = true;
         }
     }
     else if (step == 4) // close for l_grap
@@ -141,7 +141,7 @@ void ArmExtentNode::box_info_converse(int8_t box_info_, float *box_data, bool *l
         *box_data = box_b_width;
         *lift_info_ = (abs(current_lift - (box_c_width + robot_lift_add)) <= error);
     }
-    else if (box_info_ = 3) // c_box lower
+    else if (box_info_ == 3) // c_box lower
     {
         *box_data = box_c_width;
     }
@@ -160,8 +160,8 @@ void ArmExtentNode::step_update()
         }
         else
         {
-            info_save == true;
-            step == 0;
+            info_save = true;
+            step = 0;
         }
     }
     else // close
@@ -175,8 +175,8 @@ void ArmExtentNode::step_update()
         }
         else
         {
-            info_save == false;
-            step == 4;
+            info_save = false;
+            step = 4;
         }
     }
 }
