@@ -77,7 +77,7 @@ void CoreNode::timer_callback()
         under_hand_slide = 0.0f;
         cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
         cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        if (controller_union.data.right_stick_y > 80 || controller_union.data.right_stick_y < -100)
+        if (controller_union.data.right_stick_y > 80 || controller_union.data.right_stick_y < -80)
         {
             lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
             cmd_vel_msg.angular.z = 0.0f;

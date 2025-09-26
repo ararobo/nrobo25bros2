@@ -18,6 +18,7 @@ float32 left_raise
 class ArmExtentNode : public rclcpp::Node
 {
 private:
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_mode_auto_;        // auto/manual mode
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_width_; // current width of arm
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_depth_; // current depth of arm
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_current_lift_;

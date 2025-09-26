@@ -5,6 +5,9 @@ ArmExtentNode::ArmExtentNode()
     : Node("arm_extent_node")
 {
     // subscribe
+    sub_mode_auto_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/mode_auto", 10,
+        std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/current/width", 10,
         std::bind(&ArmExtentNode::current_width_callback, this, std::placeholders::_1));

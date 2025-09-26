@@ -11,12 +11,6 @@
 class CoreNode : public rclcpp::Node
 {
 private:
-    std::shared_ptr<SimpleUDP> controller_udp;
-    std::shared_ptr<SimpleUDP> mainboard_udp;
-    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_x;
-    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_y;
-    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_z;
-    geometry_msgs::msg::Twist cmd_vel_msg;
     uint8_t mode = 0;
     bool auto_mode = false;
     bool acceleration = false;
@@ -37,10 +31,17 @@ private:
         uint8_t code[sizeof(controller_data_t)];
         controller_data_t data;
     } controller_union;
-
+    // UDP
+    std::shared_ptr<SimpleUDP> controller_udp;
+    std::shared_ptr<SimpleUDP> mainboard_udp;
+    // 台形制御
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_x;
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_y;
+    std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_z;
+    geometry_msgs::msg::Twist cmd_vel_msg;
     // timer
     rclcpp::TimerBase::SharedPtr timer_;
-    // phone auto
+    // スマホ間通信
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_phone_cmd_vel;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_phone_mode;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_upper_depth;
