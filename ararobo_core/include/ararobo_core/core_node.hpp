@@ -15,14 +15,11 @@ private:
     bool auto_mode = false;
     bool acceleration = false;
     bool hold = false;
-    float lift_vel = 0.0f;
     float lift_pos = 0.0f;
     float upper_depth_speed = 25.0f;
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.0f;
     float under_hand_slide_speed = 1.0f;
-    float upper_depth = 0.0f;
-    float upper_width = 0.0f;
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
     float upper_depth_phone = 0.0f;
@@ -54,6 +51,11 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_raise;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_under_slide;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_robot_lift;
+
+    void control_upper_hand_manual();
+    void control_under_hand_manual();
+    void update_lift_pos(float lift_vel);
+    void control_cmd_vel();
 
 public:
     CoreNode();
