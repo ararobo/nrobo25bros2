@@ -10,19 +10,23 @@ ArmExtentNode::ArmExtentNode()
         std::bind(&ArmExtentNode::width_distance_callback, this, std::placeholders::_1));
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/current/width", 10,
-        std::bind(&ArmExtentNode::current_width_callback, this, std::placeholders::_1));
+        [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
+        { current_width = msg->data * diameter; });
     sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/current/depth", 10,
-        std::bind(&ArmExtentNode::current_depth_callback, this, std::placeholders::_1));
+        [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
+        { current_depth = msg->data * lead / (2 * M_PI); });
     sub_current_lift_ = this->create_subscription<std_msgs::msg::Float32>(
         "/lift/current/pos", 10,
-        std::bind(&ArmExtentNode::current_lift_callback, this, std::placeholders::_1));
+        [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
+        { current_lift = msg->data; });
     sub_box_hold_ = this->create_subscription<std_msgs::msg::Bool>(
         "/box_hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
     sub_box_info_ = this->create_subscription<std_msgs::msg::Int8>(
         "/box_info", 10,
-        std::bind(&ArmExtentNode::box_info_callback, this, std::placeholders::_1));
+        [&](const std_msgs::msg::Int8::SharedPtr msg) -> void
+        { box_info = msg->data; });
     // publish
     pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
         "/robot/upper_hand/width", 10);
@@ -91,26 +95,6 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     pub_upper_hand_width_->publish(upper_hand_width_msg);
     pub_upper_hand_depth_->publish(upper_hand_depth_msg);
     pub_centering_vel_->publish(centering_addend);
-}
-
-void ArmExtentNode::box_info_callback(const std_msgs::msg::Int8::SharedPtr msg)
-{
-    box_info = msg->data;
-}
-
-void ArmExtentNode::current_width_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_width = msg->data * diameter;
-}
-
-void ArmExtentNode::current_depth_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_depth = msg->data * lead / (2 * M_PI);
-}
-
-void ArmExtentNode::current_lift_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    current_lift = msg->data;
 }
 
 float ArmExtentNode::clamp(float variable, float max, float min)
