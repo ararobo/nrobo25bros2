@@ -6,7 +6,7 @@ ArmExtentNode::ArmExtentNode()
 {
     // subscribe
     sub_mode_auto_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/mode_auto", 10,
+        "/mode/auto", 10,
         [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
         { mode_auto = msg->data; });
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -22,17 +22,17 @@ ArmExtentNode::ArmExtentNode()
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { current_lift = msg->data; });
     sub_box_hold_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/box_hold", 10,
+        "/hand/box/hold", 10,
         std::bind(&ArmExtentNode::box_hold_callback, this, std::placeholders::_1));
     sub_box_info_ = this->create_subscription<std_msgs::msg::Int8>(
-        "/box_info", 10,
+        "/hand/box/info", 10,
         [&](const std_msgs::msg::Int8::SharedPtr msg) -> void
         { box_info = msg->data; });
     // publish
     pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/upper_hand/width", 10);
+        "/hand/upper/width", 10);
     pub_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/upper_hand/depth", 10);
+        "/hand/upper/depth", 10);
     pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
         "/centering_vel", 10);
 }
@@ -88,6 +88,9 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
 
     step_update();
 
+    std_msgs::msg::Float32 upper_hand_width_msg;
+    std_msgs::msg::Float32 upper_hand_depth_msg;
+
     // set width and depth
     upper_hand_width_msg.data = (arm_w_max - arm_width) / diameter / 2.0f * -1;
     upper_hand_depth_msg.data = arm_depth * (2.0f * M_PI) / lead / 2.0f;
@@ -95,7 +98,6 @@ void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
     // publish
     pub_upper_hand_width_->publish(upper_hand_width_msg);
     pub_upper_hand_depth_->publish(upper_hand_depth_msg);
-    pub_centering_vel_->publish(centering_addend);
 }
 
 float ArmExtentNode::clamp(float variable, float max, float min)

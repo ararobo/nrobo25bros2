@@ -28,10 +28,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;
 
-    std_msgs::msg::Float32 upper_hand_width_msg;
-    std_msgs::msg::Float32 upper_hand_depth_msg;
-    std_msgs::msg::Float32 centering_addend;
-
     // constant_data
     float arm_w_max = 0.010;   // width, range of motion[m]
     float arm_d_max = 0.550;   // depth, range of motion[m]

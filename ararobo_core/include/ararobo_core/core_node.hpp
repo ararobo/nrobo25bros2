@@ -23,14 +23,6 @@ private:
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
     float upper_depth_phone = 0.0f;
-    union controller_data_union_t
-    {
-        uint8_t code[sizeof(controller_data_t)];
-        controller_data_t data;
-    } controller_union;
-    // UDP
-    std::shared_ptr<SimpleUDP> controller_udp;
-    std::shared_ptr<SimpleUDP> mainboard_udp;
     // 台形制御
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_x;
     std::shared_ptr<TrapezoidalController<float>> trapezoidal_controller_y;

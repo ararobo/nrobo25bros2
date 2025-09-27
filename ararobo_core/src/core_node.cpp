@@ -3,8 +3,6 @@
 
 CoreNode::CoreNode() : Node("core_node")
 {
-    controller_udp = std::make_shared<SimpleUDP>();
-    mainboard_udp = std::make_shared<SimpleUDP>();
     trapezoidal_controller_x = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_y = std::make_shared<TrapezoidalController<float>>();
     trapezoidal_controller_z = std::make_shared<TrapezoidalController<float>>();
@@ -42,49 +40,23 @@ CoreNode::CoreNode() : Node("core_node")
         "/hand/under/slide", 10);
     pub_robot_lift = this->create_publisher<std_msgs::msg::Float32>(
         "/lift/target", 10);
-    if (!controller_udp->initSocket())
-    {
-        RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
-        return;
-    }
-    if (!controller_udp->bindSocket(ethernet_config::pc::ip_wifi,
-                                    ethernet_config::controller::port_controller))
-    {
-        RCLCPP_ERROR(this->get_logger(), "bind error\n");
-    }
-
-    if (!mainboard_udp->initSocket())
-    {
-        RCLCPP_ERROR(this->get_logger(), "Failed to initialize mainboard UDP socket");
-        return;
-    }
-    if (!mainboard_udp->bindSocket(ethernet_config::pc::ip_wifi,
-                                   ethernet_config::main_board::port_controller_ble))
-    {
-        RCLCPP_ERROR(this->get_logger(), "bind error\n");
-    }
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
-                                     std::bind(&CoreNode::timer_callback, this));
 }
 
 void CoreNode::timer_callback()
 {
-    if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
-    {
-        float lift_vel = 0.0f;
+    float lift_vel = 0.0f;
 
-        cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
-        cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
-        if (controller_union.data.right_stick_y > 80 || controller_union.data.right_stick_y < -80)
-        {
-            lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
-            cmd_vel_msg.angular.z = 0.0f;
-        }
-        else
-        {
-            lift_vel = 0.0f;
-            cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
-        }
+    cmd_vel_msg.linear.x = controller_union.data.left_stick_x / 127.0f * 1.5f;
+    cmd_vel_msg.linear.y = controller_union.data.left_stick_y / 127.0f * 1.5f;
+    if (controller_union.data.right_stick_y > 80 || controller_union.data.right_stick_y < -80)
+    {
+        lift_vel = controller_union.data.right_stick_y / 127.0f * 0.4f;
+        cmd_vel_msg.angular.z = 0.0f;
+    }
+    else
+    {
+        lift_vel = 0.0f;
+        cmd_vel_msg.angular.z = -controller_union.data.right_stick_x / 127.0f * 2.4f;
     }
     if (acceleration)
     {
