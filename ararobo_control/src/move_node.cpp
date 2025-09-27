@@ -62,3 +62,11 @@ void MoveNode::timer_callback()
     }
     update_joy_ = false;
 }
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<MoveNode>());
+    rclcpp::shutdown();
+    return 0;
+}

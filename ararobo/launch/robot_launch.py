@@ -29,6 +29,12 @@ def generate_launch_description():
             name='feedback_node',
             output='screen'
         ),
+        Node(
+            package='ararobo_robot',
+            executable='feedback_node',
+            name='feedback_node',
+            output='screen'
+        ),
         Node(package='tf2_ros',
             executable='static_transform_publisher',
             name='static_tf_pub_laser',

@@ -27,7 +27,6 @@ void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     update_joy_ = true;
     if (auto_mode)
     {
-        upper_hand_control_auto();
     }
     else
     {
@@ -130,4 +129,12 @@ void HandNode::timer_callback()
         }
     }
     update_joy_ = false;
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<HandNode>());
+    rclcpp::shutdown();
+    return 0;
 }

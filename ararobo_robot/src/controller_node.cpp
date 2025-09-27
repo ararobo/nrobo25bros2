@@ -96,3 +96,11 @@ void ControllerNode::timer_callback()
         pub_joy_->publish(joy_msg);
     }
 }
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<ControllerNode>());
+    rclcpp::shutdown();
+    return 0;
+}

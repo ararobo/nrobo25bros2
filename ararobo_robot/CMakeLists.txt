@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -23,6 +24,7 @@ set(dependencies
   tf2
   tf2_ros
   tf2_geometry_msgs
+  sensor_msgs
 )
 
 # robot
@@ -49,9 +51,22 @@ target_include_directories(feedback_node PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+# controller
+add_executable(controller_node src/controller_node.cpp src/simple_udp.cpp)
+
+ament_target_dependencies(controller_node
+  ${dependencies}
+)
+
+target_include_directories(controller_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 install(TARGETS
   operation_node
   feedback_node
+  controller_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

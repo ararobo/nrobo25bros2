@@ -47,5 +47,4 @@ public:
     void timer_callback();
     void under_hand_control(const sensor_msgs::msg::Joy::SharedPtr msg);
     void upper_hand_control_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
-    void upper_hand_control_auto();
 };
