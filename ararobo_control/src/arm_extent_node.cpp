@@ -30,9 +30,9 @@ ArmExtentNode::ArmExtentNode()
         { box_info = msg->data; });
     // publish
     pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/upper_hand/width", 10);
+        "/upper_hand/width", 10);
     pub_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/robot/upper_hand/depth", 10);
+        "/upper_hand/depth", 10);
     pub_centering_vel_ = this->create_publisher<std_msgs::msg::Float32>(
         "/centering_vel", 10);
 }
