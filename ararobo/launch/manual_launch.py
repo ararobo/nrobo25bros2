@@ -18,32 +18,15 @@ def generate_launch_description():
     
     return LaunchDescription([
         Node(
-            package='ararobo_robot',
-            executable='operation_node',
-            name='operation_node',
+            package='ararobo_control',
+            executable='hand_node',
+            name='hand_node',
             output='screen'
         ),
         Node(
-            package='ararobo_robot',
-            executable='feedback_node',
-            name='feedback_node',
+            package='ararobo_control',
+            executable='move_node',
+            name='move_node',
             output='screen'
         ),
-        Node(
-            package='ararobo_robot',
-            executable='feedback_node',
-            name='feedback_node',
-            output='screen'
-        ),
-        Node(package='tf2_ros',
-            executable='static_transform_publisher',
-            name='static_tf_pub_laser',
-            arguments=['0', '-0.35', '0.02','-1.57075', '0', '-3.1415','base_link','urg_laser'],
-        ),
-       IncludeLaunchDescription(
-           PythonLaunchDescriptionSource([urg_launch_file_path])
-       ),
-       IncludeLaunchDescription(
-           PythonLaunchDescriptionSource([ydlidar_launch_file_path])
-       ),
     ])

@@ -9,6 +9,7 @@ MoveNode::MoveNode() : Node("move_node")
     trapezoidal_y->set_control_cycle(10);
     trapezoidal_z->set_control_cycle(10);
     pub_cmd_vel_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+    pub_lift_ = this->create_publisher<std_msgs::msg::Float32>("/lift/target", 10);
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&MoveNode::joy_callback, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(

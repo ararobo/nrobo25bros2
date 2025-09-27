@@ -17,24 +17,6 @@ def generate_launch_description():
     slam_launch_file_path = os.path.join(slam_share_dir, 'launch', 'online_async_launch.py')
     
     return LaunchDescription([
-        Node(
-            package='ararobo_robot',
-            executable='operation_node',
-            name='operation_node',
-            output='screen'
-        ),
-        Node(
-            package='ararobo_robot',
-            executable='feedback_node',
-            name='feedback_node',
-            output='screen'
-        ),
-        Node(
-            package='ararobo_robot',
-            executable='feedback_node',
-            name='feedback_node',
-            output='screen'
-        ),
         Node(package='tf2_ros',
             executable='static_transform_publisher',
             name='static_tf_pub_laser',
