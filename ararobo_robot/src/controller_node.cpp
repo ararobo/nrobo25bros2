@@ -22,7 +22,7 @@ ControllerNode::ControllerNode()
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize mainboard UDP socket");
         return;
     }
-    if (!mainboard_udp->bindSocket(ethernet_config::pc::ip_wifi,
+    if (!mainboard_udp->bindSocket(ethernet_config::pc::ip,
                                    ethernet_config::main_board::port_controller_ble))
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
