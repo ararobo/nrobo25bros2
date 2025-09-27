@@ -81,19 +81,19 @@ void HandNode::under_hand_control(const sensor_msgs::msg::Joy::SharedPtr msg)
         under_hand_raise = 0.0f;
         if (msg->buttons[4])
         {
-            under_hand_slide += under_hand_slide_speed;
+            under_hand_raise += under_hand_raise_speed;
         }
         if (msg->buttons[5])
         {
-            under_hand_slide -= under_hand_slide_speed;
+            under_hand_raise -= under_hand_raise_speed;
         }
         if (msg->buttons[6])
         {
-            under_hand_raise += under_hand_raise_speed;
+            under_hand_slide -= under_hand_slide_speed;
         }
         if (msg->buttons[7])
         {
-            under_hand_raise -= under_hand_raise_speed;
+            under_hand_slide += under_hand_slide_speed;
         }
     }
 

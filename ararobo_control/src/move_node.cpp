@@ -23,8 +23,8 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     auto cmd_vel_msg = geometry_msgs::msg::Twist();
     auto lift_msg = std_msgs::msg::Float32();
     // 直線移動
-    cmd_vel_msg.linear.x = linear_x_speed * msg->axes[1];
-    cmd_vel_msg.linear.y = linear_y_speed * msg->axes[0];
+    cmd_vel_msg.linear.x = linear_x_speed * msg->axes[0];
+    cmd_vel_msg.linear.y = linear_y_speed * msg->axes[1];
     // 右スティック
     if (std::abs(msg->axes[3]) > angular_stick_threshold) // リフト制御
     {

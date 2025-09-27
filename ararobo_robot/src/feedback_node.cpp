@@ -74,7 +74,7 @@ void FeedbackNode::timer_callback()
 {
     // UDPパケットの受信
     int recv_size = udp->recvPacket(feedback_union.code, sizeof(feedback_union));
-    if (!(recv_size > 0 && recv_size == sizeof(feedback_union)))
+    if (recv_size != sizeof(feedback_union))
     {
         RCLCPP_WARN(this->get_logger(), "Failed to receive UDP packet or no data received. Recv size: %d", recv_size);
     }
