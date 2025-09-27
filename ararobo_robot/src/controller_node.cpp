@@ -3,7 +3,7 @@
 ControllerNode::ControllerNode()
     : rclcpp::Node("controller_node")
 {
-    pub_joy_ = this->create_publisher<sensor_msgs::msg::Joy>("/joy", 10);
+    pub_joy_ = this->create_publisher<sensor_msgs::msg::Joy>("/controller", 10);
     controller_udp = std::make_shared<SimpleUDP>();
     mainboard_udp = std::make_shared<SimpleUDP>();
     if (!controller_udp->initSocket())

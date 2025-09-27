@@ -42,7 +42,7 @@ OperationNode::OperationNode()
         { operation_data.left_raise = -msg->data;
         operation_data.right_raise = msg->data; });
     sub_communication_status_ = this->create_subscription<std_msgs::msg::UInt8>(
-        "/communication_status", 10,
+        "/mode/connection", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { operation_data.communication_status = msg->data; });
 
