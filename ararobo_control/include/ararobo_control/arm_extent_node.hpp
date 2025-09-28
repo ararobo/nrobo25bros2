@@ -27,6 +27,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_hand_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_centering_vel_;
+    rclcpp::TimerBase::SharedPtr timer_;
 
     // constant_data
     float arm_w_max = 0.010;   // width, range of motion[m]
@@ -61,11 +62,12 @@ private:
     bool flag_ = true; // lift ready
     bool info_save;
     bool lift_info;
-    bool mode_auto; // auto/manual mode
+    bool mode_auto = false; // auto/manual mode
 
     // callback
     void box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg);
     void width_distance_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void timer_callback();
 
     /**
      * @brief maximum and minimum limit

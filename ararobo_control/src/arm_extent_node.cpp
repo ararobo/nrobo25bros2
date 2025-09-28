@@ -37,67 +37,73 @@ ArmExtentNode::ArmExtentNode()
         "/centering_vel", 10);
 }
 
+void ArmExtentNode::timer_callback()
+{
+    if (mode_auto)
+    {
+        box_info_converse(box_info, &target_width, &lift_info);
+
+        if (step == 0) // strage
+        {
+            arm_width = arm_w_max;
+            arm_depth = 0.0f;
+        }
+        else if (step == 1) // open for u_grap
+        {
+            arm_width = arm_w_max;
+            arm_depth = arm_d_max;
+        }
+        else if (step == 2) // open for l_grap
+        {
+            arm_width = target_width;
+            arm_depth = arm_d_max;
+        }
+        else if (step == 3)
+        {
+            flag_ = false;
+            if ((box_info == 1 && lift_info) ||
+                (box_info == 2 && lift_info) ||
+                box_info == 3)
+            {
+                flag_ = true;
+            }
+        }
+        else if (step == 4) // close for l_grap
+        {
+            arm_width = target_width;
+            arm_depth = 0.1;
+        }
+
+        // maximum and minimum limit
+        arm_width = clamp(arm_width, arm_w_max, 0.0f);
+        arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
+
+        // step complete
+        if ((abs(current_width - arm_width) <= error &&
+             abs(current_depth - arm_depth) <= error) &&
+            flag_)
+        {
+            ready = true;
+        }
+
+        step_update();
+
+        std_msgs::msg::Float32 upper_hand_width_msg;
+        std_msgs::msg::Float32 upper_hand_depth_msg;
+
+        // set width and depth
+        upper_hand_width_msg.data = (arm_w_max - arm_width) / diameter / 2.0f * -1;
+        upper_hand_depth_msg.data = arm_depth * (2.0f * M_PI) / lead / 2.0f;
+
+        // publish
+        pub_upper_hand_width_->publish(upper_hand_width_msg);
+        pub_upper_hand_depth_->publish(upper_hand_depth_msg);
+    }
+}
+
 void ArmExtentNode::box_hold_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     box_hold = msg->data; // get info "open or close"
-
-    box_info_converse(box_info, &target_width, &lift_info);
-
-    if (step == 0) // strage
-    {
-        arm_width = arm_w_max;
-        arm_depth = 0.0f;
-    }
-    else if (step == 1) // open for u_grap
-    {
-        arm_width = arm_w_max;
-        arm_depth = arm_d_max;
-    }
-    else if (step == 2) // open for l_grap
-    {
-        arm_width = target_width;
-        arm_depth = arm_d_max;
-    }
-    else if (step == 3)
-    {
-        flag_ = false;
-        if ((box_info == 1 && lift_info) ||
-            (box_info == 2 && lift_info) ||
-            box_info == 3)
-        {
-            flag_ = true;
-        }
-    }
-    else if (step == 4) // close for l_grap
-    {
-        arm_width = target_width;
-        arm_depth = 0.1;
-    }
-
-    // maximum and minimum limit
-    arm_width = clamp(arm_width, arm_w_max, 0.0f);
-    arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
-
-    // step complete
-    if ((abs(current_width - arm_width) <= error &&
-         abs(current_depth - arm_depth) <= error) &&
-        flag_)
-    {
-        ready = true;
-    }
-
-    step_update();
-
-    std_msgs::msg::Float32 upper_hand_width_msg;
-    std_msgs::msg::Float32 upper_hand_depth_msg;
-
-    // set width and depth
-    upper_hand_width_msg.data = (arm_w_max - arm_width) / diameter / 2.0f * -1;
-    upper_hand_depth_msg.data = arm_depth * (2.0f * M_PI) / lead / 2.0f;
-
-    // publish
-    pub_upper_hand_width_->publish(upper_hand_width_msg);
-    pub_upper_hand_depth_->publish(upper_hand_depth_msg);
 }
 
 float ArmExtentNode::clamp(float variable, float max, float min)
