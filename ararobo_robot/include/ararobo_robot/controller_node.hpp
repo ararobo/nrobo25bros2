@@ -26,6 +26,13 @@ private:
     uint32_t mainboard_disconnect_count = 0;
     uint32_t mainboard_disconnect_threshold = 50; // 50 * 10ms = 500ms
 
+    uint32_t mainboard_tick = 0;
+    uint32_t controller_tick = 0;
+    uint32_t mainboard_tick_prev = 0;
+    uint32_t controller_tick_prev = 0;
+    uint32_t mainboard_tick_threshold = 50;
+    uint32_t controller_tick_threshold = 50;
+
 public:
     ControllerNode();
     ~ControllerNode();

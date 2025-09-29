@@ -47,6 +47,14 @@ void ControllerNode::timer_callback()
             is_controller_connected = true;
             RCLCPP_INFO(this->get_logger(), "Controller connected");
         }
+
+        controller_tick = controller_union.data.tick;
+        if ((controller_tick - controller_tick_prev) > controller_tick_threshold)
+        {
+            RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
+            controller_tick_prev = controller_tick;
+            return;
+        }
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
         joy_msg.axes.resize(4);
@@ -65,6 +73,7 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
         controller_disconnect_count = 0;
+        controller_tick_prev = controller_tick;
     }
     else
     {
@@ -87,6 +96,15 @@ void ControllerNode::timer_callback()
             is_mainboard_connected = true;
             RCLCPP_INFO(this->get_logger(), "Mainboard connected");
         }
+
+        mainboard_tick = controller_union.data.tick;
+        if ((mainboard_tick - mainboard_tick_prev) > mainboard_tick_threshold)
+        {
+            RCLCPP_WARN(this->get_logger(), "Mainboard tick jump detected");
+            mainboard_tick_prev = mainboard_tick;
+            return;
+        }
+
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
         joy_msg.axes.resize(4);
@@ -104,6 +122,8 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[6] = controller_union.data.buttons.r_left;
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
+        mainboard_disconnect_count = 0;
+        mainboard_tick_prev = mainboard_tick;
     }
     else
     {
