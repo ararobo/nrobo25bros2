@@ -20,8 +20,11 @@ private:
     } controller_union;
 
     bool is_controller_connected = false;
-    uint32_t disconnect_count = 0;
-    uint32_t disconnect_threshold = 100; // 100 * 10ms = 1s
+    bool is_mainboard_connected = false;
+    uint32_t controller_disconnect_count = 0;
+    uint32_t controller_disconnect_threshold = 50; // 50 * 10ms = 500ms
+    uint32_t mainboard_disconnect_count = 0;
+    uint32_t mainboard_disconnect_threshold = 50; // 50 * 10ms = 500ms
 
 public:
     ControllerNode();

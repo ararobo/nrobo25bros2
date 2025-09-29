@@ -54,6 +54,7 @@ void MoveNode::timer_callback()
 {
     if (!update_joy_)
     {
+        RCLCPP_WARN(this->get_logger(), "No joy message received, stopping the robot");
         auto cmd_vel_msg = geometry_msgs::msg::Twist();
         cmd_vel_msg.linear.x = 0.0;
         cmd_vel_msg.linear.y = 0.0;

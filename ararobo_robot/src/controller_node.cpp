@@ -42,7 +42,11 @@ void ControllerNode::timer_callback()
 {
     if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
-        is_controller_connected = true;
+        if (!is_controller_connected)
+        {
+            is_controller_connected = true;
+            RCLCPP_INFO(this->get_logger(), "Controller connected");
+        }
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
         joy_msg.axes.resize(4);
@@ -60,23 +64,29 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[6] = controller_union.data.buttons.r_left;
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
-        disconnect_count = 0;
+        controller_disconnect_count = 0;
     }
     else
     {
         if (is_controller_connected)
         {
-            disconnect_count++;
-            if (disconnect_count >= disconnect_threshold)
-            {
-                is_controller_connected = false;
-                disconnect_count = 0;
-                RCLCPP_WARN(this->get_logger(), "Controller disconnected");
-            }
+            controller_disconnect_count++;
+        }
+        if (controller_disconnect_count >= controller_disconnect_threshold)
+        {
+            controller_disconnect_count = 0;
+            is_controller_connected = false;
+            RCLCPP_WARN(this->get_logger(), "Controller disconnected");
         }
     }
+
     if (!is_controller_connected && mainboard_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
+        if (!is_mainboard_connected)
+        {
+            is_mainboard_connected = true;
+            RCLCPP_INFO(this->get_logger(), "Mainboard connected");
+        }
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
         joy_msg.axes.resize(4);
@@ -94,6 +104,19 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[6] = controller_union.data.buttons.r_left;
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
+    }
+    else
+    {
+        if (is_mainboard_connected)
+        {
+            mainboard_disconnect_count++;
+        }
+        if (mainboard_disconnect_count >= mainboard_disconnect_threshold)
+        {
+            mainboard_disconnect_count = 0;
+            is_mainboard_connected = false;
+            RCLCPP_WARN(this->get_logger(), "Mainboard disconnected");
+        }
     }
 }
 
