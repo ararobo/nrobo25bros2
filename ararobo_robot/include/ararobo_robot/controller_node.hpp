@@ -1,6 +1,7 @@
 #pragma once
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include "ararobo_robot/simple_udp.hpp"
 #include "ararobo_robot/robot_data_config.hpp"
 #include "ararobo_robot/ethernet_config.hpp"
@@ -9,6 +10,7 @@ class ControllerNode : public rclcpp::Node
 {
 private:
     rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr pub_joy_;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_connection_status_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> controller_udp;
     std::shared_ptr<SimpleUDP> mainboard_udp;

@@ -46,15 +46,18 @@ void ControllerNode::timer_callback()
         if (!is_controller_connected)
         {
             is_controller_connected = true;
-            RCLCPP_INFO(this->get_logger(), "Controller connected");
             controller_tick_prev = controller_tick;
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 2; // 2: WiFi接続
+            pub_connection_status_->publish(connection_msg);
+            RCLCPP_INFO(this->get_logger(), "Controller connected");
         }
         else
         {
             if ((controller_tick - controller_tick_prev) > controller_tick_threshold)
             {
-                RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
                 controller_tick_prev = controller_tick;
+                RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
                 return;
             }
         }
@@ -88,6 +91,9 @@ void ControllerNode::timer_callback()
         {
             controller_disconnect_count = 0;
             is_controller_connected = false;
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 1; // 1: 無線通信なし
+            pub_connection_status_->publish(connection_msg);
             RCLCPP_WARN(this->get_logger(), "Controller disconnected");
         }
     }
@@ -99,8 +105,11 @@ void ControllerNode::timer_callback()
         if (!is_mainboard_connected)
         {
             is_mainboard_connected = true;
-            RCLCPP_INFO(this->get_logger(), "Mainboard connected");
             mainboard_tick_prev = mainboard_tick;
+            RCLCPP_INFO(this->get_logger(), "Mainboard connected");
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 3; // 3: BLE接続
+            pub_connection_status_->publish(connection_msg);
         }
         else
         {
@@ -142,6 +151,9 @@ void ControllerNode::timer_callback()
         {
             mainboard_disconnect_count = 0;
             is_mainboard_connected = false;
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 1; // 1: 無線通信なし
+            pub_connection_status_->publish(connection_msg);
             RCLCPP_WARN(this->get_logger(), "Mainboard disconnected");
         }
     }
