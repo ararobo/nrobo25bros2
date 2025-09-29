@@ -13,6 +13,7 @@
 
 struct feedback_data_t
 {
+    uint32_t tick;                    // 送信時のタイムスタンプ
     float q_x;                        // ロボットの回転クォータニオン
     float q_y;                        // ロボットの回転クォータニオン
     float q_z;                        // ロボットの回転クォータニオン
