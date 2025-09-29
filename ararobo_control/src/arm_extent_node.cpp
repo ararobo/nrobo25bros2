@@ -28,6 +28,7 @@ ArmExtentNode::ArmExtentNode()
         "/hand/box/info", 10,
         [&](const std_msgs::msg::Int8::SharedPtr msg) -> void
         { box_info = msg->data; });
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(10), std::bind(&ArmExtentNode::timer_callback, this));
     // publish
     pub_upper_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
         "/hand/upper/width", 10);
