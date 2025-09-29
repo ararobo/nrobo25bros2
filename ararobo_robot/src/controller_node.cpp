@@ -42,18 +42,21 @@ void ControllerNode::timer_callback()
 {
     if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
+        controller_tick = controller_union.data.tick;
         if (!is_controller_connected)
         {
             is_controller_connected = true;
             RCLCPP_INFO(this->get_logger(), "Controller connected");
-        }
-
-        controller_tick = controller_union.data.tick;
-        if ((controller_tick - controller_tick_prev) > controller_tick_threshold)
-        {
-            RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
             controller_tick_prev = controller_tick;
-            return;
+        }
+        else
+        {
+            if ((controller_tick - controller_tick_prev) > controller_tick_threshold)
+            {
+                RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
+                controller_tick_prev = controller_tick;
+                return;
+            }
         }
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
@@ -91,18 +94,22 @@ void ControllerNode::timer_callback()
 
     if (!is_controller_connected && mainboard_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
+        mainboard_tick = controller_union.data.tick;
+
         if (!is_mainboard_connected)
         {
             is_mainboard_connected = true;
             RCLCPP_INFO(this->get_logger(), "Mainboard connected");
-        }
-
-        mainboard_tick = controller_union.data.tick;
-        if ((mainboard_tick - mainboard_tick_prev) > mainboard_tick_threshold)
-        {
-            RCLCPP_WARN(this->get_logger(), "Mainboard tick jump detected");
             mainboard_tick_prev = mainboard_tick;
-            return;
+        }
+        else
+        {
+            if ((mainboard_tick - mainboard_tick_prev) > mainboard_tick_threshold)
+            {
+                RCLCPP_WARN(this->get_logger(), "Mainboard tick jump detected");
+                mainboard_tick_prev = mainboard_tick;
+                return;
+            }
         }
 
         sensor_msgs::msg::Joy joy_msg;
