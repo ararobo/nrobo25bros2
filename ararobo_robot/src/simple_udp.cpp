@@ -36,8 +36,8 @@ bool SimpleUDP::initSocket()
     setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
     // ノンブロックモードにする
-    // int flags = fcntl(sock_, F_GETFL, 0);
-    // fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(sock_, F_GETFL, 0);
+    fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
 
     return true;
 }
