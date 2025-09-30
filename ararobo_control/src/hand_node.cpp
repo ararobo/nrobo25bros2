@@ -17,30 +17,39 @@ HandNode::HandNode() : Node("hand_node")
     sub_under_position_control_ = this->create_subscription<std_msgs::msg::Bool>(
         "/hand/under/position_control", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
         { under_position_control = msg->data; });
+    sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
+        "/joy", 10, std::bind(&HandNode::joy_callback, this, std::placeholders::_1));
+    sub_mode_ = this->create_subscription<std_msgs::msg::UInt8>(
+        "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg)
+        { mode = msg->data; });
+    sub_hold_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/hand/box/hold", 10, [&](const std_msgs::msg::Float32::SharedPtr msg)
+        { hold = msg->data; });
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(100),
         std::bind(&HandNode::timer_callback, this));
-    sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
-        "/joy", 10, std::bind(&HandNode::joy_callback, this, std::placeholders::_1));
 }
 
 void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     update_joy_ = true;
-    if (auto_mode)
+    upper_hand_control_manual(msg);
+    if (under_position_control)
     {
     }
     else
     {
-        upper_hand_control_manual(msg);
+        under_hand_control(msg);
     }
-    under_hand_control(msg);
 }
 
 void HandNode::upper_hand_control_manual(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     if (upper_position_control)
     {
+        if (auto_mode)
+        {
+        }
     }
     else
     {

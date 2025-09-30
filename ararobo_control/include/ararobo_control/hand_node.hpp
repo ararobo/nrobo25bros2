@@ -3,6 +3,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int8.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 
 class HandNode : public rclcpp::Node
 {
@@ -22,11 +23,16 @@ private:
     float upper_width = 0.0f;
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
+    // 下ハンド
+    float under_hand_start_slide = 0.0f;
+    float under_hand_corn_slide = 0.0f;
+    float under_hand_default_slide = 0.0f;
     // 動作モード
     uint8_t mode = 0;
     bool auto_mode = false;
     bool upper_position_control = false;
     bool under_position_control = false;
+    float hold = 0.0f;
     // 安全用
     bool update_joy_ = false;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_depth_;
@@ -39,6 +45,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_auto_mode_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_position_control_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_under_position_control_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_hold_;
     rclcpp::TimerBase::SharedPtr timer_;
 
 public:
