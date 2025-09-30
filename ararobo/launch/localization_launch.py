@@ -7,11 +7,9 @@ import os
 
 def generate_launch_description():
     # 別のlaunchファイルがあるパッケージの共有ディレクトリを取得
-    ydlidar_share_dir = get_package_share_directory('ydlidar_ros2_driver')
     slam_share_dir = get_package_share_directory('slam_toolbox')
 
     # 起動したい子launchファイルのパスを指定
-    ydlidar_launch_file_path = os.path.join(ydlidar_share_dir, 'launch', 'ydlidar_launch.py')
     slam_launch_file_path = os.path.join(slam_share_dir, 'launch', 'online_async_launch.py')
 
     tf2_node = Node(package='tf2_ros',
