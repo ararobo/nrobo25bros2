@@ -28,8 +28,11 @@ ControllerNode::ControllerNode()
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
-                                     std::bind(&ControllerNode::timer_callback, this));
+    recv_timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
+                                          std::bind(&ControllerNode::recv_timer_callback, this));
+    ping_timer_ = this->create_wall_timer(std::chrono::milliseconds(500),
+                                          std::bind(&ControllerNode::ping_timer_callback, this));
+    RCLCPP_INFO(this->get_logger(), "ControllerNode started");
 }
 
 ControllerNode::~ControllerNode()
@@ -39,9 +42,9 @@ ControllerNode::~ControllerNode()
     RCLCPP_INFO(this->get_logger(), "ControllerNode destroyed");
 }
 
-void ControllerNode::timer_callback()
+void ControllerNode::recv_timer_callback()
 {
-    if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
+    if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
     {
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
@@ -117,6 +120,61 @@ void ControllerNode::timer_callback()
             RCLCPP_WARN(this->get_logger(), "Mainboard disconnected");
         }
     }
+}
+
+void ControllerNode::ping_timer_callback()
+{
+    avg_ping_time = get_ping_time();
+    if (avg_ping_time >= ping_time_threshold)
+    {
+        RCLCPP_WARN(this->get_logger(), "Ping time too high: %.2f ms", avg_ping_time);
+    }
+    else if (avg_ping_time >= 0)
+    {
+        RCLCPP_INFO(this->get_logger(), "Ping time: %.2f ms", avg_ping_time);
+    }
+}
+
+double ControllerNode::get_ping_time()
+{
+    // ping コマンドの例: 1回だけ実行し、結果の要約（summary）を出力する
+    // -c 1: 1回だけ実行
+    // -W 1: タイムアウトを1秒に設定
+    // {マイコンのIP}: 監視対象のマイコンのIPアドレス
+    const std::string PING_COMMAND = "ping -c 1 -W 1 " + target_ip_address;
+
+    FILE *pipe = popen(PING_COMMAND.c_str(), "r");
+    if (!pipe)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to run ping command");
+        return -1.0;
+    }
+
+    char buffer[128];
+    std::string result = "";
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
+    {
+        result += buffer;
+    }
+    pclose(pipe);
+
+    std::regex rtt_regex("rtt min/avg/max/mdev = ([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+) ms");
+    std::smatch match;
+
+    if (std::regex_search(result, match, rtt_regex) && match.size() == 5)
+    {
+        // match[2] が平均 (avg) のRTT値
+        double avg_rtt_ms = std::stod(match[2].str());
+        return avg_rtt_ms;
+    }
+    else
+    {
+        // RTTの行が見つからない = パケットロスやタイムアウト
+        RCLCPP_ERROR(this->get_logger(), "Ping output parsing failed");
+        return -1.0;
+    }
+    RCLCPP_ERROR(this->get_logger(), "Ping failed or timed out");
+    return -1.0;
 }
 
 int main(int argc, char const *argv[])
