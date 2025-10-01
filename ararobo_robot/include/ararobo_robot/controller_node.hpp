@@ -32,8 +32,8 @@ private:
     uint32_t controller_tick = 0;
     uint32_t mainboard_tick_prev = 0;
     uint32_t controller_tick_prev = 0;
-    uint32_t mainboard_tick_threshold = 20;
-    uint32_t controller_tick_threshold = 20;
+    uint32_t mainboard_tick_threshold = 15;
+    uint32_t controller_tick_threshold = 15;
 
 public:
     ControllerNode();
