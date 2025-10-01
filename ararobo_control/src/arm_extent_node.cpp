@@ -75,10 +75,6 @@ void ArmExtentNode::timer_callback()
             arm_depth = 0.1;
         }
 
-        // maximum and minimum limit
-        arm_width = clamp(arm_width, arm_w_max, 0.0f);
-        arm_depth = clamp(arm_depth, arm_d_max, 0.0f);
-
         // step complete
         if ((abs(current_width - arm_width) <= error &&
              abs(current_depth - arm_depth) <= error) &&
@@ -93,8 +89,8 @@ void ArmExtentNode::timer_callback()
         std_msgs::msg::Float32 upper_hand_depth_msg;
 
         // set width and depth
-        upper_hand_width_msg.data = (arm_w_max - arm_width) / diameter / 2.0f * -1;
-        upper_hand_depth_msg.data = arm_depth * (2.0f * M_PI) / lead / 2.0f;
+        upper_hand_width_msg.data = clamp((arm_w_max - arm_width) / diameter / 2.0f, arm_w_max, 0.0f) * 1;
+        upper_hand_depth_msg.data = clamp(arm_depth * (2.0f * M_PI) / lead / 2.0f, arm_d_max, 0.0f);
 
         // publish
         pub_upper_hand_width_->publish(upper_hand_width_msg);

@@ -31,7 +31,7 @@ private:
 
     // constant_data
     float arm_w_max = 0.010;   // width, range of motion[m]
-    float arm_d_max = 0.550;   // depth, range of motion[m]
+    float arm_d_max = 0.013;   // depth, range of motion[m]
     float box_a_width = 0.300; // [m]
     float box_b_width = 0.400; // [m]
     float box_c_width = 0.500; // [m]
