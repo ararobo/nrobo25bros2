@@ -43,25 +43,6 @@ void ControllerNode::timer_callback()
 {
     if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
-        controller_tick = controller_union.data.tick;
-        if (!is_controller_connected)
-        {
-            is_controller_connected = true;
-            controller_tick_prev = controller_tick;
-            auto connection_msg = std_msgs::msg::UInt8();
-            connection_msg.data = 2; // 2: WiFi接続
-            pub_connection_status_->publish(connection_msg);
-            RCLCPP_INFO(this->get_logger(), "Controller connected");
-        }
-        else
-        {
-            if ((controller_tick - controller_tick_prev) > controller_tick_threshold)
-            {
-                controller_tick_prev = controller_tick;
-                RCLCPP_WARN(this->get_logger(), "Controller tick jump detected");
-                return;
-            }
-        }
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
         joy_msg.axes.resize(4);
@@ -80,7 +61,6 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
         controller_disconnect_count = 0;
-        controller_tick_prev = controller_tick;
     }
     else
     {
@@ -101,26 +81,6 @@ void ControllerNode::timer_callback()
 
     if (!is_controller_connected && mainboard_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
     {
-        mainboard_tick = controller_union.data.tick;
-
-        if (!is_mainboard_connected)
-        {
-            is_mainboard_connected = true;
-            mainboard_tick_prev = mainboard_tick;
-            RCLCPP_INFO(this->get_logger(), "Mainboard connected");
-            auto connection_msg = std_msgs::msg::UInt8();
-            connection_msg.data = 3; // 3: BLE接続
-            pub_connection_status_->publish(connection_msg);
-        }
-        else
-        {
-            if ((mainboard_tick - mainboard_tick_prev) > mainboard_tick_threshold)
-            {
-                RCLCPP_WARN(this->get_logger(), "Mainboard tick jump detected");
-                mainboard_tick_prev = mainboard_tick;
-                return;
-            }
-        }
 
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
@@ -140,7 +100,6 @@ void ControllerNode::timer_callback()
         joy_msg.buttons[7] = controller_union.data.buttons.r_right;
         pub_joy_->publish(joy_msg);
         mainboard_disconnect_count = 0;
-        mainboard_tick_prev = mainboard_tick;
     }
     else
     {
