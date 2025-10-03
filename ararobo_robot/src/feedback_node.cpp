@@ -34,21 +34,25 @@ FeedbackNode::FeedbackNode()
     pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10);
     pub_current_hand_width_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/hand/upper/current/width", 10);
+        "/hand/upper/width/current", 10);
     pub_current_hand_depth_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/hand/upper/current/depth", 10);
+        "/hand/upper/depth/current", 10);
     pub_current_lift_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/lift/current/pos", 10);
+        "/lift/pos/current", 10);
     pub_distance_right_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "/base/distance/right", 10);
+        "/base/right/distance", 10);
     pub_distance_left_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "/base/distance/left", 10);
+        "/base/left/distance", 10);
     pub_position_control_lift_ = this->create_publisher<std_msgs::msg::Bool>(
         "/lift/position_control", 10);
-    pub_position_control_upper_hand_ = this->create_publisher<std_msgs::msg::Bool>(
-        "/hand/upper/position_control", 10);
-    pub_position_control_under_hand_ = this->create_publisher<std_msgs::msg::Bool>(
-        "/hand/under/position_control", 10);
+    pub_position_control_upper_hand_depth_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/depth/position_control", 10);
+    pub_position_control_upper_hand_width_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/width/position_control", 10);
+    pub_position_control_under_hand_right_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/under/right/position_control", 10);
+    pub_position_control_under_hand_left_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/under/left/position_control", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -103,12 +107,18 @@ void FeedbackNode::timer_callback()
         auto position_control_lift = std_msgs::msg::Bool();
         position_control_lift.data = feedback_union.data.position_control_lift ? true : false;
         pub_position_control_lift_->publish(position_control_lift);
-        auto position_control_upper_hand = std_msgs::msg::Bool();
-        position_control_upper_hand.data = feedback_union.data.position_control_upper_hand ? true : false;
-        pub_position_control_upper_hand_->publish(position_control_upper_hand);
-        auto position_control_under_hand = std_msgs::msg::Bool();
-        position_control_under_hand.data = feedback_union.data.position_control_under_hand ? true : false;
-        pub_position_control_under_hand_->publish(position_control_under_hand);
+        auto position_control_upper_hand_depth = std_msgs::msg::Bool();
+        position_control_upper_hand_depth.data = feedback_union.data.position_control_upper_hand_depth ? true : false;
+        pub_position_control_upper_hand_depth_->publish(position_control_upper_hand_depth);
+        auto position_control_upper_hand_width = std_msgs::msg::Bool();
+        position_control_upper_hand_width.data = feedback_union.data.position_control_upper_hand_width ? true : false;
+        pub_position_control_upper_hand_width_->publish(position_control_upper_hand_width);
+        auto position_control_under_hand_right = std_msgs::msg::Bool();
+        position_control_under_hand_right.data = feedback_union.data.position_control_under_hand_slide_right ? true : false;
+        pub_position_control_under_hand_right_->publish(position_control_under_hand_right);
+        auto position_control_under_hand_left = std_msgs::msg::Bool();
+        position_control_under_hand_left.data = feedback_union.data.position_control_under_hand_slide_left ? true : false;
+        pub_position_control_under_hand_left_->publish(position_control_under_hand_left);
 
         tf2::Quaternion q_tf2;
         q_tf2.setX(feedback_union.data.q_x);

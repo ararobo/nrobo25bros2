@@ -10,15 +10,15 @@ ArmExtentNode::ArmExtentNode()
         [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
         { mode_auto = msg->data; });
     sub_current_width_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/hand/upper/current/width", 10,
+        "/hand/upper/width/current", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { current_width = msg->data * diameter; });
     sub_current_depth_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/hand/upper/current/depth", 10,
+        "/hand/upper/depth/current", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { current_depth = msg->data * lead / (2 * M_PI); });
     sub_current_lift_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/lift/current/pos", 10,
+        "/lift/pos/current", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
         { current_lift = msg->data; });
     sub_box_hold_ = this->create_subscription<std_msgs::msg::Bool>(
