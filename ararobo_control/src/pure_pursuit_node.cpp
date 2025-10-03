@@ -30,9 +30,9 @@ public:
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         distance_sub_left = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "distance_left", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
+            "/base/left/distance", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
         distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "distance_right", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
+            "/base/right/distance", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
 
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
