@@ -5,11 +5,10 @@ namespace ethernet_config
 {
     namespace main_board
     {
-        uint8_t ip[4] = {192, 168, 1, 100};   // メインボードのIPアドレス
-        uint16_t port_operation = 5000;       // 操作用ポート番号
-        uint16_t port_feedback = 5001;        // フィードバック用ポート番号
-        uint16_t port_controller_wifi = 5002; // コントローラー用ポート番号 (WiFi)
-        uint16_t port_controller_ble = 5003;  // コントローラー用ポート番号 (BLE)
+        uint8_t ip[4] = {192, 168, 1, 100};  // メインボードのIPアドレス
+        uint16_t port_operation = 5000;      // 操作用ポート番号
+        uint16_t port_feedback = 5001;       // フィードバック用ポート番号
+        uint16_t port_controller_ble = 5003; // コントローラー用ポート番号 (BLE)
     }
 
     namespace pc
