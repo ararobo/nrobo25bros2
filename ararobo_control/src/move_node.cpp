@@ -13,7 +13,7 @@ MoveNode::MoveNode() : Node("move_node")
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&MoveNode::joy_callback, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100),
+        std::chrono::milliseconds(200),
         std::bind(&MoveNode::timer_callback, this));
 }
 

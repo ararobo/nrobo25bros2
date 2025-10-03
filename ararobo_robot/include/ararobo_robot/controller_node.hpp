@@ -31,7 +31,7 @@ private:
     uint32_t mainboard_disconnect_count = 0;
     uint32_t mainboard_disconnect_threshold = 50; // 50 * 10ms = 500ms
     double avg_ping_time = -1.0;                  // 平均応答時間（ms）、-1は未測定
-    double ping_time_threshold = 100.0;           // 応答時間の閾値（ms）
+    double ping_time_threshold = 150.0;           // 応答時間の閾値（ms）
 
 public:
     ControllerNode();
