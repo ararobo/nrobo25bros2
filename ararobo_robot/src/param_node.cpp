@@ -11,6 +11,8 @@ ParamNode::ParamNode()
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize UDP socket");
         return; // 初期化失敗で終了
     }
+    udp->setTxAddr(ethernet_config::main_board::ip,
+                   ethernet_config::main_board::port_pid_gain);
     // PIDゲインサブスクライバーの初期化
     sub_pid_gain_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
         "/pid_gain", 10,
@@ -45,7 +47,7 @@ void ParamNode::pid_gain_callback(const std_msgs::msg::Float32MultiArray::Shared
     pid_gain_union.data.d = msg->data[3];
 
     // UDPで送信
-    if (!udp->sendPacket(pid_gain_union.code, sizeof(pid_gain_t), ethernet_config::main_board::ip, ethernet_config::main_board::port_pid_gain))
+    if (!udp->sendPacket(pid_gain_union.code, sizeof(pid_gain_t)))
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to send PID gain data via UDP");
     }
@@ -57,4 +59,12 @@ void ParamNode::pid_gain_callback(const std_msgs::msg::Float32MultiArray::Shared
                     pid_gain_union.data.i,
                     pid_gain_union.data.d);
     }
+}
+
+int main(int argc, char const *argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<ParamNode>());
+    rclcpp::shutdown();
+    return 0;
 }
