@@ -29,7 +29,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_right_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_left_;
-    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_wheel_encoder_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 

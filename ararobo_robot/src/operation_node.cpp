@@ -23,24 +23,22 @@ OperationNode::OperationNode()
     sub_upper_hand_width_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/width", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
-        { operation_data.width = msg->data; });
+        { operation_data.upper_hand_width = msg->data; });
 
     sub_upper_hand_depth_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/upper/depth", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
-        { operation_data.depth = msg->data; });
+        { operation_data.upper_hand_depth = msg->data; });
 
     sub_under_hand_slide_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/under/slide", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
-        {   operation_data.left_slide = -msg->data;
-            operation_data.right_slide = msg->data; });
+        { operation_data.under_arm_slide = msg->data; });
 
     sub_under_hand_raise_ = this->create_subscription<std_msgs::msg::Float32>(
         "/hand/under/raise", 10,
         [&](const std_msgs::msg::Float32::SharedPtr msg) -> void
-        { operation_data.left_raise = -msg->data;
-        operation_data.right_raise = msg->data; });
+        { operation_data.under_arm_raise = msg->data; });
     sub_communication_status_ = this->create_subscription<std_msgs::msg::UInt8>(
         "/mode/connection", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void

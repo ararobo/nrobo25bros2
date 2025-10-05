@@ -53,8 +53,6 @@ FeedbackNode::FeedbackNode()
         "/hand/under/right/position_control", 10);
     pub_position_control_under_hand_left_ = this->create_publisher<std_msgs::msg::Bool>(
         "/hand/under/left/position_control", 10);
-    pub_wheel_encoder_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "/wheel/encoder", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -121,14 +119,6 @@ void FeedbackNode::timer_callback()
         // auto position_control_under_hand_left = std_msgs::msg::Bool();
         // position_control_under_hand_left.data = feedback_union.data.position_control_under_hand_slide_left ? true : false;
         // pub_position_control_under_hand_left_->publish(position_control_under_hand_left);
-        // 各車輪のエンコーダ値をMultiArray型でパブリッシュ
-        auto wheel_encoder = std_msgs::msg::Float32MultiArray();
-        wheel_encoder.data.resize(4);
-        for (int i = 0; i < 4; i++)
-        {
-            wheel_encoder.data[i] = feedback_union.data.wheel_encoder[i];
-        }
-        pub_wheel_encoder_->publish(wheel_encoder);
         /*
                 tf2::Quaternion q_tf2;
                 q_tf2.setX(feedback_union.data.q_x);

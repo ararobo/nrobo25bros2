@@ -25,18 +25,13 @@ struct feedback_data_t
     bool position_control_lift;             // 昇降機構位置制御モードか否か
     bool position_control_upper_hand_depth; // 上ハンド機構奥行き位置制御モードか否か
     bool position_control_upper_hand_width; // 上ハンド機構幅位置制御モードか否か
-    // bool position_control_under_hand_slide_right; // 右下ハンド機構位置制御モードか否か
-    // bool position_control_under_hand_slide_left;  // 左下ハンド機構位置制御モードか否か
-    // float q_x;                                    // ロボットの回転クォータニオン
-    // float q_y;                                    // ロボットの回転クォータニオン
-    // float q_z;                                    // ロボットの回転クォータニオン
-    // float q_w;                                    // ロボットの回転クォータニオン
-    float current_lift;             // 昇降機構位置制御現在値
-    float upper_hand_current_depth; // 上ハンド機構位置制御現在値
-    float upper_hand_current_width; // 上ハンド機構位置制御現在値
-    // float under_hand_current_slide_right;         // 右下ハンド機構位置制御現在値
-    // float under_hand_current_slide_left;          // 左下ハンド機構位置制御現在値
-    float wheel_encoder[4]; // 各車輪のエンコーダ値[rad]
+    float q_x;                              // ロボットの回転クォータニオン
+    float q_y;                              // ロボットの回転クォータニオン
+    float q_z;                              // ロボットの回転クォータニオン
+    float q_w;                              // ロボットの回転クォータニオン
+    float current_lift;                     // 昇降機構位置制御現在値
+    float upper_hand_current_depth;         // 上ハンド機構位置制御現在値
+    float upper_hand_current_width;         // 上ハンド機構位置制御現在値
 } __attribute__((__packed__));
 
 struct operation_data_t
@@ -49,13 +44,11 @@ struct operation_data_t
     float vx;                     // x軸方向の速度[m/s]
     float vy;                     // y軸方向の速度[m/s]
     float omega;                  // 回転速度[rad/s]
-    float width;                  // 上アーム開閉幅
-    float depth;                  // 上アーム出し入れ
     float lift;                   // 昇降
-    float right_slide;            // 右下ハンド前後スライド
-    float right_raise;            // 右下ハンド上下回転
-    float left_slide;             // 左下ハンド前後スライド
-    float left_raise;             // 左下ハンド上下回転
+    float upper_hand_width;       // 上ハンド開閉幅
+    float upper_hand_depth;       // 上ハンド出し入れ
+    float under_arm_slide;        // 下アーム前後スライド
+    float under_arm_raise;        // 下アーム上下回転
 } __attribute__((__packed__));
 
 struct controller_data_t
