@@ -53,6 +53,6 @@ public:
     HandNode();
     void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg);
     void timer_callback();
-    void under_hand_control(const sensor_msgs::msg::Joy::SharedPtr msg);
-    void upper_hand_control_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
+    void under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPtr msg);
+    void upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
 };
