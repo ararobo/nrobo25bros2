@@ -13,30 +13,30 @@
 
 struct feedback_data_t
 {
-    uint32_t tick;                                // 送信時のタイムスタンプ
-    int16_t encoder_x;                            // x軸方向のエンコーダ値[CRP]
-    int16_t encoder_y;                            // y軸方向のエンコーダ値[CRP]
-    uint16_t distance_base_rf;                    // 右前の距離センサ[mm]
-    uint16_t distance_base_rm;                    // 右中央の距離センサ[mm]
-    uint16_t distance_base_rb;                    // 右後の距離センサ[mm]
-    uint16_t distance_base_lf;                    // 左前の距離センサ[mm]
-    uint16_t distance_base_lm;                    // 左中央の距離センサ[mm]
-    uint16_t distance_base_lb;                    // 左後の距離センサ[mm]
-    bool position_control_lift;                   // 昇降機構位置制御モードか否か
-    bool position_control_upper_hand_depth;       // 上ハンド機構奥行き位置制御モードか否か
-    bool position_control_upper_hand_width;       // 上ハンド機構幅位置制御モードか否か
-    bool position_control_under_hand_slide_right; // 右下ハンド機構位置制御モードか否か
-    bool position_control_under_hand_slide_left;  // 左下ハンド機構位置制御モードか否か
-    float q_x;                                    // ロボットの回転クォータニオン
-    float q_y;                                    // ロボットの回転クォータニオン
-    float q_z;                                    // ロボットの回転クォータニオン
-    float q_w;                                    // ロボットの回転クォータニオン
-    float current_lift;                           // 昇降機構位置制御現在値
-    float upper_hand_current_depth;               // 上ハンド機構位置制御現在値
-    float upper_hand_current_width;               // 上ハンド機構位置制御現在値
-    float under_hand_current_slide_right;         // 右下ハンド機構位置制御現在値
-    float under_hand_current_slide_left;          // 左下ハンド機構位置制御現在値
-    float wheel_encoder[4];                       // 各車輪のエンコーダ値[rad]
+    uint32_t tick;                          // 送信時のタイムスタンプ
+    int16_t encoder_x;                      // x軸方向のエンコーダ値[CRP]
+    int16_t encoder_y;                      // y軸方向のエンコーダ値[CRP]
+    uint16_t distance_base_rf;              // 右前の距離センサ[mm]
+    uint16_t distance_base_rm;              // 右中央の距離センサ[mm]
+    uint16_t distance_base_rb;              // 右後の距離センサ[mm]
+    uint16_t distance_base_lf;              // 左前の距離センサ[mm]
+    uint16_t distance_base_lm;              // 左中央の距離センサ[mm]
+    uint16_t distance_base_lb;              // 左後の距離センサ[mm]
+    bool position_control_lift;             // 昇降機構位置制御モードか否か
+    bool position_control_upper_hand_depth; // 上ハンド機構奥行き位置制御モードか否か
+    bool position_control_upper_hand_width; // 上ハンド機構幅位置制御モードか否か
+    // bool position_control_under_hand_slide_right; // 右下ハンド機構位置制御モードか否か
+    // bool position_control_under_hand_slide_left;  // 左下ハンド機構位置制御モードか否か
+    // float q_x;                                    // ロボットの回転クォータニオン
+    // float q_y;                                    // ロボットの回転クォータニオン
+    // float q_z;                                    // ロボットの回転クォータニオン
+    // float q_w;                                    // ロボットの回転クォータニオン
+    float current_lift;             // 昇降機構位置制御現在値
+    float upper_hand_current_depth; // 上ハンド機構位置制御現在値
+    float upper_hand_current_width; // 上ハンド機構位置制御現在値
+    // float under_hand_current_slide_right;         // 右下ハンド機構位置制御現在値
+    // float under_hand_current_slide_left;          // 左下ハンド機構位置制御現在値
+    float wheel_encoder[4]; // 各車輪のエンコーダ値[rad]
 } __attribute__((__packed__));
 
 struct operation_data_t

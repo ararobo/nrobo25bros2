@@ -115,12 +115,12 @@ void FeedbackNode::timer_callback()
         auto position_control_upper_hand_width = std_msgs::msg::Bool();
         position_control_upper_hand_width.data = feedback_union.data.position_control_upper_hand_width ? true : false;
         pub_position_control_upper_hand_width_->publish(position_control_upper_hand_width);
-        auto position_control_under_hand_right = std_msgs::msg::Bool();
-        position_control_under_hand_right.data = feedback_union.data.position_control_under_hand_slide_right ? true : false;
-        pub_position_control_under_hand_right_->publish(position_control_under_hand_right);
-        auto position_control_under_hand_left = std_msgs::msg::Bool();
-        position_control_under_hand_left.data = feedback_union.data.position_control_under_hand_slide_left ? true : false;
-        pub_position_control_under_hand_left_->publish(position_control_under_hand_left);
+        // auto position_control_under_hand_right = std_msgs::msg::Bool();
+        // position_control_under_hand_right.data = feedback_union.data.position_control_under_hand_slide_right ? true : false;
+        // pub_position_control_under_hand_right_->publish(position_control_under_hand_right);
+        // auto position_control_under_hand_left = std_msgs::msg::Bool();
+        // position_control_under_hand_left.data = feedback_union.data.position_control_under_hand_slide_left ? true : false;
+        // pub_position_control_under_hand_left_->publish(position_control_under_hand_left);
         // 各車輪のエンコーダ値をMultiArray型でパブリッシュ
         auto wheel_encoder = std_msgs::msg::Float32MultiArray();
         wheel_encoder.data.resize(4);
@@ -129,77 +129,78 @@ void FeedbackNode::timer_callback()
             wheel_encoder.data[i] = feedback_union.data.wheel_encoder[i];
         }
         pub_wheel_encoder_->publish(wheel_encoder);
+        /*
+                tf2::Quaternion q_tf2;
+                q_tf2.setX(feedback_union.data.q_x);
+                q_tf2.setY(feedback_union.data.q_y);
+                q_tf2.setZ(feedback_union.data.q_z);
+                q_tf2.setW(feedback_union.data.q_w);
 
-        tf2::Quaternion q_tf2;
-        q_tf2.setX(feedback_union.data.q_x);
-        q_tf2.setY(feedback_union.data.q_y);
-        q_tf2.setZ(feedback_union.data.q_z);
-        q_tf2.setW(feedback_union.data.q_w);
+                tf2::Matrix3x3 matrix(q_tf2);
+                double roll, pitch, yaw;
+                matrix.getRPY(roll, pitch, yaw);
 
-        tf2::Matrix3x3 matrix(q_tf2);
-        double roll, pitch, yaw;
-        matrix.getRPY(roll, pitch, yaw);
+                theta = yaw;
 
-        theta = yaw;
+                // オドメトリ計算
+                double current_period_s = static_cast<double>(period_odom) / 1000.0;
+                odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
+                odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
+                rclcpp::Time now = this->now();
 
-        // オドメトリ計算
-        double current_period_s = static_cast<double>(period_odom) / 1000.0;
-        odom_calculator->set_encoder_count(feedback_union.data.encoder_x, -feedback_union.data.encoder_y, current_period_s);
-        odom_calculator->get_robot_coord(&x, &y, theta, current_period_s);
-        rclcpp::Time now = this->now();
+                // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
+                geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q_tf2);
 
-        // tf2::Quaternionをgeometry_msgs::msg::Quaternionに変換
-        geometry_msgs::msg::Quaternion odom_quat_msg = tf2::toMsg(q_tf2);
+                // odom
+                nav_msgs::msg::Odometry odom_msg;
+                odom_msg.header.stamp = now;
+                odom_msg.header.frame_id = "odom";
+                odom_msg.child_frame_id = "odom_link";
 
-        // odom
-        nav_msgs::msg::Odometry odom_msg;
-        odom_msg.header.stamp = now;
-        odom_msg.header.frame_id = "odom";
-        odom_msg.child_frame_id = "odom_link";
+                odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
+                odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
 
-        odom_msg.twist.twist.linear.x = odom_calculator->robot_velocity[0]; // ロボット座標系でのx速度 (m/s)
-        odom_msg.twist.twist.linear.y = odom_calculator->robot_velocity[1]; // ロボット座標系でのy速度 (m/s)
+                // 角速度の計算
+                double dt = (now - prev_time).seconds();
+                double dtheta = theta - prev_theta;
+                // 角度の差分を-πからπの範囲に正規化
+                dtheta = atan2(sin(dtheta), cos(dtheta));
 
-        // 角速度の計算
-        double dt = (now - prev_time).seconds();
-        double dtheta = theta - prev_theta;
-        // 角度の差分を-πからπの範囲に正規化
-        dtheta = atan2(sin(dtheta), cos(dtheta));
+                if (dt > 0.0) // ゼロ除算を避けるため
+                {
+                    odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
+                }
+                else
+                {
+                    odom_msg.twist.twist.angular.z = 0.0;
+                }
 
-        if (dt > 0.0) // ゼロ除算を避けるため
-        {
-            odom_msg.twist.twist.angular.z = dtheta / dt; // z軸方向の角速度 (rad/s)
-        }
-        else
-        {
-            odom_msg.twist.twist.angular.z = 0.0;
-        }
+                odom_msg.pose.pose.position.x = x;
+                odom_msg.pose.pose.position.y = y;
+                odom_msg.pose.pose.position.z = 0.0;
+                odom_msg.pose.pose.orientation = odom_quat_msg;
+                pub_odometry_->publish(odom_msg); // odometryデータの送信
 
-        odom_msg.pose.pose.position.x = x;
-        odom_msg.pose.pose.position.y = y;
-        odom_msg.pose.pose.position.z = 0.0;
-        odom_msg.pose.pose.orientation = odom_quat_msg;
-        pub_odometry_->publish(odom_msg); // odometryデータの送信
+                // tf2
+                geometry_msgs::msg::TransformStamped odom_trans;
+                odom_trans.header.stamp = now;
+                odom_trans.header.frame_id = "odom";
+                odom_trans.child_frame_id = "odom_link";
 
-        // tf2
-        geometry_msgs::msg::TransformStamped odom_trans;
-        odom_trans.header.stamp = now;
-        odom_trans.header.frame_id = "odom";
-        odom_trans.child_frame_id = "odom_link";
+                odom_trans.transform.translation.x = x;
+                odom_trans.transform.translation.y = y;
+                odom_trans.transform.translation.z = 0.0;
+                odom_trans.transform.rotation = odom_quat_msg; // 同じ変換されたクォータニオンを使用
 
-        odom_trans.transform.translation.x = x;
-        odom_trans.transform.translation.y = y;
-        odom_trans.transform.translation.z = 0.0;
-        odom_trans.transform.rotation = odom_quat_msg; // 同じ変換されたクォータニオンを使用
+                tf_broadcaster_->sendTransform(odom_trans);
 
-        tf_broadcaster_->sendTransform(odom_trans);
+                prev_time = now;    // 前回のタイムスタンプを更新
+                prev_theta = theta; // 前回のヨー角を更新
 
-        prev_time = now;    // 前回のタイムスタンプを更新
-        prev_theta = theta; // 前回のヨー角を更新
-
-        // ログ出力 (より詳細に速度も出力)
-        RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f, linear_vx: %f, linear_vy: %f, angular_wz: %f",
-                    x, y, theta, odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.angular.z);
+                // ログ出力 (より詳細に速度も出力)
+                RCLCPP_INFO(this->get_logger(), "Odometry: x: %f, y: %f, theta: %f, linear_vx: %f, linear_vy: %f, angular_wz: %f",
+                            x, y, theta, odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.angular.z);
+        */
     }
     else
     {
