@@ -63,10 +63,23 @@ target_include_directories(controller_node PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+# param
+add_executable(param_node src/param_node.cpp src/simple_udp.cpp)
+
+ament_target_dependencies(param_node
+  ${dependencies}
+)
+
+target_include_directories(param_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 install(TARGETS
   operation_node
   feedback_node
   controller_node
+  param_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

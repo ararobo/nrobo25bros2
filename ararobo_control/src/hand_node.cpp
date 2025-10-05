@@ -33,46 +33,36 @@ HandNode::HandNode() : Node("hand_node")
 void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     update_joy_ = true;
-    upper_hand_control_manual(msg);
+    upper_hand_control_velocity_manual(msg);
     if (under_position_control)
     {
     }
     else
     {
-        under_hand_control(msg);
+        under_hand_velocity_control(msg);
     }
 }
 
-void HandNode::upper_hand_control_manual(const sensor_msgs::msg::Joy::SharedPtr msg)
+void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
-    if (upper_position_control)
+    upper_depth = 0.0f;
+    upper_width = 0.0f;
+    if (msg->buttons[0])
     {
-        if (auto_mode)
-        {
-        }
+        upper_depth += upper_depth_speed;
     }
-    else
+    if (msg->buttons[1])
     {
-        upper_depth = 0.0f;
-        upper_width = 0.0f;
-        if (msg->buttons[0])
-        {
-            upper_depth += upper_depth_speed;
-        }
-        if (msg->buttons[1])
-        {
-            upper_depth -= upper_depth_speed;
-        }
-        if (msg->buttons[2])
-        {
-            upper_width -= upper_width_speed;
-        }
-        if (msg->buttons[3])
-        {
-            upper_width += upper_width_speed;
-        }
+        upper_depth -= upper_depth_speed;
     }
-
+    if (msg->buttons[2])
+    {
+        upper_width -= upper_width_speed;
+    }
+    if (msg->buttons[3])
+    {
+        upper_width += upper_width_speed;
+    }
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
     pub_upper_depth_->publish(upper_depth_msg);
@@ -81,31 +71,25 @@ void HandNode::upper_hand_control_manual(const sensor_msgs::msg::Joy::SharedPtr 
     pub_upper_width_->publish(upper_width_msg);
 }
 
-void HandNode::under_hand_control(const sensor_msgs::msg::Joy::SharedPtr msg)
+void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
-    if (under_position_control)
+    under_hand_slide = 0.0f;
+    under_hand_raise = 0.0f;
+    if (msg->buttons[4])
     {
+        under_hand_raise += under_hand_raise_speed;
     }
-    else
+    if (msg->buttons[5])
     {
-        under_hand_slide = 0.0f;
-        under_hand_raise = 0.0f;
-        if (msg->buttons[4])
-        {
-            under_hand_raise += under_hand_raise_speed;
-        }
-        if (msg->buttons[5])
-        {
-            under_hand_raise -= under_hand_raise_speed;
-        }
-        if (msg->buttons[6])
-        {
-            under_hand_slide -= under_hand_slide_speed;
-        }
-        if (msg->buttons[7])
-        {
-            under_hand_slide += under_hand_slide_speed;
-        }
+        under_hand_raise -= under_hand_raise_speed;
+    }
+    if (msg->buttons[6])
+    {
+        under_hand_slide -= under_hand_slide_speed;
+    }
+    if (msg->buttons[7])
+    {
+        under_hand_slide += under_hand_slide_speed;
     }
 
     std_msgs::msg::Float32 under_slide_msg;

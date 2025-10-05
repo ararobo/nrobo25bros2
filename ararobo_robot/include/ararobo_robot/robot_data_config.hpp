@@ -75,3 +75,12 @@ struct controller_data_t
         uint8_t r_right : 1;
     } __attribute__((__packed__)) buttons;
 } __attribute__((__packed__));
+
+struct pid_gain_t
+{
+    uint8_t id;        // MDのID
+    bool reinitialize; // 再初期化するか否か
+    float p;           // 比例ゲイン
+    float i;           // 積分ゲイン
+    float d;           // 微分ゲイン
+} __attribute__((__packed__));

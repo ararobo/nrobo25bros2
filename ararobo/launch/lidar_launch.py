@@ -9,10 +9,12 @@ def generate_launch_description():
     # 別のlaunchファイルがあるパッケージの共有ディレクトリを取得
     ydlidar_share_dir = get_package_share_directory('ydlidar_ros2_driver')
     urg_share_dir = get_package_share_directory('urg_node2')
+    laser_scan_merger_share_dir = get_package_share_directory('ros2_laser_scan_merger')
 
     # 起動したい子launchファイルのパスを指定
     ydlidar_launch_file_path = os.path.join(ydlidar_share_dir, 'launch', 'ydlidar_launch.py')
     urg_launch_file_path = os.path.join(urg_share_dir, 'launch', 'urg_node2.launch.py')
+    laser_scan_merger_file_path = os.path.join(laser_scan_merger_share_dir, 'launch', 'merge_2_scan.launch.py')
     
     return LaunchDescription([
         Node(package='tf2_ros',
@@ -25,5 +27,8 @@ def generate_launch_description():
        ),
        IncludeLaunchDescription(
            PythonLaunchDescriptionSource([ydlidar_launch_file_path])
+       ),
+       IncludeLaunchDescription(
+           PythonLaunchDescriptionSource([laser_scan_merger_file_path])
        ),
     ])
