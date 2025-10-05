@@ -23,8 +23,9 @@ HandNode::HandNode() : Node("hand_node")
         "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg)
         { mode = msg->data; });
     sub_hold_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/hand/box/hold", 10, [&](const std_msgs::msg::Float32::SharedPtr msg)
-        { hold = msg->data; });
+        "/phone/upper_hand/depth", 10, [&](const std_msgs::msg::Float32::SharedPtr msg)
+        { hold = msg->data; 
+          update_hold_ = true; });
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(100),
         std::bind(&HandNode::timer_callback, this));
@@ -62,6 +63,10 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     if (msg->buttons[3])
     {
         upper_width += upper_width_speed;
+    }
+    if (hold < 0.1f)
+    {
+        upper_depth = -hold_speed;
     }
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
@@ -124,6 +129,11 @@ void HandNode::timer_callback()
         }
     }
     update_joy_ = false;
+    if (!update_hold_)
+    {
+        hold = 0.0f;
+    }
+    update_hold_ = false;
 }
 
 int main(int argc, char const *argv[])

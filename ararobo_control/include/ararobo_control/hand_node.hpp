@@ -13,6 +13,7 @@ private:
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.0f;
     float under_hand_slide_speed = 1.0f;
+    float hold_speed = 25.0f;
     // 位置制御時速度
     float upper_depth_pos_speed = 25.0f;
     float upper_width_pos_speed = 1.0f;
@@ -35,6 +36,7 @@ private:
     float hold = 0.0f;
     // 安全用
     bool update_joy_ = false;
+    bool update_hold_ = false;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_slide_;

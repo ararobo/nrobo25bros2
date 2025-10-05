@@ -12,6 +12,9 @@ MoveNode::MoveNode() : Node("move_node")
     pub_lift_ = this->create_publisher<std_msgs::msg::Float32>("/lift/target", 10);
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&MoveNode::joy_callback, this, std::placeholders::_1));
+    sub_acceleration_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/phone/low_accel", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        { acceleration = msg->data; });
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(200),
         std::bind(&MoveNode::timer_callback, this));
