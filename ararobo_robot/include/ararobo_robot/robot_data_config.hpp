@@ -2,7 +2,7 @@
  * @file robot_data_config.hpp
  * @author aiba-gento
  * @brief ロボットの通信データ構造体定義
- * @version 2.0
+ * @version 2.1
  * @date 2025-10-03
  *
  * @copyright Copyright (c) 2025
@@ -36,6 +36,7 @@ struct feedback_data_t
     float upper_hand_current_width;               // 上ハンド機構位置制御現在値
     float under_hand_current_slide_right;         // 右下ハンド機構位置制御現在値
     float under_hand_current_slide_left;          // 左下ハンド機構位置制御現在値
+    float wheel_encoder[4];                       // 各車輪のエンコーダ値[rad]
 } __attribute__((__packed__));
 
 struct operation_data_t
