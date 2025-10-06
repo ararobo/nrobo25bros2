@@ -24,6 +24,8 @@ private:
         controller_data_t data;
     } controller_union[3];
 
+    int network_select_;
+
     bool is_controller_connected = false;
     bool is_mainboard_connected = false;
     uint32_t controller_disconnect_count = 0;

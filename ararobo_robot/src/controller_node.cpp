@@ -58,35 +58,57 @@ ControllerNode::~ControllerNode()
 void ControllerNode::recv_timer_callback()
 {
 #ifdef USE_DUAL_BAND
-    int network_select = 0;
     bool rx_controller_data[2] = {false, false};
     rx_controller_data[0] = controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t));
     rx_controller_data[1] = controller_udp[1]->recvPacket(controller_union[1].code, sizeof(controller_data_union_t));
     if (rx_controller_data[0] && !rx_controller_data[1])
     {
         publish_joy(controller_union[0].data);
+        network_select_ = 0;
+        controller_disconnect_count = 0;
     }
     else if (rx_controller_data[1] && !rx_controller_data[0])
     {
         publish_joy(controller_union[1].data);
+        network_select_ = 1;
+        controller_disconnect_count = 0;
     }
-    else
+    else if (rx_controller_data[0] && rx_controller_data[1])
     {
         if (controller_union[0].data.tick > controller_union[1].data.tick)
         {
             publish_joy(controller_union[0].data);
+            network_select_ = 0;
         }
         else
         {
             publish_joy(controller_union[1].data);
+            network_select_ = 1;
+        }
+        controller_disconnect_count = 0;
+    }
+    else
+    {
+        if (is_controller_connected)
+        {
+            controller_disconnect_count++;
+        }
+        if (controller_disconnect_count >= controller_disconnect_threshold)
+        {
+            controller_disconnect_count = 0;
+            is_controller_connected = false;
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 1; // 1: 無線通信なし
+            pub_connection_status_->publish(connection_msg);
+            RCLCPP_WARN(this->get_logger(), "Controller disconnected");
         }
     }
-
 #else
     if (controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
     {
         publish_joy(controller_union[0].data);
         controller_disconnect_count = 0;
+        network_select_ = 0;
     }
     else
     {
@@ -138,6 +160,20 @@ void ControllerNode::ping_timer_callback()
     else if (avg_ping_time >= 0)
     {
         RCLCPP_INFO(this->get_logger(), "Ping time: %.2f ms", avg_ping_time);
+    }
+    switch (network_select_)
+    {
+    case 0:
+        RCLCPP_INFO(this->get_logger(), "Using wifi 1");
+        break;
+    case 1:
+        RCLCPP_INFO(this->get_logger(), "Using wifi 2");
+        break;
+    case 2:
+        RCLCPP_INFO(this->get_logger(), "Using mainboard");
+        break;
+    default:
+        break;
     }
 }
 
