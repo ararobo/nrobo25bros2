@@ -18,7 +18,7 @@ ControllerNode::ControllerNode()
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
-
+#ifdef USE_DUAL_BAND
     if (!controller_udp[1]->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
@@ -29,7 +29,7 @@ ControllerNode::ControllerNode()
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
-
+#endif
     if (!mainboard_udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize mainboard UDP socket");
@@ -57,50 +57,39 @@ ControllerNode::~ControllerNode()
 
 void ControllerNode::recv_timer_callback()
 {
-    if (controller_udp[0]->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
+#ifdef USE_DUAL_BAND
+    int network_select = 0;
+    bool rx_controller_data[2] = {false, false};
+    rx_controller_data[0] = controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t));
+    rx_controller_data[1] = controller_udp[1]->recvPacket(controller_union[1].code, sizeof(controller_data_union_t));
+    if (rx_controller_data[0] && !rx_controller_data[1])
     {
-        sensor_msgs::msg::Joy joy_msg;
-        joy_msg.header.stamp = this->now();
-        joy_msg.axes.resize(4);
-        joy_msg.buttons.resize(8);
-        joy_msg.axes[0] = controller_union.data.left_stick_x / 127.f;
-        joy_msg.axes[1] = controller_union.data.left_stick_y / 127.f;
-        joy_msg.axes[2] = controller_union.data.right_stick_x / 127.f;
-        joy_msg.axes[3] = controller_union.data.right_stick_y / 127.f;
-        joy_msg.buttons[0] = controller_union.data.buttons.l_up;
-        joy_msg.buttons[1] = controller_union.data.buttons.l_down;
-        joy_msg.buttons[2] = controller_union.data.buttons.l_left;
-        joy_msg.buttons[3] = controller_union.data.buttons.l_right;
-        joy_msg.buttons[4] = controller_union.data.buttons.r_up;
-        joy_msg.buttons[5] = controller_union.data.buttons.r_down;
-        joy_msg.buttons[6] = controller_union.data.buttons.r_left;
-        joy_msg.buttons[7] = controller_union.data.buttons.r_right;
-        pub_joy_->publish(joy_msg);
+        publish_joy(controller_union[0].data);
+    }
+    else if (rx_controller_data[1] && !rx_controller_data[0])
+    {
+        publish_joy(controller_union[1].data);
+    }
+    else
+    {
+        if (controller_union[0].data.tick > controller_union[1].data.tick)
+        {
+            publish_joy(controller_union[0].data);
+        }
+        else
+        {
+            publish_joy(controller_union[1].data);
+        }
+    }
+
+#else
+    if (controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
+    {
+        publish_joy(controller_union[0].data);
         controller_disconnect_count = 0;
     }
     else
     {
-        if (controller_udp[1]->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
-        {
-            sensor_msgs::msg::Joy joy_msg;
-            joy_msg.header.stamp = this->now();
-            joy_msg.axes.resize(4);
-            joy_msg.buttons.resize(8);
-            joy_msg.axes[0] = controller_union.data.left_stick_x / 127.f;
-            joy_msg.axes[1] = controller_union.data.left_stick_y / 127.f;
-            joy_msg.axes[2] = controller_union.data.right_stick_x / 127.f;
-            joy_msg.axes[3] = controller_union.data.right_stick_y / 127.f;
-            joy_msg.buttons[0] = controller_union.data.buttons.l_up;
-            joy_msg.buttons[1] = controller_union.data.buttons.l_down;
-            joy_msg.buttons[2] = controller_union.data.buttons.l_left;
-            joy_msg.buttons[3] = controller_union.data.buttons.l_right;
-            joy_msg.buttons[4] = controller_union.data.buttons.r_up;
-            joy_msg.buttons[5] = controller_union.data.buttons.r_down;
-            joy_msg.buttons[6] = controller_union.data.buttons.r_left;
-            joy_msg.buttons[7] = controller_union.data.buttons.r_right;
-            pub_joy_->publish(joy_msg);
-            controller_disconnect_count = 0;
-        }
         if (is_controller_connected)
         {
             controller_disconnect_count++;
@@ -115,27 +104,10 @@ void ControllerNode::recv_timer_callback()
             RCLCPP_WARN(this->get_logger(), "Controller disconnected");
         }
     }
-
-    if (!is_controller_connected && mainboard_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)))
+#endif
+    if (!is_controller_connected && mainboard_udp->recvPacket(controller_union[2].code, sizeof(controller_data_union_t)))
     {
-
-        sensor_msgs::msg::Joy joy_msg;
-        joy_msg.header.stamp = this->now();
-        joy_msg.axes.resize(4);
-        joy_msg.buttons.resize(8);
-        joy_msg.axes[0] = controller_union.data.left_stick_x / 127.f;
-        joy_msg.axes[1] = controller_union.data.left_stick_y / 127.f;
-        joy_msg.axes[2] = controller_union.data.right_stick_x / 127.f;
-        joy_msg.axes[3] = controller_union.data.right_stick_y / 127.f;
-        joy_msg.buttons[0] = controller_union.data.buttons.l_up;
-        joy_msg.buttons[1] = controller_union.data.buttons.l_down;
-        joy_msg.buttons[2] = controller_union.data.buttons.l_left;
-        joy_msg.buttons[3] = controller_union.data.buttons.l_right;
-        joy_msg.buttons[4] = controller_union.data.buttons.r_up;
-        joy_msg.buttons[5] = controller_union.data.buttons.r_down;
-        joy_msg.buttons[6] = controller_union.data.buttons.r_left;
-        joy_msg.buttons[7] = controller_union.data.buttons.r_right;
-        pub_joy_->publish(joy_msg);
+        publish_joy(controller_union[2].data);
         mainboard_disconnect_count = 0;
     }
     else
@@ -167,6 +139,27 @@ void ControllerNode::ping_timer_callback()
     {
         RCLCPP_INFO(this->get_logger(), "Ping time: %.2f ms", avg_ping_time);
     }
+}
+
+void ControllerNode::publish_joy(controller_data_t &controller_data)
+{
+    sensor_msgs::msg::Joy joy_msg;
+    joy_msg.header.stamp = this->now();
+    joy_msg.axes.resize(4);
+    joy_msg.buttons.resize(8);
+    joy_msg.axes[0] = controller_data.left_stick_x / 127.f;
+    joy_msg.axes[1] = controller_data.left_stick_y / 127.f;
+    joy_msg.axes[2] = controller_data.right_stick_x / 127.f;
+    joy_msg.axes[3] = controller_data.right_stick_y / 127.f;
+    joy_msg.buttons[0] = controller_data.buttons.l_up;
+    joy_msg.buttons[1] = controller_data.buttons.l_down;
+    joy_msg.buttons[2] = controller_data.buttons.l_left;
+    joy_msg.buttons[3] = controller_data.buttons.l_right;
+    joy_msg.buttons[4] = controller_data.buttons.r_up;
+    joy_msg.buttons[5] = controller_data.buttons.r_down;
+    joy_msg.buttons[6] = controller_data.buttons.r_left;
+    joy_msg.buttons[7] = controller_data.buttons.r_right;
+    pub_joy_->publish(joy_msg);
 }
 
 double ControllerNode::get_ping_time()

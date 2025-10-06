@@ -22,7 +22,7 @@ private:
     {
         uint8_t code[sizeof(controller_data_t)];
         controller_data_t data;
-    } controller_union;
+    } controller_union[3];
 
     bool is_controller_connected = false;
     bool is_mainboard_connected = false;
@@ -38,5 +38,6 @@ public:
     ~ControllerNode();
     void recv_timer_callback();
     void ping_timer_callback();
+    void publish_joy(controller_data_t &controller_data);
     double get_ping_time();
 };

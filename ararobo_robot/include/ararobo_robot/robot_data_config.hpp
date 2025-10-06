@@ -53,6 +53,7 @@ struct operation_data_t
 
 struct controller_data_t
 {
+    uint32_t tick;        // 送信時のタイムスタンプ
     int8_t left_stick_x;  // 左スティック左右
     int8_t left_stick_y;  // 左スティック上下
     int8_t right_stick_x; // 右スティック左右

@@ -1,4 +1,5 @@
 #pragma once
+#define USE_DUAL_BAND
 #include <stdint.h>
 
 namespace ethernet_config
