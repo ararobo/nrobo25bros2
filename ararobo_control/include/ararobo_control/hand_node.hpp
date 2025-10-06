@@ -17,17 +17,11 @@ private:
     // 位置制御時速度
     float upper_depth_pos_speed = 25.0f;
     float upper_width_pos_speed = 1.0f;
-    float under_hand_raise_pos_speed = 1.0f;
-    float under_hand_slide_pos_speed = 1.0f;
     // 上ハンド
     float upper_depth = 0.0f;
     float upper_width = 0.0f;
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
-    // 下ハンド
-    float under_hand_start_slide = 0.0f;
-    float under_hand_corn_slide = 0.0f;
-    float under_hand_default_slide = 0.0f;
     // 動作モード
     uint8_t mode = 0;
     bool auto_mode = false;
