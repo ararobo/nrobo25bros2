@@ -40,11 +40,15 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_acceleration_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_low_speed_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_lift_position_control_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_phone_cmd_vel_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_lift_;
     // Timer
     rclcpp::TimerBase::SharedPtr timer_;
 
 public:
     MoveNode();
     void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg);
+    void phone_cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+    void phone_lift_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void timer_callback();
 };

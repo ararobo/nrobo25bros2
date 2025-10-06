@@ -18,6 +18,10 @@ MoveNode::MoveNode() : Node("move_node")
     sub_low_speed_ = this->create_subscription<std_msgs::msg::Bool>(
         "/phone/low_speed", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
         { low_speed = msg->data; });
+    sub_phone_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
+        "/phone/cmd_vel", 10, std::bind(&MoveNode::phone_cmd_vel_callback, this, std::placeholders::_1));
+    sub_phone_lift_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/phone/lift", 10, std::bind(&MoveNode::phone_lift_callback, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(200),
         std::bind(&MoveNode::timer_callback, this));
@@ -77,6 +81,14 @@ void MoveNode::timer_callback()
         return;
     }
     update_joy_ = false;
+}
+
+void MoveNode::phone_cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+{
+}
+
+void MoveNode::phone_lift_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
 }
 
 int main(int argc, char const *argv[])
