@@ -13,9 +13,9 @@ private:
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.0f;
     float under_hand_slide_speed = 1.0f;
-    float hold_speed = 25.0f;
+    float hold_speed = 20.0f;
     // 位置制御時速度
-    float upper_depth_pos_speed = 25.0f;
+    float upper_depth_pos_speed = 20.0f;
     float upper_width_pos_speed = 1.0f;
     // 上ハンド
     float upper_depth = 0.0f;
