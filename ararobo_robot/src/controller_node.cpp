@@ -5,15 +5,27 @@ ControllerNode::ControllerNode()
 {
     pub_joy_ = this->create_publisher<sensor_msgs::msg::Joy>("/joy", 10);
     pub_connection_status_ = this->create_publisher<std_msgs::msg::UInt8>("/controller/connection_status", 10);
-    controller_udp = std::make_shared<SimpleUDP>();
+    controller_udp[0] = std::make_shared<SimpleUDP>();
+    controller_udp[1] = std::make_shared<SimpleUDP>();
     mainboard_udp = std::make_shared<SimpleUDP>();
-    if (!controller_udp->initSocket())
+    if (!controller_udp[0]->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
         return;
     }
-    if (!controller_udp->bindSocket(ethernet_config::pc::ip_wifi,
-                                    ethernet_config::controller::port_controller))
+    if (!controller_udp[0]->bindSocket(ethernet_config::pc::ip_wifi_1,
+                                       ethernet_config::controller::port_controller))
+    {
+        RCLCPP_ERROR(this->get_logger(), "bind error\n");
+    }
+
+    if (!controller_udp[1]->initSocket())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
+        return;
+    }
+    if (!controller_udp[1]->bindSocket(ethernet_config::pc::ip_wifi_2,
+                                       ethernet_config::controller::port_controller))
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
@@ -37,14 +49,15 @@ ControllerNode::ControllerNode()
 
 ControllerNode::~ControllerNode()
 {
-    controller_udp->closeSocket();
+    controller_udp[0]->closeSocket();
+    controller_udp[1]->closeSocket();
     mainboard_udp->closeSocket();
     RCLCPP_INFO(this->get_logger(), "ControllerNode destroyed");
 }
 
 void ControllerNode::recv_timer_callback()
 {
-    if (controller_udp->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
+    if (controller_udp[0]->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
     {
         sensor_msgs::msg::Joy joy_msg;
         joy_msg.header.stamp = this->now();
@@ -67,6 +80,27 @@ void ControllerNode::recv_timer_callback()
     }
     else
     {
+        if (controller_udp[1]->recvPacket(controller_union.code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
+        {
+            sensor_msgs::msg::Joy joy_msg;
+            joy_msg.header.stamp = this->now();
+            joy_msg.axes.resize(4);
+            joy_msg.buttons.resize(8);
+            joy_msg.axes[0] = controller_union.data.left_stick_x / 127.f;
+            joy_msg.axes[1] = controller_union.data.left_stick_y / 127.f;
+            joy_msg.axes[2] = controller_union.data.right_stick_x / 127.f;
+            joy_msg.axes[3] = controller_union.data.right_stick_y / 127.f;
+            joy_msg.buttons[0] = controller_union.data.buttons.l_up;
+            joy_msg.buttons[1] = controller_union.data.buttons.l_down;
+            joy_msg.buttons[2] = controller_union.data.buttons.l_left;
+            joy_msg.buttons[3] = controller_union.data.buttons.l_right;
+            joy_msg.buttons[4] = controller_union.data.buttons.r_up;
+            joy_msg.buttons[5] = controller_union.data.buttons.r_down;
+            joy_msg.buttons[6] = controller_union.data.buttons.r_left;
+            joy_msg.buttons[7] = controller_union.data.buttons.r_right;
+            pub_joy_->publish(joy_msg);
+            controller_disconnect_count = 0;
+        }
         if (is_controller_connected)
         {
             controller_disconnect_count++;

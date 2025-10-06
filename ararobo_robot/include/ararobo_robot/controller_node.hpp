@@ -14,7 +14,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_connection_status_;
     rclcpp::TimerBase::SharedPtr recv_timer_;
     rclcpp::TimerBase::SharedPtr ping_timer_;
-    std::shared_ptr<SimpleUDP> controller_udp;
+    std::shared_ptr<SimpleUDP> controller_udp[2];
     std::shared_ptr<SimpleUDP> mainboard_udp;
     std::string target_ip_address = "192.168.2.111";
 
