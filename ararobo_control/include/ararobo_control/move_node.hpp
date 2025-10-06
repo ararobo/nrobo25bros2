@@ -14,7 +14,8 @@ private:
     float angular_speed = -2.4f;
     float angular_lift_speed = 0.5f;
     float angular_stick_threshold = 0.5f;
-    float max_acceleration = 1.0f;
+    float max_acceleration = 0.015f;
+    float low_speed_rate = 0.6f;
     // リフト位置制御
     bool lift_position_control = false;
     float lift_pos = 0.0f;
@@ -22,6 +23,7 @@ private:
     uint8_t mode = 0;
     bool auto_mode = false;
     bool acceleration = false;
+    bool low_speed = false;
     // 安全用
     bool update_joy_ = false;
 
@@ -36,6 +38,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_auto_mode_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_acceleration_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_low_speed_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_lift_position_control_;
     // Timer
     rclcpp::TimerBase::SharedPtr timer_;

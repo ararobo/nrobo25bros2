@@ -15,6 +15,9 @@ MoveNode::MoveNode() : Node("move_node")
     sub_acceleration_ = this->create_subscription<std_msgs::msg::Bool>(
         "/phone/low_accel", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
         { acceleration = msg->data; });
+    sub_low_speed_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/phone/low_speed", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        { low_speed = msg->data; });
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(200),
         std::bind(&MoveNode::timer_callback, this));
@@ -38,12 +41,20 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     {
         cmd_vel_msg.angular.z = angular_speed * msg->axes[2];
     }
+    // 速度制限
+    if (low_speed)
+    {
+        cmd_vel_msg.linear.x = cmd_vel_msg.linear.x * low_speed_rate;
+        cmd_vel_msg.linear.y = cmd_vel_msg.linear.y * low_speed_rate;
+        cmd_vel_msg.angular.z = cmd_vel_msg.angular.z * low_speed_rate;
+    }
+
     // 台形制御
     if (acceleration)
     {
-        cmd_vel_msg.linear.x = cmd_vel_msg.linear.x * 0.6;
-        cmd_vel_msg.linear.y = cmd_vel_msg.linear.y * 0.6;
-        cmd_vel_msg.angular.z = cmd_vel_msg.angular.z * 0.6;
+        cmd_vel_msg.linear.x = trapezoidal_x->trapezoidal_control(cmd_vel_msg.linear.x, max_acceleration);
+        cmd_vel_msg.linear.y = trapezoidal_y->trapezoidal_control(cmd_vel_msg.linear.y, max_acceleration);
+        cmd_vel_msg.angular.z = trapezoidal_z->trapezoidal_control(cmd_vel_msg.angular.z, max_acceleration);
     }
 
     pub_cmd_vel_->publish(cmd_vel_msg);
