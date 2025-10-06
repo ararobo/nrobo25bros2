@@ -48,7 +48,7 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 
     pub_cmd_vel_->publish(cmd_vel_msg);
 
-    lift_pos = std::clamp(lift_pos, -162.0f, 0.0f);
+    lift_pos = std::clamp(lift_pos, -162.0f, 20.0f);
     lift_msg.data = lift_pos;
     pub_lift_->publish(lift_msg);
 }
