@@ -17,6 +17,7 @@
 #include <fcntl.h> // For fcntl()
 #include <errno.h> // For errno and EWOULDBLOCK
 #include "ararobo_robot/simple_udp.hpp"
+#include <cstring>
 
 SimpleUDP::SimpleUDP()
 {
@@ -114,6 +115,11 @@ int SimpleUDP::recvPacket(uint8_t *buffer, uint8_t buffer_size)
         }
     }
     return rx_data_size;
+}
+
+void SimpleUDP::setInterface(const char *interface_name)
+{
+    setsockopt(sock_, SOL_SOCKET, SO_BINDTODEVICE, interface_name, strlen(interface_name));
 }
 
 void SimpleUDP::closeSocket()

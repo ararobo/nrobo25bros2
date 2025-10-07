@@ -9,11 +9,13 @@ ControllerNode::ControllerNode()
     controller_udp[0] = std::make_shared<SimpleUDP>();
     controller_udp[1] = std::make_shared<SimpleUDP>();
     mainboard_udp = std::make_shared<SimpleUDP>();
+
     if (!controller_udp[0]->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
         return;
     }
+    controller_udp[0]->setInterface("wlan0");
     if (!controller_udp[0]->bindSocket(ethernet_config::pc::ip_wifi_1,
                                        ethernet_config::controller::port_controller))
     {
@@ -25,6 +27,7 @@ ControllerNode::ControllerNode()
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize controller UDP socket");
         return;
     }
+    controller_udp[1]->setInterface("wlx98038eddc160");
     if (!controller_udp[1]->bindSocket(ethernet_config::pc::ip_wifi_2,
                                        ethernet_config::controller::port_controller))
     {

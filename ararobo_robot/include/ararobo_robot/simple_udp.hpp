@@ -82,6 +82,8 @@ public:
      */
     int recvPacket(uint8_t *buffer, uint8_t buffer_size);
 
+    void setInterface(const char *interface_name);
+
     /**
      * @brief ソケットを閉じる
      *
