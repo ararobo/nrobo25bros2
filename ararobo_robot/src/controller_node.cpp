@@ -177,29 +177,26 @@ void ControllerNode::ping_timer_callback()
 #endif
     if (is_controller_connected)
     {
+        auto connection_msg = std_msgs::msg::UInt8();
         switch (network_select_)
         {
         case 0:
             RCLCPP_INFO(this->get_logger(), "Using wifi 1");
-            auto connection_msg = std_msgs::msg::UInt8();
             connection_msg.data = 3; // 2: WiFi 1
-            pub_connection_status_->publish(connection_msg);
             break;
         case 1:
             RCLCPP_INFO(this->get_logger(), "Using wifi 2");
-            auto connection_msg = std_msgs::msg::UInt8();
+
             connection_msg.data = 4; // 3: WiFi 2
-            pub_connection_status_->publish(connection_msg);
             break;
         case 2:
             RCLCPP_INFO(this->get_logger(), "Using mainboard");
-            auto connection_msg = std_msgs::msg::UInt8();
             connection_msg.data = 2; // 4: BLE
-            pub_connection_status_->publish(connection_msg);
             break;
         default:
             break;
         }
+        pub_connection_status_->publish(connection_msg);
     }
     else
     {
