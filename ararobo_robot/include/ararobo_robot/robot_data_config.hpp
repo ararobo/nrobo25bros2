@@ -37,7 +37,7 @@ struct feedback_data_t
 struct operation_data_t
 {
     uint8_t communication_status; // 通信状態 (0:なし 1:PC-main間通信 2:BLE 3:WiFi-1 4:WiFi-2)
-    uint8_t control_mode;         // 制御モード (0:manual 1:manual(PC) 2:auto(PC))
+    uint8_t control_mode;         // 制御モード (0:通常スピード 1:低速モード 2:加速度制限モード 3:低速加速度制限モード)
     bool position_control_lift;   // 昇降機構位置制御モードか否か
     bool position_control_upper;  // 上ハンド機構位置制御モードか
     bool position_control_under;  // 下ハンド機構位置制御モードか

@@ -5,7 +5,7 @@ ControllerNode::ControllerNode()
     : rclcpp::Node("controller_node")
 {
     pub_joy_ = this->create_publisher<sensor_msgs::msg::Joy>("/joy", 10);
-    pub_connection_status_ = this->create_publisher<std_msgs::msg::UInt8>("/controller/connection_status", 10);
+    pub_connection_status_ = this->create_publisher<std_msgs::msg::UInt8>("/mode/connection", 10);
     controller_udp[0] = std::make_shared<SimpleUDP>();
     controller_udp[1] = std::make_shared<SimpleUDP>();
     mainboard_udp = std::make_shared<SimpleUDP>();
