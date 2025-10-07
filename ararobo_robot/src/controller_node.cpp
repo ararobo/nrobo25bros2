@@ -110,10 +110,6 @@ void ControllerNode::recv_timer_callback()
         {
             controller_disconnect_count = 0;
             is_controller_connected = false;
-            auto connection_msg = std_msgs::msg::UInt8();
-            connection_msg.data = 1; // 1: 無線通信なし
-            pub_connection_status_->publish(connection_msg);
-            RCLCPP_WARN(this->get_logger(), "Controller disconnected");
         }
     }
 #else
@@ -179,19 +175,38 @@ void ControllerNode::ping_timer_callback()
         RCLCPP_INFO(this->get_logger(), "Ping time: %.2f ms", avg_ping_time);
     }
 #endif
-    switch (network_select_)
+    if (is_controller_connected)
     {
-    case 0:
-        RCLCPP_INFO(this->get_logger(), "Using wifi 1");
-        break;
-    case 1:
-        RCLCPP_INFO(this->get_logger(), "Using wifi 2");
-        break;
-    case 2:
-        RCLCPP_INFO(this->get_logger(), "Using mainboard");
-        break;
-    default:
-        break;
+        switch (network_select_)
+        {
+        case 0:
+            RCLCPP_INFO(this->get_logger(), "Using wifi 1");
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 3; // 2: WiFi 1
+            pub_connection_status_->publish(connection_msg);
+            break;
+        case 1:
+            RCLCPP_INFO(this->get_logger(), "Using wifi 2");
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 4; // 3: WiFi 2
+            pub_connection_status_->publish(connection_msg);
+            break;
+        case 2:
+            RCLCPP_INFO(this->get_logger(), "Using mainboard");
+            auto connection_msg = std_msgs::msg::UInt8();
+            connection_msg.data = 2; // 4: BLE
+            pub_connection_status_->publish(connection_msg);
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        auto connection_msg = std_msgs::msg::UInt8();
+        connection_msg.data = 1; // 1: 無線通信なし
+        pub_connection_status_->publish(connection_msg);
+        RCLCPP_WARN(this->get_logger(), "Controller disconnected");
     }
 }
 
