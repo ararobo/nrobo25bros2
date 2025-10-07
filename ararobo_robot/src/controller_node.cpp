@@ -31,6 +31,7 @@ ControllerNode::ControllerNode()
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
 #endif
+#ifdef ENABLE_CONTROLLER_BYPASS_UDP
     if (!mainboard_udp->initSocket())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to initialize mainboard UDP socket");
@@ -41,6 +42,7 @@ ControllerNode::ControllerNode()
     {
         RCLCPP_ERROR(this->get_logger(), "bind error\n");
     }
+#endif
     recv_timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
                                           std::bind(&ControllerNode::recv_timer_callback, this));
     ping_timer_ = this->create_wall_timer(std::chrono::milliseconds(500),
@@ -52,7 +54,9 @@ ControllerNode::~ControllerNode()
 {
     controller_udp[0]->closeSocket();
     controller_udp[1]->closeSocket();
+#ifdef ENABLE_CONTROLLER_BYPASS_UDP
     mainboard_udp->closeSocket();
+#endif
     RCLCPP_INFO(this->get_logger(), "ControllerNode destroyed");
 }
 
@@ -136,6 +140,7 @@ void ControllerNode::recv_timer_callback()
         }
     }
 #endif
+#ifdef ENABLE_CONTROLLER_BYPASS_UDP
     if (!is_controller_connected && mainboard_udp->recvPacket(controller_union[2].code, sizeof(controller_data_union_t)))
     {
         publish_joy(controller_union[2].data);
@@ -158,6 +163,7 @@ void ControllerNode::recv_timer_callback()
             RCLCPP_WARN(this->get_logger(), "Mainboard disconnected");
         }
     }
+#endif
 }
 
 void ControllerNode::ping_timer_callback()
