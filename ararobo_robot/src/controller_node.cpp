@@ -1,3 +1,4 @@
+// #define CHECK_LATENCY_BY_PING
 #include "ararobo_robot/controller_node.hpp"
 
 ControllerNode::ControllerNode()
@@ -58,20 +59,27 @@ ControllerNode::~ControllerNode()
 void ControllerNode::recv_timer_callback()
 {
 #ifdef USE_DUAL_BAND
-    bool rx_controller_data[2] = {false, false};
-    rx_controller_data[0] = controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t));
-    rx_controller_data[1] = controller_udp[1]->recvPacket(controller_union[1].code, sizeof(controller_data_union_t));
+    // 受信データサイズを格納 (0:データなし, >0:データあり, -1:エラー)
+    int rx_data_size[2];
+    rx_data_size[0] = controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t));
+    rx_data_size[1] = controller_udp[1]->recvPacket(controller_union[1].code, sizeof(controller_data_union_t));
+
+    // データ受信の有無を明確に判定
+    bool rx_controller_data[2] = {rx_data_size[0] > 0, rx_data_size[1] > 0};
+
     if (rx_controller_data[0] && !rx_controller_data[1])
     {
         publish_joy(controller_union[0].data);
         network_select_ = 0;
         controller_disconnect_count = 0;
+        is_controller_connected = true;
     }
     else if (rx_controller_data[1] && !rx_controller_data[0])
     {
         publish_joy(controller_union[1].data);
         network_select_ = 1;
         controller_disconnect_count = 0;
+        is_controller_connected = true;
     }
     else if (rx_controller_data[0] && rx_controller_data[1])
     {
@@ -86,6 +94,7 @@ void ControllerNode::recv_timer_callback()
             network_select_ = 1;
         }
         controller_disconnect_count = 0;
+        is_controller_connected = true;
     }
     else
     {
@@ -104,7 +113,7 @@ void ControllerNode::recv_timer_callback()
         }
     }
 #else
-    if (controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t)) && avg_ping_time < ping_time_threshold)
+    if (controller_udp[0]->recvPacket(controller_union[0].code, sizeof(controller_data_union_t)))
     {
         publish_joy(controller_union[0].data);
         controller_disconnect_count = 0;
@@ -131,6 +140,7 @@ void ControllerNode::recv_timer_callback()
     {
         publish_joy(controller_union[2].data);
         mainboard_disconnect_count = 0;
+        is_mainboard_connected = true;
     }
     else
     {
@@ -152,6 +162,7 @@ void ControllerNode::recv_timer_callback()
 
 void ControllerNode::ping_timer_callback()
 {
+#ifdef CHECK_LATENCY_BY_PING
     avg_ping_time = get_ping_time();
     if (avg_ping_time >= ping_time_threshold)
     {
@@ -161,6 +172,7 @@ void ControllerNode::ping_timer_callback()
     {
         RCLCPP_INFO(this->get_logger(), "Ping time: %.2f ms", avg_ping_time);
     }
+#endif
     switch (network_select_)
     {
     case 0:
