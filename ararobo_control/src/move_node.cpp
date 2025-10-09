@@ -13,10 +13,10 @@ MoveNode::MoveNode() : Node("move_node")
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&MoveNode::joy_callback, this, std::placeholders::_1));
     sub_acceleration_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/phone/low_accel", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        "/phone/low_speed", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
         { acceleration = msg->data; });
     sub_low_speed_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/phone/low_speed", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        "/phone/low_accel", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
         { low_speed = msg->data; });
     sub_phone_cmd_vel_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "/phone/cmd_vel", 10, std::bind(&MoveNode::phone_cmd_vel_callback, this, std::placeholders::_1));
