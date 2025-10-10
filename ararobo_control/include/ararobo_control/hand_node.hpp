@@ -37,6 +37,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_raise_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_box_hold_;
     rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr pub_box_info_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_hold_cancel_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_auto_mode_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_position_control_;
