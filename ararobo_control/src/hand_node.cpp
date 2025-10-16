@@ -50,19 +50,11 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     upper_width = 0.0f;
     if (msg->buttons[0])
     {
-        upper_depth += upper_depth_speed;
+        mode = 1;
     }
     if (msg->buttons[1])
     {
-        upper_depth -= upper_depth_speed;
-    }
-    if (msg->buttons[2])
-    {
-        upper_width -= upper_width_speed;
-    }
-    if (msg->buttons[3])
-    {
-        upper_width += upper_width_speed;
+        mode = 2;
     }
     if (hold < -0.1f)
     {
