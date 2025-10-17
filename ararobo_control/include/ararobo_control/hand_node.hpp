@@ -28,6 +28,7 @@ private:
     bool upper_position_control = false;
     bool under_position_control = false;
     float hold = 0.0f;
+
     // 安全用
     bool update_joy_ = false;
     bool update_hold_ = false;
