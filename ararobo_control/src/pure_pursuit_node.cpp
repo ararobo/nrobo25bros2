@@ -10,6 +10,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -33,6 +34,13 @@ public:
             "/base/left/distance", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
         distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
             "/base/right/distance", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
+        mode_sub = this->create_subscription<std_msgs::msg::UInt8>(
+            "/phone/mode", 10,
+            [this](std_msgs::msg::UInt8::SharedPtr msg)
+            {
+                this->current_mode = msg->data;
+                RCLCPP_INFO(this->get_logger(), "Mode changed to: %d", this->current_mode);
+            });
 
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
@@ -52,7 +60,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr mode_sub;
+    uint8_t current_mode = 0;
     geometry_msgs::msg::PoseStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
@@ -203,6 +212,10 @@ private:
                 if (current_vel > v_max)
                     current_vel = v_max;
             }
+        }
+        if (current_mode == 1)
+        {
+            RCLCPP_INFO(this->get_logger(), "Pylon mode active");
         }
     }
 };
