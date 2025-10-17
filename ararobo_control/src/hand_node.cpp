@@ -48,13 +48,75 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
 {
     upper_depth = 0.0f;
     upper_width = 0.0f;
-    if (msg->buttons[0])
+    if (in_operation)
     {
-        mode = 1;
+        if (operate_mode == 1)
+        {
+            if (upper_width_limit)
+            {
+                if (upper_depth_open_limit)
+                {
+                    in_operation = false;
+                }
+                else
+                {
+                    upper_depth += upper_depth_speed;
+                }
+            }
+            else
+            {
+                upper_width += upper_width_speed;
+            }
+        }
+        else
+        {
+            if (upper_depth_close_limit)
+            {
+                if (upper_width_limit)
+                {
+                    in_operation = false;
+                }
+                else
+                {
+                    upper_width += upper_width_speed;
+                }
+            }
+            else
+            {
+                upper_depth -= upper_depth_speed;
+            }
+        }
     }
-    if (msg->buttons[1])
+    else
     {
-        mode = 2;
+        if (mode)
+        {
+            operate_mode = 1; // open
+            in_operation = true;
+        }
+        if (mode)
+        {
+            operate_mode = 2; // close
+            in_operation = true;
+        }
+
+        // manual
+        if (msg->buttons[0])
+        {
+            upper_depth += upper_depth_speed;
+        }
+        if (msg->buttons[1])
+        {
+            upper_depth -= upper_depth_speed;
+        }
+        if (msg->buttons[2])
+        {
+            upper_width -= upper_width_speed;
+        }
+        if (msg->buttons[3])
+        {
+            upper_width += upper_width_speed;
+        }
     }
     if (hold < -0.1f)
     {

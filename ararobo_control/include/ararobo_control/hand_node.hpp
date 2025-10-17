@@ -29,6 +29,12 @@ private:
     bool under_position_control = false;
     float hold = 0.0f;
 
+    bool upper_width_limit = false;
+    bool upper_depth_open_limit = false;
+    bool upper_depth_close_limit = false;
+    bool in_operation;
+    int operate_mode;
+
     // 安全用
     bool update_joy_ = false;
     bool update_hold_ = false;
