@@ -50,73 +50,26 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     upper_width = 0.0f;
     if (in_operation)
     {
-        if (operate_mode == 1)
+        // automatic
+        if (operate_mode == 1) // open
         {
-            if (upper_width_limit)
-            {
-                if (upper_depth_open_limit)
-                {
-                    in_operation = false;
-                }
-                else
-                {
-                    upper_depth += upper_depth_speed;
-                }
-            }
-            else
-            {
-                upper_width += upper_width_speed;
-            }
+            upper_hand_automatic_open();
         }
-        else
+        else if (operate_mode == 2) // close
         {
-            if (upper_depth_close_limit)
-            {
-                if (upper_width_limit)
-                {
-                    in_operation = false;
-                }
-                else
-                {
-                    upper_width += upper_width_speed;
-                }
-            }
-            else
-            {
-                upper_depth -= upper_depth_speed;
-            }
+            upper_hand_automatic_close();
         }
     }
     else
     {
-        if (mode)
+        if ((mode == 1 || mode == 2) /*&& mode != operate_mode*/)
         {
-            operate_mode = 1; // open
-            in_operation = true;
-        }
-        if (mode)
-        {
-            operate_mode = 2; // close
+            operate_mode = mode;
             in_operation = true;
         }
 
         // manual
-        if (msg->buttons[0])
-        {
-            upper_depth += upper_depth_speed;
-        }
-        if (msg->buttons[1])
-        {
-            upper_depth -= upper_depth_speed;
-        }
-        if (msg->buttons[2])
-        {
-            upper_width -= upper_width_speed;
-        }
-        if (msg->buttons[3])
-        {
-            upper_width += upper_width_speed;
-        }
+        upper_hand_manual_control(msg);
     }
     if (hold < -0.1f)
     {
@@ -188,6 +141,60 @@ void HandNode::timer_callback()
         hold = 0.0f;
     }
     update_hold_ = false;
+}
+
+void HandNode::upper_hand_automatic_open()
+{
+    if (!upper_width_limit)
+    {
+        upper_width += upper_width_speed;
+        return;
+    }
+    if (!upper_depth_open_limit)
+    {
+        upper_depth += upper_depth_speed;
+        return;
+    }
+
+    // 完了
+    in_operation = false;
+}
+
+void HandNode::upper_hand_automatic_close()
+{
+    if (!upper_depth_close_limit)
+    {
+        upper_depth -= upper_depth_speed;
+        return;
+    }
+    if (!upper_width_limit)
+    {
+        upper_width += upper_width_speed;
+        return;
+    }
+
+    // 完了
+    in_operation = false;
+}
+
+void HandNode::upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg)
+{
+    if (msg->buttons[0])
+    {
+        upper_depth += upper_depth_speed;
+    }
+    if (msg->buttons[1])
+    {
+        upper_depth -= upper_depth_speed;
+    }
+    if (msg->buttons[2])
+    {
+        upper_width -= upper_width_speed;
+    }
+    if (msg->buttons[3])
+    {
+        upper_width += upper_width_speed;
+    }
 }
 
 int main(int argc, char const *argv[])
