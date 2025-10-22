@@ -59,10 +59,15 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
         {
             upper_hand_automatic_close();
         }
+        else if (operate_mode == 3) // release
+        {
+            in_operation = false;
+            // upper_hand_automatic_release();
+        }
     }
     else
     {
-        if ((mode == 1 || mode == 2) /*&& mode != operate_mode*/)
+        if (mode == 1 || mode == 2 || mode == 3)
         {
             operate_mode = mode;
             in_operation = true;
@@ -75,6 +80,7 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     {
         upper_depth = -hold_speed;
     }
+    mode = 0;
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
     pub_upper_depth_->publish(upper_depth_msg);
@@ -103,7 +109,6 @@ void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPt
     {
         under_hand_slide += under_hand_slide_speed;
     }
-
     std_msgs::msg::Float32 under_slide_msg;
     under_slide_msg.data = under_hand_slide;
     pub_under_slide_->publish(under_slide_msg);
@@ -156,7 +161,6 @@ void HandNode::upper_hand_automatic_open()
         return;
     }
 
-    // 完了
     in_operation = false;
 }
 
@@ -173,7 +177,22 @@ void HandNode::upper_hand_automatic_close()
         return;
     }
 
-    // 完了
+    in_operation = false;
+}
+
+void HandNode::upper_hand_automatic_release()
+{
+    if (!upper_depth_open_limit)
+    {
+        upper_depth += upper_depth_speed;
+        return;
+    }
+    if (!upper_width_limit)
+    {
+        upper_width += upper_width_speed;
+        return;
+    }
+
     in_operation = false;
 }
 

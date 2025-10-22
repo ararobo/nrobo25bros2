@@ -60,5 +60,6 @@ public:
     void upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
     void upper_hand_automatic_open();
     void upper_hand_automatic_close();
+    void upper_hand_automatic_release();
     void upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg);
 };
