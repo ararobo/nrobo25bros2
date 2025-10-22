@@ -9,13 +9,13 @@ class MoveNode : public rclcpp::Node
 {
 private:
     // 速度設定
-    float linear_x_speed = 1.5f;
-    float linear_y_speed = 1.5f;
+    float linear_x_speed = 1.7f;
+    float linear_y_speed = 1.7f;
     float angular_speed = -2.4f;
     float angular_lift_speed = 0.5f;
     float angular_stick_threshold = 0.5f;
-    float max_acceleration = 0.015f;
-    float low_speed_rate = 0.6f;
+    float max_acceleration = 0.001f;
+    float low_speed_rate = 0.4f;
     // リフト位置制御
     bool lift_position_control = false;
     float lift_pos = 0.0f;
