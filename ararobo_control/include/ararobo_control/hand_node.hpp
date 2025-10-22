@@ -28,6 +28,13 @@ private:
     bool upper_position_control = false;
     bool under_position_control = false;
     float hold = 0.0f;
+    bool in_operation;
+    int operate_mode; // 1:open , 2:close
+    // リミットスイッチ
+    bool upper_width_limit = false;
+    bool upper_depth_open_limit = false;
+    bool upper_depth_close_limit = false;
+
     // 安全用
     bool update_joy_ = false;
     bool update_hold_ = false;
@@ -51,4 +58,8 @@ public:
     void timer_callback();
     void under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPtr msg);
     void upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
+    void upper_hand_automatic_open();
+    void upper_hand_automatic_close();
+    void upper_hand_automatic_release();
+    void upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg);
 };

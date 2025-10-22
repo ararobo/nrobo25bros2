@@ -10,6 +10,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -30,9 +31,17 @@ public:
             "/path", 10,
             std::bind(&PurePursuitNode::path_callback, this, std::placeholders::_1));
         distance_sub_left = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "/base/left/distance", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
+            "/tof/side/left", 10, std::bind(&PurePursuitNode::distance_left, this, std::placeholders::_1));
         distance_sub_right = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "/base/right/distance", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
+            "/tof/side/right", 10, std::bind(&PurePursuitNode::distance_right, this, std::placeholders::_1));
+
+        mode_sub = this->create_subscription<std_msgs::msg::UInt8>(
+            "/phone/mode", 10,
+            [this](std_msgs::msg::UInt8::SharedPtr msg)
+            {
+                this->current_mode = msg->data;
+                RCLCPP_INFO(this->get_logger(), "Mode changed to: %d", this->current_mode);
+            });
 
         cmd_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
@@ -52,7 +61,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr mode_sub;
+    uint8_t current_mode = 0;
     geometry_msgs::msg::PoseStamped current_pose;
     nav_msgs::msg::Path path;
     double lookahead_distance;
@@ -64,28 +74,28 @@ private:
         RCLCPP_INFO(this->get_logger(), "Path received with %zu poses", path.poses.size());
     }
 
-    std::array<float, 4> left_distance = {1.0, 1.0, 1.0, 1.0};
-    std::array<float, 4> right_distance = {1.0, 1.0, 1.0, 1.0};
+    std::array<float, 3> left_distance = {1.0, 1.0, 1.0};
+    std::array<float, 3> right_distance = {1.0, 1.0, 1.0};
 
     // --- センサーコールバック ---
     void distance_left(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
     {
-        if (msg->data.size() >= 4)
+        if (msg->data.size() >= 3)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
-                left_distance[i] = msg->data[i];
+                left_distance[i] = msg->data[i]; // 左3個のセンサ値で上書き
             }
         }
     }
 
     void distance_right(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
     {
-        if (msg->data.size() >= 4)
+        if (msg->data.size() >= 3)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
-                right_distance[i] = msg->data[i];
+                right_distance[i] = msg->data[i]; // 右3個のセンサ値で上書き
             }
         }
     }
@@ -203,6 +213,36 @@ private:
                 if (current_vel > v_max)
                     current_vel = v_max;
             }
+        }
+        if (current_mode == 1)
+        {
+            double target_distance = 0.5; // 目標距離[m]
+            double Kp = 1.5;
+            geometry_msgs::msg::Twist cmd;
+            cmd.linear.x = current_vel;
+            cmd.angular.z = 0.0;
+
+            // 左センサー3個をチェック
+            for (int i = 0; i < 3; i++)
+            {
+                if (left_distance[i] < 5.0) // センサーが有効範囲内
+                {
+                    double error = target_distance - left_distance[i];
+                    cmd.angular.z += Kp * error; // 左に.寄せたいので正の方向に旋回
+                }
+            }
+
+            // 右センサー3個をチェック
+            for (int i = 0; i < 3; i++)
+            {
+                if (right_distance[i] < 5.0) // センサーが有効範囲内
+                {
+                    double error = right_distance[i] - target_distance;
+                    cmd.angular.z += Kp * error; // 右に寄せたいので負の方向に旋回
+                }
+            }
+
+            cmd_pub->publish(cmd);
         }
     }
 };
