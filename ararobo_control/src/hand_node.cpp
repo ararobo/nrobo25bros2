@@ -35,20 +35,14 @@ void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     update_joy_ = true;
     upper_hand_control_velocity_manual(msg);
-    if (under_position_control)
-    {
-    }
-    else
-    {
-        under_hand_velocity_control(msg);
-    }
+    under_hand_velocity_control(msg);
 }
 
 void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     upper_depth = 0.0f;
     upper_width = 0.0f;
-    if (in_operation)
+    if (upper_hand_in_operation)
     {
         // automatic
         if (operate_mode == 1) // open
@@ -61,7 +55,7 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
         }
         else if (operate_mode == 3) // release
         {
-            in_operation = false;
+            upper_hand_in_operation = false;
             // upper_hand_automatic_release();
         }
     }
@@ -70,7 +64,8 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
         if (mode == 1 || mode == 2 || mode == 3)
         {
             operate_mode = mode;
-            in_operation = true;
+            mode = 0;
+            // upper_hand_in_operation = true;
         }
 
         // manual
@@ -80,7 +75,6 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     {
         upper_depth = -hold_speed;
     }
-    mode = 0;
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
     pub_upper_depth_->publish(upper_depth_msg);
@@ -93,21 +87,28 @@ void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPt
 {
     under_hand_slide = 0.0f;
     under_hand_raise = 0.0f;
-    if (msg->buttons[4])
+    if (under_hand_in_operation)
     {
-        under_hand_raise += under_hand_raise_speed;
+        if (operate_mode == 4)
+        {
+            under_hand_automatic_open();
+        }
+        if (operate_mode == 5)
+        {
+            under_hand_automatic_open();
+        }
     }
-    if (msg->buttons[5])
+    else
     {
-        under_hand_raise -= under_hand_raise_speed;
-    }
-    if (msg->buttons[6])
-    {
-        under_hand_slide -= under_hand_slide_speed;
-    }
-    if (msg->buttons[7])
-    {
-        under_hand_slide += under_hand_slide_speed;
+        if (mode == 4 || mode == 5)
+        {
+            operate_mode = mode;
+            mode = 0;
+            // under_hand_in_operation = true;
+        }
+
+        // manual
+        under_hand_manual_control(msg);
     }
     std_msgs::msg::Float32 under_slide_msg;
     under_slide_msg.data = under_hand_slide;
@@ -161,23 +162,23 @@ void HandNode::upper_hand_automatic_open()
         return;
     }
 
-    in_operation = false;
+    upper_hand_in_operation = false;
 }
 
 void HandNode::upper_hand_automatic_close()
 {
-    if (!upper_depth_close_limit)
-    {
-        upper_depth -= upper_depth_speed;
-        return;
-    }
     if (!upper_width_limit)
     {
         upper_width += upper_width_speed;
         return;
     }
+    if (!upper_depth_close_limit)
+    {
+        upper_depth -= upper_depth_speed;
+        return;
+    }
 
-    in_operation = false;
+    upper_hand_in_operation = false;
 }
 
 void HandNode::upper_hand_automatic_release()
@@ -185,15 +186,48 @@ void HandNode::upper_hand_automatic_release()
     if (!upper_depth_open_limit)
     {
         upper_depth += upper_depth_speed;
-        return;
     }
     if (!upper_width_limit)
     {
         upper_width += upper_width_speed;
+    }
+
+    if (upper_width_limit && upper_depth_open_limit)
+    {
+        upper_hand_in_operation = false;
+    }
+}
+
+void HandNode::under_hand_automatic_open()
+{
+    if (!under_slide_open_limit)
+    {
+        under_hand_slide += under_hand_slide_speed;
+        return;
+    }
+    if (!under_raise_open_limit)
+    {
+        under_hand_raise += under_hand_raise_speed;
         return;
     }
 
-    in_operation = false;
+    under_hand_in_operation = false;
+}
+
+void HandNode::under_hand_automatic_close()
+{
+    if (!under_raise_close_limit)
+    {
+        under_hand_raise -= under_hand_raise_speed;
+        return;
+    }
+    if (!under_slide_close_limit)
+    {
+        under_hand_slide -= under_hand_slide_speed;
+        return;
+    }
+
+    under_hand_in_operation = false;
 }
 
 void HandNode::upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg)
@@ -213,6 +247,26 @@ void HandNode::upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr 
     if (msg->buttons[3])
     {
         upper_width += upper_width_speed;
+    }
+}
+
+void HandNode::under_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg)
+{
+    if (msg->buttons[4])
+    {
+        under_hand_raise += under_hand_raise_speed;
+    }
+    if (msg->buttons[5])
+    {
+        under_hand_raise -= under_hand_raise_speed;
+    }
+    if (msg->buttons[6])
+    {
+        under_hand_slide -= under_hand_slide_speed;
+    }
+    if (msg->buttons[7])
+    {
+        under_hand_slide += under_hand_slide_speed;
     }
 }
 
