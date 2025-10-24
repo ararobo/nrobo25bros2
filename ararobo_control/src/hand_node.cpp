@@ -6,6 +6,7 @@ HandNode::HandNode() : Node("hand_node")
     pub_upper_width_ = this->create_publisher<std_msgs::msg::Float32>("/hand/upper/width", 10);
     pub_under_slide_ = this->create_publisher<std_msgs::msg::Float32>("/hand/under/slide", 10);
     pub_under_raise_ = this->create_publisher<std_msgs::msg::Float32>("/hand/under/raise", 10);
+    pub_hold_cancel_ = this->create_publisher<std_msgs::msg::Bool>("/cancel_hold", 10);
     // pub_box_hold_ = this->create_publisher<std_msgs::msg::Bool>("/hand/box/hold", 10);
     // pub_box_info_ = this->create_publisher<std_msgs::msg::Int8>("/hand/box/info", 10);
     sub_auto_mode_ = this->create_subscription<std_msgs::msg::Bool>(
@@ -74,6 +75,12 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     if (hold < -0.1f)
     {
         upper_depth = -hold_speed;
+        if (msg->buttons[0])
+        {
+            auto hold_cancel_msg = std_msgs::msg::Bool();
+            hold_cancel_msg.data = true;
+            pub_hold_cancel_->publish(hold_cancel_msg);
+        }
     }
     std_msgs::msg::Float32 upper_depth_msg;
     upper_depth_msg.data = upper_depth;
