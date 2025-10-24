@@ -220,14 +220,14 @@ void ControllerNode::publish_joy(controller_data_t &controller_data)
     joy_msg.axes[1] = controller_data.left_stick_y / 127.f;
     joy_msg.axes[2] = controller_data.right_stick_x / 127.f;
     joy_msg.axes[3] = controller_data.right_stick_y / 127.f;
-    joy_msg.buttons[0] = controller_data.buttons.l_up;
-    joy_msg.buttons[1] = controller_data.buttons.l_down;
-    joy_msg.buttons[2] = controller_data.buttons.l_left;
-    joy_msg.buttons[3] = controller_data.buttons.l_right;
-    joy_msg.buttons[4] = controller_data.buttons.r_up;
-    joy_msg.buttons[5] = controller_data.buttons.r_down;
-    joy_msg.buttons[6] = controller_data.buttons.r_left;
-    joy_msg.buttons[7] = controller_data.buttons.r_right;
+    joy_msg.buttons[0] = controller_data.buttons.r_up;
+    joy_msg.buttons[1] = controller_data.buttons.r_down;
+    joy_msg.buttons[2] = controller_data.buttons.r_left;
+    joy_msg.buttons[3] = controller_data.buttons.r_right;
+    joy_msg.buttons[4] = controller_data.buttons.l_up;
+    joy_msg.buttons[5] = controller_data.buttons.l_down;
+    joy_msg.buttons[6] = controller_data.buttons.l_left;
+    joy_msg.buttons[7] = controller_data.buttons.l_right;
     pub_joy_->publish(joy_msg);
 }
 
