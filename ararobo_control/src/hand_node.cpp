@@ -54,19 +54,14 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
         {
             upper_hand_automatic_close();
         }
-        else if (operate_mode == 3) // release
-        {
-            upper_hand_in_operation = false;
-            // upper_hand_automatic_release();
-        }
     }
     else
     {
-        if (mode == 1 || mode == 2 || mode == 3)
+        if (mode == 1 || mode == 2)
         {
             operate_mode = mode;
             mode = 0;
-            // upper_hand_in_operation = true;
+            upper_hand_in_operation = true;
         }
 
         // manual
@@ -96,22 +91,22 @@ void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPt
     under_hand_raise = 0.0f;
     if (under_hand_in_operation)
     {
-        if (operate_mode == 4)
+        if (operate_mode == 3) // open
         {
             under_hand_automatic_open();
         }
-        if (operate_mode == 5)
+        if (operate_mode == 4) // close
         {
             under_hand_automatic_open();
         }
     }
     else
     {
-        if (mode == 4 || mode == 5)
+        if (mode == 3 || mode == 4)
         {
             operate_mode = mode;
             mode = 0;
-            // under_hand_in_operation = true;
+            under_hand_in_operation = true;
         }
 
         // manual
@@ -188,53 +183,28 @@ void HandNode::upper_hand_automatic_close()
     upper_hand_in_operation = false;
 }
 
-void HandNode::upper_hand_automatic_release()
-{
-    if (!upper_depth_open_limit)
-    {
-        upper_depth += upper_depth_speed;
-    }
-    if (!upper_width_limit)
-    {
-        upper_width += upper_width_speed;
-    }
-
-    if (upper_width_limit && upper_depth_open_limit)
-    {
-        upper_hand_in_operation = false;
-    }
-}
-
 void HandNode::under_hand_automatic_open()
 {
     if (!under_slide_open_limit)
     {
         under_hand_slide += under_hand_slide_speed;
-        return;
     }
-    if (!under_raise_open_limit)
+    else
     {
-        under_hand_raise += under_hand_raise_speed;
-        return;
+        under_hand_in_operation = false;
     }
-
-    under_hand_in_operation = false;
 }
 
 void HandNode::under_hand_automatic_close()
 {
-    if (!under_raise_close_limit)
-    {
-        under_hand_raise -= under_hand_raise_speed;
-        return;
-    }
     if (!under_slide_close_limit)
     {
         under_hand_slide -= under_hand_slide_speed;
-        return;
     }
-
-    under_hand_in_operation = false;
+    else
+    {
+        under_hand_in_operation = false;
+    }
 }
 
 void HandNode::upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg)
