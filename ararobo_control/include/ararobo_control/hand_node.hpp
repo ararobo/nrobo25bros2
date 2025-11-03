@@ -56,6 +56,9 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_under_position_control_;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_hold_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_open_limit_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_close_limit_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_width_limit_;
     rclcpp::TimerBase::SharedPtr timer_;
 
 public:

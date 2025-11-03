@@ -27,6 +27,15 @@ HandNode::HandNode() : Node("hand_node")
         "/phone/upper_hand/depth", 10, [&](const std_msgs::msg::Float32::SharedPtr msg)
         { hold = msg->data; 
           update_hold_ = true; });
+    sub_upper_depth_open_limit_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/hand/upper/depth/max", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        { upper_depth_open_limit = msg->data; });
+    sub_upper_depth_close_limit_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/hand/upper/depth/min", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        { upper_depth_close_limit = msg->data; });
+    sub_upper_width_limit_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/hand/upper/width/max", 10, [&](const std_msgs::msg::Bool::SharedPtr msg)
+        { upper_width_limit = msg->data; });
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(100),
         std::bind(&HandNode::timer_callback, this));
