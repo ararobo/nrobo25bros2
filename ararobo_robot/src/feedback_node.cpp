@@ -30,6 +30,7 @@ FeedbackNode::FeedbackNode()
         return; // 初期化失敗で終了
     }
 
+    /*
     // Odometryパブリッシャーの初期化
     pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10);
@@ -53,16 +54,15 @@ FeedbackNode::FeedbackNode()
         "/hand/under/right/position_control", 10);
     pub_position_control_under_hand_left_ = this->create_publisher<std_msgs::msg::Bool>(
         "/hand/under/left/position_control", 10);
+    */
     pub_limit_depth_max_ = this->create_publisher<std_msgs::msg::Bool>(
         "/hand/upper/depth/max", 10);
     pub_limit_depth_minimum_ = this->create_publisher<std_msgs::msg::Bool>(
-        "/hand/upper/depth/minimum", 10);
+        "/hand/upper/depth/min", 10);
     pub_limit_width_max_ = this->create_publisher<std_msgs::msg::Bool>(
         "/hand/upper/width/max", 10);
-    pub_limit_depth_minimum_ = this->create_publisher<std_msgs::msg::Bool>(
-        "/hand/upper/width/minimum", 10);
-    // TF Broadcasterの初期化
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+    pub_limit_width_minimum_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/width/min", 10);
 
     // タイマーの設定
     timer_ = this->create_wall_timer(
@@ -89,6 +89,7 @@ void FeedbackNode::timer_callback()
     if (recv_size == sizeof(feedback_union))
     {
         // 受信データサイズの確認
+        /*
         auto current_width = std_msgs::msg::Float32();
         current_width.data = feedback_union.data.upper_hand_current_width;
         pub_current_hand_width_->publish(current_width);
@@ -121,6 +122,7 @@ void FeedbackNode::timer_callback()
         auto position_control_upper_hand_width = std_msgs::msg::Bool();
         position_control_upper_hand_width.data = feedback_union.data.position_control_upper_hand_width ? true : false;
         pub_position_control_upper_hand_width_->publish(position_control_upper_hand_width);
+        */
         auto limit_depth_max_msg = std_msgs::msg::Bool();
         limit_depth_max_msg.data = feedback_union.data.limit_depth_max;
         pub_limit_depth_max_->publish(limit_depth_max_msg);

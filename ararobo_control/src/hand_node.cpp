@@ -98,6 +98,7 @@ void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPt
 {
     under_hand_slide = 0.0f;
     under_hand_raise = 0.0f;
+    /*
     if (under_hand_in_operation)
     {
         if (operate_mode == 3) // open
@@ -121,6 +122,8 @@ void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPt
         // manual
         under_hand_manual_control(msg);
     }
+    */
+    under_hand_manual_control(msg);
     std_msgs::msg::Float32 under_slide_msg;
     under_slide_msg.data = under_hand_slide;
     pub_under_slide_->publish(under_slide_msg);

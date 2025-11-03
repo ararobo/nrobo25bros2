@@ -17,23 +17,10 @@ private:
     double encoder_resolution; // エンコーダの分解能
     double wheel_radius;       // 車輪の半径
     uint8_t period_odom;       // オドメトリ計算周期[ms]
-
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_hand_width_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_hand_depth_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_current_lift_;
-    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_distance_right_;
-    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_distance_left_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_lift_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_upper_hand_depth_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_upper_hand_width_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_right_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_left_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_depth_max_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_depth_minimum_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_width_max_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_width_minimum_;
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 
     std::shared_ptr<SimpleUDP> udp;
