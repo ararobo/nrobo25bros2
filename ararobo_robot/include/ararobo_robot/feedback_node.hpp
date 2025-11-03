@@ -29,6 +29,10 @@ private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_upper_hand_width_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_right_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_position_control_under_hand_left_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_depth_max_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_depth_minimum_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_width_max_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_limit_width_minimum_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 

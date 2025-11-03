@@ -53,6 +53,14 @@ FeedbackNode::FeedbackNode()
         "/hand/under/right/position_control", 10);
     pub_position_control_under_hand_left_ = this->create_publisher<std_msgs::msg::Bool>(
         "/hand/under/left/position_control", 10);
+    pub_limit_depth_max_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/depth/max", 10);
+    pub_limit_depth_minimum_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/depth/minimum", 10);
+    pub_limit_width_max_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/width/max", 10);
+    pub_limit_depth_minimum_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/hand/upper/width/minimum", 10);
     // TF Broadcasterの初期化
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
@@ -113,6 +121,18 @@ void FeedbackNode::timer_callback()
         auto position_control_upper_hand_width = std_msgs::msg::Bool();
         position_control_upper_hand_width.data = feedback_union.data.position_control_upper_hand_width ? true : false;
         pub_position_control_upper_hand_width_->publish(position_control_upper_hand_width);
+        auto limit_depth_max_msg = std_msgs::msg::Bool();
+        limit_depth_max_msg.data = feedback_union.data.limit_depth_max;
+        pub_limit_depth_max_->publish(limit_depth_max_msg);
+        auto limit_depth_minimum_msg = std_msgs::msg::Bool();
+        limit_depth_minimum_msg.data = feedback_union.data.limit_depth_min;
+        pub_limit_depth_minimum_->publish(limit_depth_minimum_msg);
+        auto limit_width_max_msg = std_msgs::msg::Bool();
+        limit_width_max_msg.data = feedback_union.data.limit_width_max;
+        pub_limit_width_max_->publish(limit_width_max_msg);
+        auto limit_width_minimum_msg = std_msgs::msg::Bool();
+        limit_width_minimum_msg.data = feedback_union.data.limit_width_min;
+        pub_limit_width_minimum_->publish(limit_width_minimum_msg);
         // auto position_control_under_hand_right = std_msgs::msg::Bool();
         // position_control_under_hand_right.data = feedback_union.data.position_control_under_hand_slide_right ? true : false;
         // pub_position_control_under_hand_right_->publish(position_control_under_hand_right);
