@@ -167,7 +167,7 @@ void HandNode::upper_hand_automatic_open()
 {
     if (!upper_width_limit)
     {
-        upper_width += upper_width_speed;
+        upper_width -= upper_width_speed;
         return;
     }
     if (!upper_depth_open_limit)
@@ -183,7 +183,7 @@ void HandNode::upper_hand_automatic_close()
 {
     if (!upper_width_limit)
     {
-        upper_width += upper_width_speed;
+        upper_width -= upper_width_speed;
         return;
     }
     if (!upper_depth_close_limit)

@@ -56,9 +56,9 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     // 台形制御
     if (acceleration)
     {
-        cmd_vel_msg.linear.x = trapezoidal_x->trapezoidal_control(cmd_vel_msg.linear.x, max_acceleration);
-        cmd_vel_msg.linear.y = trapezoidal_y->trapezoidal_control(cmd_vel_msg.linear.y, max_acceleration);
-        cmd_vel_msg.angular.z = trapezoidal_z->trapezoidal_control(cmd_vel_msg.angular.z, max_acceleration);
+        cmd_vel_msg.linear.x = cmd_vel_msg.linear.x * low_speed_rate;
+        cmd_vel_msg.linear.y = cmd_vel_msg.linear.y * low_speed_rate;
+        cmd_vel_msg.angular.z = cmd_vel_msg.angular.z * low_speed_rate;
     }
 
     pub_cmd_vel_->publish(cmd_vel_msg);
