@@ -59,14 +59,14 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
         {
             upper_hand_automatic_open();
         }
-        else if (operate_mode == 2) // close
+        /*else if (operate_mode == 2) // close
         {
             upper_hand_automatic_close();
-        }
+        }*/
     }
     else
     {
-        if (mode == 1 || mode == 2)
+        if (mode == 1 /*|| mode == 2*/)
         {
             operate_mode = mode;
             mode = 0;
