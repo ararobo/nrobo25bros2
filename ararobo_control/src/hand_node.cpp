@@ -7,6 +7,10 @@ HandNode::HandNode() : Node("hand_node")
     pub_under_slide_ = this->create_publisher<std_msgs::msg::Float32>("/hand/under/slide", 10);
     pub_under_raise_ = this->create_publisher<std_msgs::msg::Float32>("/hand/under/raise", 10);
     pub_hold_cancel_ = this->create_publisher<std_msgs::msg::Bool>("/cancel_hold", 10);
+    pub_hand_extent_ = this->create_publisher<std_msgs::msg::UInt8>("/hand/extent", 10);
+    sub_hand_extent_ = this->create_subscription<std_msgs::msg::UInt8>(
+        "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg)
+        { hand_extent = msg->data; });
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&HandNode::joy_callback, this, std::placeholders::_1));
     sub_hold_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -21,6 +25,11 @@ HandNode::HandNode() : Node("hand_node")
 void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     update_joy_ = true;
+    if (msg->buttons[0] || msg->buttons[1] || msg->buttons[2] || msg->buttons[3] ||
+        msg->buttons[4] || msg->buttons[5] || msg->buttons[6] || msg->buttons[7])
+    {
+        hand_extent = 0;
+    }
     upper_hand_control_velocity_manual(msg);
     under_hand_velocity_control(msg);
 }
@@ -48,6 +57,9 @@ void HandNode::upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::S
     std_msgs::msg::Float32 upper_width_msg;
     upper_width_msg.data = upper_width;
     pub_upper_width_->publish(upper_width_msg);
+    std_msgs::msg::UInt8 hand_extent_msg;
+    hand_extent_msg.data = hand_extent;
+    pub_hand_extent_->publish(hand_extent_msg);
 }
 
 void HandNode::under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPtr msg)

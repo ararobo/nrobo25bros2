@@ -19,6 +19,7 @@ private:
     float upper_width = 0.0f;
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
+    uint8_t hand_extent = 0;
     // 動作モード
     float hold = 0.0f;
 
@@ -32,10 +33,11 @@ private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_box_hold_;
     rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr pub_box_info_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_hold_cancel_;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_hand_extent_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_position_control_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_under_position_control_;
-    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_hand_extent_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_hold_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_open_limit_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_close_limit_;
