@@ -3,6 +3,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <chrono>
 #include "ararobo_control/trapezoidal_controller.hpp"
 
 class MoveNode : public rclcpp::Node
@@ -19,6 +20,9 @@ private:
     // リフト位置制御
     bool lift_position_control = false;
     float lift_pos = 0.0f;
+    float current_lift_input = 0.0f; // 現在のリフト入力値
+    rclcpp::Time last_update_time_;  // 前回の更新時刻
+
     // 動作モード
     uint8_t mode = 0;
     bool auto_mode = false;
@@ -43,12 +47,12 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_phone_cmd_vel_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_lift_;
     // Timer
-    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::TimerBase::SharedPtr timer_communication_check_;
 
 public:
     MoveNode();
     void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg);
     void phone_cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
     void phone_lift_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void timer_callback();
+    void timer_communication_check_callback();
 };

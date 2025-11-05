@@ -1,4 +1,6 @@
 #include "ararobo_control/move_node.hpp"
+#include <algorithm>
+#include <cmath>
 
 MoveNode::MoveNode() : Node("move_node")
 {
@@ -8,6 +10,10 @@ MoveNode::MoveNode() : Node("move_node")
     trapezoidal_x->set_control_cycle(10);
     trapezoidal_y->set_control_cycle(10);
     trapezoidal_z->set_control_cycle(10);
+
+    // 時刻の初期化
+    last_update_time_ = this->now();
+
     pub_cmd_vel_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
     pub_lift_ = this->create_publisher<std_msgs::msg::Float32>("/lift/target", 10);
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
@@ -22,9 +28,9 @@ MoveNode::MoveNode() : Node("move_node")
         "/phone/cmd_vel", 10, std::bind(&MoveNode::phone_cmd_vel_callback, this, std::placeholders::_1));
     sub_phone_lift_ = this->create_subscription<std_msgs::msg::Float32>(
         "/phone/lift", 10, std::bind(&MoveNode::phone_lift_callback, this, std::placeholders::_1));
-    timer_ = this->create_wall_timer(
+    timer_communication_check_ = this->create_wall_timer(
         std::chrono::milliseconds(200),
-        std::bind(&MoveNode::timer_callback, this));
+        std::bind(&MoveNode::timer_communication_check_callback, this));
 }
 
 void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
@@ -32,17 +38,27 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     update_joy_ = true;
     auto cmd_vel_msg = geometry_msgs::msg::Twist();
     auto lift_msg = std_msgs::msg::Float32();
+
+    // 現在時刻の取得
+    rclcpp::Time current_time = this->now();
+    double dt = (current_time - last_update_time_).seconds();
+    last_update_time_ = current_time;
+
     // 直線移動
     cmd_vel_msg.linear.x = linear_x_speed * msg->axes[0];
     cmd_vel_msg.linear.y = linear_y_speed * msg->axes[1];
+
     // 右スティック
     if (std::abs(msg->axes[3]) > angular_stick_threshold) // リフト制御
     {
-        lift_pos += angular_lift_speed * msg->axes[3];
+        // 時間ベースでリフト位置を更新（joyの受信周期に依存しない）
+        current_lift_input = msg->axes[3];
+        lift_pos += angular_lift_speed * current_lift_input * dt;
         cmd_vel_msg.angular.z = 0.0;
     }
     else // 回転制御
     {
+        current_lift_input = 0.0;
         cmd_vel_msg.angular.z = angular_speed * msg->axes[2];
     }
     // 速度制限
@@ -63,12 +79,16 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 
     pub_cmd_vel_->publish(cmd_vel_msg);
 
-    lift_pos = std::clamp(lift_pos, -175.0f, 20.0f);
+    // リフト位置の制限
+    if (lift_pos < -175.0f)
+        lift_pos = -175.0f;
+    if (lift_pos > 20.0f)
+        lift_pos = 20.0f;
     lift_msg.data = lift_pos;
     pub_lift_->publish(lift_msg);
 }
 
-void MoveNode::timer_callback()
+void MoveNode::timer_communication_check_callback()
 {
     if (!update_joy_)
     {
