@@ -43,60 +43,6 @@ OperationNode::OperationNode()
         "/mode/connection", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { operation_data.communication_status = msg->data; });
-    sub_acceleration_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/phone/low_accel", 10,
-        [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
-        {
-            if (msg->data)
-            {
-                if (operation_data.control_mode == 1)
-                {
-                    operation_data.control_mode = 3;
-                }
-                else
-                {
-                    operation_data.control_mode = 2;
-                }
-            }
-            else
-            {
-                if (operation_data.control_mode == 3)
-                {
-                    operation_data.control_mode = 1;
-                }
-                else if (operation_data.control_mode == 2)
-                {
-                    operation_data.control_mode = 0;
-                }
-            }
-        });
-    sub_low_speed_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/phone/low_speed", 10,
-        [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
-        {
-            if (msg->data)
-            {
-                if (operation_data.control_mode == 2)
-                {
-                    operation_data.control_mode = 3;
-                }
-                else
-                {
-                    operation_data.control_mode = 1;
-                }
-            }
-            else
-            {
-                if (operation_data.control_mode == 3)
-                {
-                    operation_data.control_mode = 2;
-                }
-                else if (operation_data.control_mode == 1)
-                {
-                    operation_data.control_mode = 0;
-                }
-            }
-        });
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(15),
                                      std::bind(&OperationNode::timer_callback, this));
