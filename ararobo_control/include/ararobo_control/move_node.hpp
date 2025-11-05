@@ -40,11 +40,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_lift_;
     // Subscription
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_auto_mode_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_acceleration_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_low_speed_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_lift_position_control_;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_phone_cmd_vel_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_phone_lift_;
     // Timer
     rclcpp::TimerBase::SharedPtr timer_communication_check_;
