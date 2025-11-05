@@ -49,7 +49,5 @@ private:
 public:
     MoveNode();
     void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg);
-    void phone_cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
-    void phone_lift_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void timer_communication_check_callback();
 };
