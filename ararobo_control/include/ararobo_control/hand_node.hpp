@@ -14,31 +14,13 @@ private:
     float under_hand_raise_speed = 1.5f;
     float under_hand_slide_speed = 1.5f;
     float hold_speed = 30.0f;
-    // 位置制御時速度
-    float upper_depth_pos_speed = 20.0f;
-    float upper_width_pos_speed = 1.0f;
     // 上ハンド
     float upper_depth = 0.0f;
     float upper_width = 0.0f;
     float under_hand_raise = 0.0f;
     float under_hand_slide = 0.0f;
     // 動作モード
-    uint8_t mode = 0;
-    bool auto_mode = false;
-    bool upper_position_control = false;
-    bool under_position_control = false;
     float hold = 0.0f;
-    bool upper_hand_in_operation;
-    bool under_hand_in_operation;
-    int operate_mode;
-    // リミットスイッチ
-    bool upper_width_limit = false;
-    bool upper_depth_open_limit = false;
-    bool upper_depth_close_limit = false;
-    bool under_slide_open_limit = false;
-    bool under_slide_close_limit = false;
-    // bool under_raise_open_limit = false;
-    // bool under_raise_close_limit = false;
 
     // 安全用
     bool update_joy_ = false;
@@ -51,7 +33,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr pub_box_info_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_hold_cancel_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_auto_mode_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_position_control_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_under_position_control_;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_;
@@ -67,10 +48,6 @@ public:
     void timer_callback();
     void under_hand_velocity_control(const sensor_msgs::msg::Joy::SharedPtr msg);
     void upper_hand_control_velocity_manual(const sensor_msgs::msg::Joy::SharedPtr msg);
-    void upper_hand_automatic_open();
-    void upper_hand_automatic_close();
-    void under_hand_automatic_open();
-    void under_hand_automatic_close();
     void upper_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg);
     void under_hand_manual_control(const sensor_msgs::msg::Joy::SharedPtr msg);
 };

@@ -45,6 +45,7 @@ struct operation_data_t
     float upper_hand_depth;       // 上ハンド出し入れ
     float under_arm_slide;        // 下アーム前後スライド
     float under_arm_raise;        // 下アーム上下回転
+    uint8_t hand_extent;          // 0:未操作 1:展開 2:収納
 } __attribute__((__packed__));
 
 struct controller_data_t

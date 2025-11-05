@@ -43,6 +43,10 @@ OperationNode::OperationNode()
         "/mode/connection", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
         { operation_data.communication_status = msg->data; });
+    sub_hand_extent_ = this->create_subscription<std_msgs::msg::UInt8>(
+        "/hand/extent", 10,
+        [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
+        { operation_data.hand_extent = msg->data; });
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(15),
                                      std::bind(&OperationNode::timer_callback, this));
