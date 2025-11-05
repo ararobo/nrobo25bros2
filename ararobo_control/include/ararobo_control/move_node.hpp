@@ -13,7 +13,7 @@ private:
     float linear_x_speed = 1.8f;
     float linear_y_speed = 1.8f;
     float angular_speed = -2.4f;
-    float angular_lift_speed = 0.5f;
+    float angular_lift_speed = 40.0f;
     float angular_stick_threshold = 0.5f;
     float max_acceleration = 0.001f;
     float low_speed_rate = 0.4f;
