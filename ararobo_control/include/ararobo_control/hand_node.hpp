@@ -9,11 +9,11 @@ class HandNode : public rclcpp::Node
 {
 private:
     // 速度設定
-    float upper_depth_speed = 25.0f;
+    float upper_depth_speed = 28.0f;
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.5f;
     float under_hand_slide_speed = 1.5f;
-    float hold_speed = 30.0f;
+    float hold_speed = 40.0f;
     // 上ハンド
     float upper_depth = 0.0f;
     float upper_width = 0.0f;
