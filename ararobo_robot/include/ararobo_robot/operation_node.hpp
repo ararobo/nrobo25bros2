@@ -18,6 +18,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_slide_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_under_hand_raise_;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_communication_status_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_low_speed_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_low_acceleration_;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_hand_extent_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<SimpleUDP> udp;

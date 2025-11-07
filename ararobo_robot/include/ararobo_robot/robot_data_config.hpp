@@ -10,6 +10,7 @@
  */
 #pragma once
 #include <stdint.h>
+#include "led_config.hpp"
 
 struct feedback_data_t
 {
@@ -36,16 +37,16 @@ struct feedback_data_t
 
 struct operation_data_t
 {
-    uint8_t communication_status; // 通信状態 (0:なし 1:PC-main間通信 2:BLE 3:WiFi-1 4:WiFi-2)
-    float vx;                     // x軸方向の速度[m/s]
-    float vy;                     // y軸方向の速度[m/s]
-    float omega;                  // 回転速度[rad/s]
-    float lift;                   // 昇降
-    float upper_hand_width;       // 上ハンド開閉幅
-    float upper_hand_depth;       // 上ハンド出し入れ
-    float under_arm_slide;        // 下アーム前後スライド
-    float under_arm_raise;        // 下アーム上下回転
-    uint8_t hand_extent;          // 0:未操作 1:展開 2:収納
+    led_config_t led_config; // LED設定データ
+    float vx;                // x軸方向の速度[m/s]
+    float vy;                // y軸方向の速度[m/s]
+    float omega;             // 回転速度[rad/s]
+    float lift;              // 昇降
+    float upper_hand_width;  // 上ハンド開閉幅
+    float upper_hand_depth;  // 上ハンド出し入れ
+    float under_arm_slide;   // 下アーム前後スライド
+    float under_arm_raise;   // 下アーム上下回転
+    uint8_t hand_extent;     // 0:未操作 1:展開 2:収納
 } __attribute__((__packed__));
 
 struct controller_data_t

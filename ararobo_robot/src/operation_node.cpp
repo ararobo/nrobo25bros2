@@ -42,7 +42,15 @@ OperationNode::OperationNode()
     sub_communication_status_ = this->create_subscription<std_msgs::msg::UInt8>(
         "/mode/connection", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
-        { operation_data.communication_status = msg->data; });
+        { operation_data.led_config.signal = msg->data; });
+    sub_low_speed_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/phone/low_speed", 10,
+        [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
+        { operation_data.led_config.speed = msg->data; });
+    sub_low_acceleration_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/phone/low_accel", 10,
+        [&](const std_msgs::msg::Bool::SharedPtr msg) -> void
+        { operation_data.led_config.acceleration = msg->data; });
     sub_hand_extent_ = this->create_subscription<std_msgs::msg::UInt8>(
         "/hand/extent", 10,
         [&](const std_msgs::msg::UInt8::SharedPtr msg) -> void
@@ -51,7 +59,12 @@ OperationNode::OperationNode()
     timer_ = this->create_wall_timer(std::chrono::milliseconds(15),
                                      std::bind(&OperationNode::timer_callback, this));
 
-    operation_data.communication_status = 1; // PC-main間通信
+    operation_data.led_config.signal = 1; // PC-main間通信
+    operation_data.led_config.ethernet = false;
+    operation_data.led_config.operate = true; // manual
+    operation_data.led_config.speed = false;
+    operation_data.led_config.acceleration = false;
+    operation_data.led_config.ToF = false;
     RCLCPP_INFO(this->get_logger(), "OperationNode started");
 }
 
