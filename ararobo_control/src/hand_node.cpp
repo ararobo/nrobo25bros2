@@ -34,6 +34,10 @@ void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     {
         hold = true;
     }
+    if (msg->buttons[0])
+    {
+        hold = false;
+    }
 
     upper_hand_control_velocity_manual(msg);
     under_hand_velocity_control(msg);
