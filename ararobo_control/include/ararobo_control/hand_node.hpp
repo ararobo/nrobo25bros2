@@ -12,7 +12,7 @@ private:
     float upper_depth_speed = 28.0f;
     float upper_width_speed = 1.0f;
     float under_hand_raise_speed = 1.5f;
-    float under_hand_slide_speed = 1.5f;
+    float under_hand_slide_speed = 0.2f;
     float hold_speed = 40.0f;
     // 上ハンド
     float upper_depth = 0.0f;
@@ -21,11 +21,11 @@ private:
     float under_hand_slide = 0.0f;
     uint8_t hand_extent = 0;
     // 動作モード
-    float hold = 0.0f;
+    bool hold = false;
 
     // 安全用
     bool update_joy_ = false;
-    bool update_hold_ = false;
+
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_depth_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_slide_;
