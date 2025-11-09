@@ -30,18 +30,10 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_upper_width_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_slide_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_under_raise_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_box_hold_;
-    rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr pub_box_info_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_hold_cancel_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_hand_extent_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr sub_joy_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_position_control_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_under_position_control_;
-    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_hand_extent_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_hold_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_open_limit_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_depth_close_limit_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_upper_width_limit_;
     rclcpp::TimerBase::SharedPtr timer_;
 
 public:
