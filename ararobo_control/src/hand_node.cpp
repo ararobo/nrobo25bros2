@@ -21,12 +21,11 @@ HandNode::HandNode() : Node("hand_node")
 void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     update_joy_ = true;
-    if (msg->buttons[0] || msg->buttons[1] || msg->buttons[2] || msg->buttons[3] ||
-        msg->buttons[4] || msg->buttons[5] || msg->buttons[6])
+    if (msg->buttons[0] || msg->buttons[1] || msg->buttons[2] || msg->buttons[3] || msg->buttons[5])
     {
         hand_extent = 0;
     }
-    if (msg->buttons[7])
+    if (msg->buttons[4])
     {
         hand_extent = 1;
     }
@@ -34,7 +33,7 @@ void HandNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     {
         hold = true;
     }
-    if (msg->buttons[0])
+    if (msg->buttons[0] || msg->buttons[4])
     {
         hold = false;
     }
