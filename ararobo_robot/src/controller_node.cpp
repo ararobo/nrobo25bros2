@@ -74,6 +74,17 @@ void ControllerNode::recv_timer_callback()
     // データ受信の有無を明確に判定
     bool rx_controller_data[2] = {rx_data_size[0] > 0, rx_data_size[1] > 0};
 
+    if (controller_union[0].data.header != controller_data_header && rx_controller_data[0])
+    {
+        RCLCPP_WARN(this->get_logger(), "Invalid header in controller_union[0]");
+        rx_controller_data[0] = false;
+    }
+    if (controller_union[1].data.header != controller_data_header && rx_controller_data[1])
+    {
+        RCLCPP_WARN(this->get_logger(), "Invalid header in controller_union[1]");
+        rx_controller_data[1] = false;
+    }
+
     if (rx_controller_data[0] && !rx_controller_data[1])
     {
         publish_joy(controller_union[0].data);

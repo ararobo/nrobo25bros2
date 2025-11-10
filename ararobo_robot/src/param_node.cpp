@@ -17,6 +17,10 @@ ParamNode::ParamNode()
     sub_pid_gain_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
         "/pid_gain", 10,
         std::bind(&ParamNode::pid_gain_callback, this, std::placeholders::_1));
+
+    pid_gain_union.data.header = pid_gain_data_header;
+
+    RCLCPP_INFO(this->get_logger(), "ParamNode started");
 }
 
 ParamNode::~ParamNode()
