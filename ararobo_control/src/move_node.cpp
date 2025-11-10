@@ -48,7 +48,12 @@ void MoveNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
     if (std::abs(msg->axes[3]) > angular_stick_threshold) // リフト制御
     {
         // 時間ベースでリフト位置を更新（joyの受信周期に依存しない）
-        current_lift_input = msg->axes[3];
+        current_lift_input = 0.5 * (msg->axes[3] * msg->axes[3]);
+        if (msg->axes[3] < 0.0)
+        {
+            current_lift_input *= -1.0;
+        }
+        current_lift_input += 0.5 * msg->axes[3];
         lift_pos += angular_lift_speed * current_lift_input * dt;
         cmd_vel_msg.angular.z = 0.0;
     }
