@@ -12,8 +12,14 @@
 #include <stdint.h>
 #include "led_config.hpp"
 
+constexpr uint16_t operation_data_header = 0xAB36;
+constexpr uint16_t feedback_data_header = 0x554A;
+constexpr uint16_t controller_data_header = 0x15A5;
+constexpr uint16_t pid_gain_data_header = 0x5A5C;
+
 struct feedback_data_t
 {
+    uint16_t header;                        // ヘッダー
     uint32_t tick;                          // 送信時のタイムスタンプ
     int16_t encoder_x;                      // x軸方向のエンコーダ値[CRP]
     int16_t encoder_y;                      // y軸方向のエンコーダ値[CRP]
@@ -37,6 +43,7 @@ struct feedback_data_t
 
 struct operation_data_t
 {
+    uint16_t header;         // ヘッダー
     led_config_t led_config; // LED設定データ
     float vx;                // x軸方向の速度[m/s]
     float vy;                // y軸方向の速度[m/s]
@@ -51,6 +58,7 @@ struct operation_data_t
 
 struct controller_data_t
 {
+    uint16_t header;      // ヘッダー
     uint32_t tick;        // 送信時のタイムスタンプ
     int8_t left_stick_x;  // 左スティック左右
     int8_t left_stick_y;  // 左スティック上下
@@ -71,6 +79,7 @@ struct controller_data_t
 
 struct pid_gain_t
 {
+    uint16_t header;   // ヘッダー
     uint8_t id;        // MDのID
     bool reinitialize; // 再初期化するか否か
     float p;           // 比例ゲイン

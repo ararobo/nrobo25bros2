@@ -8,9 +8,6 @@ HandNode::HandNode() : Node("hand_node")
     pub_under_raise_ = this->create_publisher<std_msgs::msg::Float32>("/hand/under/raise", 10);
     pub_hold_cancel_ = this->create_publisher<std_msgs::msg::Bool>("/cancel_hold", 10);
     pub_hand_extent_ = this->create_publisher<std_msgs::msg::UInt8>("/hand/extent", 10);
-    sub_hand_extent_ = this->create_subscription<std_msgs::msg::UInt8>(
-        "/phone/mode", 10, [&](const std_msgs::msg::UInt8::SharedPtr msg)
-        { hand_extent = msg->data; });
     sub_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", 10, std::bind(&HandNode::joy_callback, this, std::placeholders::_1));
     timer_ = this->create_wall_timer(

@@ -86,7 +86,7 @@ void FeedbackNode::timer_callback()
 {
     // UDPパケットの受信
     int recv_size = udp->recvPacket(feedback_union.code, sizeof(feedback_union));
-    if (recv_size == sizeof(feedback_union))
+    if (recv_size == sizeof(feedback_union) && feedback_union.data.header == feedback_data_header)
     {
         // 受信データサイズの確認
         /*

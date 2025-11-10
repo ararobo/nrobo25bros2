@@ -59,6 +59,7 @@ OperationNode::OperationNode()
     timer_ = this->create_wall_timer(std::chrono::milliseconds(15),
                                      std::bind(&OperationNode::timer_callback, this));
 
+    operation_data.header = operation_data_header;
     operation_data.led_config.signal = 1; // PC-main間通信
     operation_data.led_config.ethernet = false;
     operation_data.led_config.operate = true; // manual
