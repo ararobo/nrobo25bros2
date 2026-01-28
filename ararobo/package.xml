@@ -4,7 +4,7 @@
   <name>ararobo</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="8gn24gn25@gmail.com">ararobo</maintainer>
+  <maintainer email="gento@gn10.org">ararobo</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
